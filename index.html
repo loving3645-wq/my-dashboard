@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0a0a0a" />
+<title>Dashboard — Today</title>
+
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Dashboard%22%2C%22short_name%22%3A%22Dashboard%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230a0a0a%22%2C%22theme_color%22%3A%22%230a0a0a%22%7D" />
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%230a0a0a'/%3E%3Ctext x='50%25' y='50%25' font-family='serif' font-size='100' fill='%23f59e0b' text-anchor='middle' dominant-baseline='central'%3E◐%3C/text%3E%3C/svg%3E" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+
+<script>
+  window.CONFIG = {
+    TODOS_GIST_ID:    '2f582e546551abba6000115cbd4f64c9',
+    CALENDAR_GIST_ID: null,
+    CALENDAR_GIST_RAW: null,
+  };
+</script>
+
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg-elevated: #141414;
+    --bg-hover: #1c1c1c;
+    --border: #262626;
+    --border-strong: #3a3a3a;
+    --text: #ededed;
+    --text-muted: #888;
+    --text-faint: #555;
+    --accent: #f59e0b;
+    --accent-dim: #b87908;
+    --danger: #ef4444;
+    --done: #4ade80;
+    --serif: 'Fraunces', 'Nanum Myeongjo', serif;
+    --sans: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+    --mono: 'JetBrains Mono', 'D2Coding', ui-monospace, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(245,158,11,0.06), transparent),
+      var(--bg);
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; background: none; border: none; }
+
+  .app { max-width: 760px; margin: 0 auto; padding: 24px 20px 80px; }
+
+  .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .header-left .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em; color: var(--text-faint); text-transform: uppercase; margin-bottom: 4px; }
+  .header-left h1 { font-family: var(--serif); font-weight: 400; font-style: italic; font-size: 32px; letter-spacing: -0.02em; line-height: 1; }
+  .header-left h1 .day { color: var(--accent); font-style: normal; font-weight: 500; }
+  .header-right { font-family: var(--mono); font-size: 11px; color: var(--text-faint); text-align: right; }
+  .header-right .time { color: var(--text-muted); font-size: 13px; letter-spacing: 0.05em; }
+  .header-right .sync { display: flex; align-items: center; gap: 6px; justify-content: flex-end; margin-top: 4px; }
+  .header-right .sync .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-faint); }
+  .header-right .sync.live .dot { background: var(--done); box-shadow: 0 0 8px rgba(74,222,128,0.5); }
+  .header-right .sync.stale .dot { background: var(--accent); }
+  .header-right .sync.error .dot { background: var(--danger); }
+
+  .section { margin-bottom: 36px; }
+  .section-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+  .section-title { font-family: var(--serif); font-size: 13px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); }
+  .section-meta { font-family: var(--mono); font-size: 11px; color: var(--text-faint); }
+
+  .events { display: flex; flex-direction: column; }
+  .event { display: grid; grid-template-columns: 64px 1fr; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: start; transition: background 0.15s; }
+  .event:hover { background: rgba(255,255,255,0.015); }
+  .event-time { font-family: var(--mono); font-size: 12px; color: var(--accent); padding-top: 2px; line-height: 1.3; }
+  .event-time .end { color: var(--text-faint); display: block; }
+  .event-time.allday { color: var(--text-muted); font-style: italic; font-family: var(--serif); font-size: 11px; letter-spacing: 0.1em; }
+  .event-body .title { font-size: 14px; color: var(--text); font-weight: 500; }
+  .event-body .loc { font-family: var(--mono); font-size: 11px; color: var(--text-faint); margin-top: 2px; }
+  .event.future-day { opacity: 0.5; }
+  .event.future-day .event-time { color: var(--text-muted); }
+
+  .day-divider { font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; color: var(--text-faint); padding: 16px 0 6px; text-transform: uppercase; border-bottom: 1px dashed var(--border); margin-bottom: 4px; }
+
+  .empty { padding: 24px 0; color: var(--text-faint); font-style: italic; font-family: var(--serif); font-size: 14px; text-align: center; }
+
+  .todo-input-wrap { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; transition: border-color 0.15s; }
+  .todo-input-wrap:focus-within { border-color: var(--border-strong); }
+  .todo-input-row { display: flex; gap: 8px; align-items: center; }
+  .todo-input { flex: 1; background: transparent; border: none; outline: none; font-size: 14px; padding: 4px 0; color: var(--text); }
+  .todo-input::placeholder { color: var(--text-faint); }
+  .todo-meta-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .priority-toggle, .time-toggle { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; padding: 4px 8px; border: 1px solid var(--border); border-radius: 3px; color: var(--text-faint); text-transform: uppercase; transition: all 0.15s; }
+  .priority-toggle:hover, .time-toggle:hover { color: var(--text-muted); border-color: var(--border-strong); }
+  .priority-toggle.active.p1 { color: var(--danger); border-color: var(--danger); }
+  .priority-toggle.active.p2 { color: var(--accent); border-color: var(--accent); }
+  .priority-toggle.active.p3 { color: var(--text-muted); border-color: var(--border-strong); }
+  .time-input { background: transparent; border: 1px solid var(--border); border-radius: 3px; padding: 3px 6px; font-family: var(--mono); font-size: 11px; color: var(--text); color-scheme: dark; outline: none; }
+  .time-input:focus { border-color: var(--border-strong); }
+  .add-btn { font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em; color: var(--accent); padding: 4px 10px; border: 1px solid var(--accent-dim); border-radius: 3px; text-transform: uppercase; margin-left: auto; transition: all 0.15s; }
+  .add-btn:hover { background: var(--accent); color: var(--bg); }
+  .add-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .todos { margin-top: 16px; display: flex; flex-direction: column; }
+  .todo { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); align-items: center; transition: opacity 0.2s; }
+  .todo .check { width: 18px; height: 18px; border: 1px solid var(--border-strong); border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; }
+  .todo .check:hover { border-color: var(--text-muted); }
+  .todo.done .check { background: var(--done); border-color: var(--done); }
+  .todo.done .check::after { content: ''; width: 6px; height: 10px; border: solid var(--bg); border-width: 0 1.5px 1.5px 0; transform: rotate(45deg) translate(-1px,-1px); }
+  .todo .body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .todo .title { font-size: 14px; color: var(--text); word-break: break-word; }
+  .todo.done .title { text-decoration: line-through; color: var(--text-faint); }
+  .todo .meta { display: flex; gap: 8px; align-items: center; font-family: var(--mono); font-size: 10px; color: var(--text-faint); letter-spacing: 0.05em; }
+  .todo .pri { padding: 1px 5px; border: 1px solid currentColor; border-radius: 2px; font-weight: 500; }
+  .todo .pri.p1 { color: var(--danger); }
+  .todo .pri.p2 { color: var(--accent); }
+  .todo .pri.p3 { color: var(--text-muted); }
+  .todo .time { color: var(--text-muted); }
+  .todo .delete { color: var(--text-faint); padding: 4px 8px; font-size: 14px; opacity: 0; transition: opacity 0.15s; line-height: 1; }
+  .todo:hover .delete { opacity: 1; }
+  .todo .delete:hover { color: var(--danger); }
+  @media (max-width: 600px) {
+    .todo .delete { opacity: 0.4; }
+  }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100; animation: fadein 0.2s; }
+  @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+  .modal { background: var(--bg-elevated); border: 1px solid var(--border-strong); border-radius: 8px; max-width: 460px; width: 100%; padding: 28px 24px; }
+  .modal h2 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 22px; margin-bottom: 8px; }
+  .modal p { color: var(--text-muted); font-size: 13px; line-height: 1.6; margin-bottom: 16px; }
+  .modal p code { font-family: var(--mono); background: var(--bg); padding: 1px 5px; border-radius: 2px; font-size: 12px; color: var(--accent); }
+  .modal input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px; font-family: var(--mono); font-size: 13px; outline: none; transition: border-color 0.15s; margin-bottom: 12px; color: var(--text); }
+  .modal input:focus { border-color: var(--accent-dim); }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+  .modal-actions button { font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em; padding: 8px 14px; border-radius: 3px; text-transform: uppercase; transition: all 0.15s; }
+  .modal-actions .primary { color: var(--accent); border: 1px solid var(--accent-dim); }
+  .modal-actions .primary:hover { background: var(--accent); color: var(--bg); }
+  .modal-actions .secondary { color: var(--text-muted); border: 1px solid var(--border); }
+  .modal-actions .secondary:hover { color: var(--text); border-color: var(--border-strong); }
+  .modal .err { color: var(--danger); font-size: 12px; margin-bottom: 8px; min-height: 18px; }
+
+  .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10px; color: var(--text-faint); letter-spacing: 0.1em; }
+  .footer button { font: inherit; color: var(--text-faint); transition: color 0.15s; letter-spacing: inherit; }
+  .footer button:hover { color: var(--text-muted); }
+
+  .stagger { opacity: 0; transform: translateY(6px); animation: stagger 0.4s ease-out forwards; }
+  @keyframes stagger { to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="header stagger" style="animation-delay: 0.05s;">
+    <div class="header-left">
+      <div class="eyebrow" id="eyebrow-date">— · —</div>
+      <h1>오늘<span class="day" id="day-num"></span></h1>
+    </div>
+    <div class="header-right">
+      <div class="time" id="clock">--:--</div>
+      <div class="sync" id="sync-status" title="">
+        <span class="dot"></span>
+        <span class="label">SYNC</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="section stagger" style="animation-delay: 0.15s;">
+    <div class="section-header">
+      <div class="section-title">Calendar</div>
+      <div class="section-meta" id="cal-meta">—</div>
+    </div>
+    <div id="events" class="events"></div>
+  </section>
+
+  <section class="section stagger" style="animation-delay: 0.25s;">
+    <div class="section-header">
+      <div class="section-title">Tasks</div>
+      <div class="section-meta" id="todo-meta">—</div>
+    </div>
+
+    <div class="todo-input-wrap">
+      <div class="todo-input-row">
+        <input id="todo-input" class="todo-input" placeholder="할 일을 입력하고 Enter…" maxlength="200" />
+      </div>
+      <div class="todo-meta-row">
+        <button class="priority-toggle" id="pri-toggle" data-pri="0">PRIORITY · —</button>
+        <input type="time" id="time-input" class="time-input" />
+        <button class="add-btn" id="add-btn">ADD</button>
+      </div>
+    </div>
+
+    <div id="todos" class="todos"></div>
+  </section>
+
+  <footer class="footer">
+    <span id="footer-status">READY</span>
+    <button id="reset-btn">RESET TOKEN</button>
+  </footer>
+</div>
+
+<div class="modal-overlay" id="modal" style="display:none;">
+  <div class="modal">
+    <h2>setup</h2>
+    <p>대시보드를 처음 열었어요. GitHub 토큰을 입력하면 본인 브라우저에만 저장돼요. (서버 전송 없음)</p>
+    <p style="font-size:11px; color:var(--text-faint);">
+      필요한 권한: <code>gist</code> 읽기/쓰기. 발급:
+      <span style="color:var(--accent);">github.com → Settings → Developer settings → Tokens (classic)</span>
+    </p>
+    <input type="password" id="token-input" placeholder="ghp_..." autocomplete="off" />
+    <div class="err" id="token-err"></div>
+    <div class="modal-actions">
+      <button class="primary" id="token-save">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = {
+  TOKEN: 'dash_gist_token',
+  CALENDAR_GIST_ID: 'dash_calendar_gist_id',
+};
+const CONFIG = window.CONFIG;
+
+let state = {
+  token: null,
+  calendarGistId: null,
+  todos: [],
+  events: [],
+  lastSync: null,
+  syncStatus: 'idle',
+};
+
+const KOREAN_DAYS = ['일', '월', '화', '수', '목', '금', '토'];
+
+function todayKST() {
+  const now = new Date();
+  const kstString = now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' });
+  return new Date(kstString);
+}
+
+function fmtDate(d) {
+  return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function fmtClock() {
+  const d = todayKST();
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${hh}:${mm} KST`;
+}
+
+function fmtTimeFromISO(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const opts = { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit', hour12: false };
+  return d.toLocaleTimeString('ko-KR', opts);
+}
+
+function isoDateKST(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function relativeDay(dateStr) {
+  const today = todayKST();
+  const todayStr = isoDateKST(today);
+  if (dateStr === todayStr) return '오늘';
+  const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+  if (dateStr === isoDateKST(tomorrow)) return '내일';
+  const target = new Date(dateStr + 'T00:00:00');
+  const diff = Math.round((target - today) / 86400000);
+  return `+${diff}일 · ${KOREAN_DAYS[target.getDay()]}`;
+}
+
+function renderHeader() {
+  const d = todayKST();
+  const dayName = KOREAN_DAYS[d.getDay()];
+  document.getElementById('eyebrow-date').textContent = `${fmtDate(d)} · ${dayName}`;
+  document.getElementById('day-num').textContent = '';
+}
+
+function tickClock() {
+  document.getElementById('clock').textContent = fmtClock();
+}
+
+function setSyncStatus(status, msg) {
+  state.syncStatus = status;
+  const el = document.getElementById('sync-status');
+  el.classList.remove('live', 'stale', 'error');
+  const labels = { idle: 'IDLE', syncing: 'SYNC…', live: 'LIVE', stale: 'STALE', error: 'ERROR' };
+  el.querySelector('.label').textContent = labels[status] || 'SYNC';
+  if (status === 'live' || status === 'stale' || status === 'error') el.classList.add(status);
+  if (msg) el.title = msg;
+  document.getElementById('footer-status').textContent = (msg || labels[status] || 'READY').toUpperCase();
+}
+
+function showTokenModal() {
+  document.getElementById('modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('token-input').focus(), 100);
+}
+function hideTokenModal() {
+  document.getElementById('modal').style.display = 'none';
+  document.getElementById('token-input').value = '';
+  document.getElementById('token-err').textContent = '';
+}
+
+async function saveToken() {
+  const input = document.getElementById('token-input');
+  const errEl = document.getElementById('token-err');
+  const token = input.value.trim();
+  if (!token) { errEl.textContent = '토큰을 입력해주세요.'; return; }
+  errEl.textContent = '검증 중…';
+  try {
+    const r = await fetch('https://api.github.com/user', {
+      headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' },
+    });
+    if (!r.ok) {
+      errEl.textContent = '토큰 검증 실패 (' + r.status + '). 권한과 만료를 확인해주세요.';
+      return;
+    }
+    localStorage.setItem(STORAGE_KEY.TOKEN, token);
+    state.token = token;
+    hideTokenModal();
+    await bootstrap();
+  } catch (e) {
+    errEl.textContent = '네트워크 오류: ' + e.message;
+  }
+}
+
+function resetToken() {
+  if (!confirm('토큰을 삭제하고 다시 입력하시겠습니까?')) return;
+  localStorage.removeItem(STORAGE_KEY.TOKEN);
+  localStorage.removeItem(STORAGE_KEY.CALENDAR_GIST_ID);
+  state.token = null;
+  state.calendarGistId = null;
+  showTokenModal();
+}
+
+async function discoverCalendarGist() {
+  const cached = localStorage.getItem(STORAGE_KEY.CALENDAR_GIST_ID);
+  if (cached) { state.calendarGistId = cached; return; }
+  if (CONFIG.CALENDAR_GIST_ID) { state.calendarGistId = CONFIG.CALENDAR_GIST_ID; return; }
+
+  const r = await fetch('https://api.github.com/gists?per_page=100', {
+    headers: { 'Authorization': `token ${state.token}`, 'Accept': 'application/vnd.github+json' },
+  });
+  if (!r.ok) throw new Error('gist list failed: ' + r.status);
+  const gists = await r.json();
+  const found = gists.find(g => g.files && g.files['calendar.json']);
+  if (!found) throw new Error('calendar.json gist not found. Has Actions run yet?');
+  state.calendarGistId = found.id;
+  localStorage.setItem(STORAGE_KEY.CALENDAR_GIST_ID, found.id);
+}
+
+async function loadCalendar() {
+  setSyncStatus('syncing', '캘린더 로드 중...');
+  if (!state.calendarGistId) {
+    try { await discoverCalendarGist(); }
+    catch (e) {
+      setSyncStatus('error', e.message);
+      renderEvents([]);
+      return;
+    }
+  }
+  try {
+    const r = await fetch(`https://api.github.com/gists/${state.calendarGistId}`, {
+      headers: { 'Authorization': `token ${state.token}`, 'Accept': 'application/vnd.github+json' },
+    });
+    if (!r.ok) throw new Error('gist load failed: ' + r.status);
+    const data = await r.json();
+    const file = data.files && data.files['calendar.json'];
+    if (!file) throw new Error('calendar.json missing in gist');
+
+    let payload;
+    try { payload = JSON.parse(file.content); }
+    catch { payload = { events: [] }; }
+
+    state.events = payload.events || [];
+    state.lastSync = payload.updated_at;
+
+    const updatedAt = payload.updated_at ? new Date(payload.updated_at) : null;
+    const ageMin = updatedAt ? (Date.now() - updatedAt.getTime()) / 60000 : 999;
+    let label;
+    if (ageMin < 35) label = 'live';
+    else if (ageMin < 120) label = 'stale';
+    else label = 'stale';
+
+    const ageStr = ageMin < 60 ? `${Math.round(ageMin)}분 전` : `${(ageMin/60).toFixed(1)}시간 전`;
+    document.getElementById('cal-meta').textContent = `synced ${ageStr}`;
+    setSyncStatus(label, `last sync: ${ageStr}`);
+    renderEvents(state.events);
+  } catch (e) {
+    setSyncStatus('error', e.message);
+    document.getElementById('cal-meta').textContent = 'sync failed';
+    renderEvents([]);
+  }
+}
+
+function renderEvents(events) {
+  const container = document.getElementById('events');
+  const today = isoDateKST(todayKST());
+  const todays = events.filter(e => e.date === today);
+  const future = events.filter(e => e.date > today).slice(0, 8);
+
+  let html = '';
+  if (todays.length === 0 && future.length === 0) {
+    html = '<div class="empty">예정된 일정 없음</div>';
+  } else {
+    if (todays.length > 0) {
+      html += todays.map(eventHTML).join('');
+    } else {
+      html += '<div class="empty" style="padding:12px 0; font-size:12px;">오늘 일정 없음</div>';
+    }
+    if (future.length > 0) {
+      let curDate = '';
+      for (const ev of future) {
+        if (ev.date !== curDate) {
+          curDate = ev.date;
+          html += `<div class="day-divider">${relativeDay(ev.date)}</div>`;
+        }
+        html += eventHTML(ev, true);
+      }
+    }
+  }
+  container.innerHTML = html;
+}
+
+function eventHTML(ev, isFuture = false) {
+  const futureCls = isFuture ? ' future-day' : '';
+  let timeBlock;
+  if (ev.all_day) {
+    timeBlock = '<div class="event-time allday">종일</div>';
+  } else {
+    const start = fmtTimeFromISO(ev.start);
+    const end = ev.end ? fmtTimeFromISO(ev.end) : '';
+    timeBlock = `<div class="event-time">${start}${end ? `<span class="end">→${end}</span>` : ''}</div>`;
+  }
+  const title = escapeHTML(ev.summary || '(제목 없음)');
+  const loc = ev.location ? `<div class="loc">${escapeHTML(ev.location)}</div>` : '';
+  return `<div class="event${futureCls}">${timeBlock}<div class="event-body"><div class="title">${title}</div>${loc}</div></div>`;
+}
+
+async function loadTodos() {
+  try {
+    const r = await fetch(`https://api.github.com/gists/${CONFIG.TODOS_GIST_ID}`, {
+      headers: { 'Authorization': `token ${state.token}`, 'Accept': 'application/vnd.github+json' },
+    });
+    if (!r.ok) throw new Error('todos load failed: ' + r.status);
+    const data = await r.json();
+    const file = data.files && data.files['todos.json'];
+    let parsed = [];
+    if (file && file.content) {
+      try { parsed = JSON.parse(file.content); } catch { parsed = []; }
+    }
+    if (!Array.isArray(parsed)) parsed = [];
+    state.todos = parsed;
+    renderTodos();
+  } catch (e) {
+    document.getElementById('todo-meta').textContent = 'load failed';
+    console.error(e);
+  }
+}
+
+let saveTimer = null;
+function scheduleSave() {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveTodos, 600);
+}
+
+async function saveTodos() {
+  document.getElementById('todo-meta').textContent = 'saving…';
+  try {
+    const r = await fetch(`https://api.github.com/gists/${CONFIG.TODOS_GIST_ID}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `token ${state.token}`,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        files: { 'todos.json': { content: JSON.stringify(state.todos, null, 2) } },
+      }),
+    });
+    if (!r.ok) throw new Error('save failed: ' + r.status);
+    document.getElementById('todo-meta').textContent = `${state.todos.filter(t=>!t.done).length} active · saved`;
+  } catch (e) {
+    document.getElementById('todo-meta').textContent = 'save failed';
+    console.error(e);
+  }
+}
+
+function renderTodos() {
+  const container = document.getElementById('todos');
+  const sorted = [...state.todos].sort((a, b) => {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    const pa = a.priority || 99;
+    const pb = b.priority || 99;
+    if (pa !== pb) return pa - pb;
+    if (a.time && b.time) return a.time.localeCompare(b.time);
+    if (a.time) return -1;
+    if (b.time) return 1;
+    return (a.created || 0) - (b.created || 0);
+  });
+
+  if (sorted.length === 0) {
+    container.innerHTML = '<div class="empty">할 일 없음</div>';
+    document.getElementById('todo-meta').textContent = '0 active';
+    return;
+  }
+
+  container.innerHTML = sorted.map(t => {
+    const priLabel = { 1: 'P1', 2: 'P2', 3: 'P3' }[t.priority] || '';
+    const priCls = t.priority ? `pri p${t.priority}` : '';
+    const meta = [];
+    if (priLabel) meta.push(`<span class="${priCls}">${priLabel}</span>`);
+    if (t.time) meta.push(`<span class="time">${escapeHTML(t.time)}</span>`);
+    return `
+      <div class="todo${t.done ? ' done' : ''}" data-id="${t.id}">
+        <button class="check" data-action="toggle" aria-label="완료"></button>
+        <div class="body">
+          <div class="title">${escapeHTML(t.text)}</div>
+          ${meta.length ? `<div class="meta">${meta.join('')}</div>` : ''}
+        </div>
+        <button class="delete" data-action="delete" aria-label="삭제">×</button>
+      </div>`;
+  }).join('');
+
+  const active = state.todos.filter(t => !t.done).length;
+  const done = state.todos.length - active;
+  document.getElementById('todo-meta').textContent = `${active} active · ${done} done`;
+}
+
+function escapeHTML(s) {
+  return String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+let currentPriority = 0;
+function cyclePriority() {
+  currentPriority = (currentPriority + 1) % 4;
+  const btn = document.getElementById('pri-toggle');
+  const labels = { 0: 'PRIORITY · —', 1: 'P1 · 긴급', 2: 'P2 · 중요', 3: 'P3 · 보통' };
+  btn.textContent = labels[currentPriority];
+  btn.classList.remove('active','p1','p2','p3');
+  if (currentPriority > 0) btn.classList.add('active', 'p' + currentPriority);
+  btn.dataset.pri = currentPriority;
+}
+
+function addTodo() {
+  const input = document.getElementById('todo-input');
+  const timeEl = document.getElementById('time-input');
+  const text = input.value.trim();
+  if (!text) return;
+  const todo = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    text,
+    done: false,
+    priority: currentPriority || null,
+    time: timeEl.value || null,
+    created: Date.now(),
+  };
+  state.todos.push(todo);
+  input.value = '';
+  timeEl.value = '';
+  currentPriority = 0;
+  document.getElementById('pri-toggle').textContent = 'PRIORITY · —';
+  document.getElementById('pri-toggle').classList.remove('active','p1','p2','p3');
+  renderTodos();
+  scheduleSave();
+}
+
+document.getElementById('todos').addEventListener('click', e => {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  const todoEl = btn.closest('.todo');
+  const id = todoEl.dataset.id;
+  const todo = state.todos.find(t => t.id === id);
+  if (!todo) return;
+  if (btn.dataset.action === 'toggle') {
+    todo.done = !todo.done;
+    if (todo.done) todo.completedAt = Date.now();
+    renderTodos();
+    scheduleSave();
+  } else if (btn.dataset.action === 'delete') {
+    state.todos = state.todos.filter(t => t.id !== id);
+    renderTodos();
+    scheduleSave();
+  }
+});
+
+document.getElementById('todo-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); addTodo(); }
+});
+document.getElementById('add-btn').addEventListener('click', addTodo);
+document.getElementById('pri-toggle').addEventListener('click', cyclePriority);
+document.getElementById('reset-btn').addEventListener('click', resetToken);
+document.getElementById('token-save').addEventListener('click', saveToken);
+document.getElementById('token-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') saveToken();
+});
+
+async function bootstrap() {
+  renderHeader();
+  tickClock();
+  setInterval(tickClock, 30000);
+
+  state.token = localStorage.getItem(STORAGE_KEY.TOKEN);
+  state.calendarGistId = localStorage.getItem(STORAGE_KEY.CALENDAR_GIST_ID);
+  if (!state.token) { showTokenModal(); return; }
+
+  await Promise.all([loadCalendar(), loadTodos()]);
+
+  setInterval(() => { if (!document.hidden) loadCalendar(); }, 5 * 60 * 1000);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) loadCalendar();
+  });
+}
+
+bootstrap();
+</script>
+</body>
+</html>
