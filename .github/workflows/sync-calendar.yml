@@ -1,0 +1,161 @@
+name: Sync Google Calendar to Gist
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install icalendar requests pytz
+
+      - name: Fetch calendar and update Gist
+        env:
+          ICAL_URL: ${{ secrets.ICAL_URL }}
+          GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
+          CALENDAR_GIST_ID: ${{ secrets.CALENDAR_GIST_ID }}
+        run: |
+          python << 'EOF'
+          import os
+          import json
+          import requests
+          from icalendar import Calendar
+          from datetime import datetime, timedelta, date
+          import pytz
+
+          KST = pytz.timezone('Asia/Seoul')
+          now_kst = datetime.now(KST)
+          today_kst = now_kst.date()
+          window_end = today_kst + timedelta(days=14)
+
+          ical_url = os.environ['ICAL_URL']
+          resp = requests.get(ical_url, timeout=30)
+          resp.raise_for_status()
+          cal = Calendar.from_ical(resp.content)
+
+          events = []
+
+          def to_kst_iso(dt):
+              if isinstance(dt, datetime):
+                  if dt.tzinfo is None:
+                      dt = pytz.UTC.localize(dt)
+                  return dt.astimezone(KST).isoformat()
+              elif isinstance(dt, date):
+                  return dt.isoformat()
+              return None
+
+          def event_date(dt):
+              if isinstance(dt, datetime):
+                  if dt.tzinfo is None:
+                      dt = pytz.UTC.localize(dt)
+                  return dt.astimezone(KST).date()
+              elif isinstance(dt, date):
+                  return dt
+              return None
+
+          for component in cal.walk():
+              if component.name != 'VEVENT':
+                  continue
+
+              dtstart = component.get('dtstart')
+              dtend = component.get('dtend')
+              if dtstart is None:
+                  continue
+
+              start_dt = dtstart.dt
+              end_dt = dtend.dt if dtend else start_dt
+
+              rrule = component.get('rrule')
+              start_date = event_date(start_dt)
+
+              if rrule:
+                  freq = rrule.get('FREQ', [None])[0]
+                  until = rrule.get('UNTIL', [None])[0]
+                  count = rrule.get('COUNT', [None])[0]
+
+                  current = start_dt
+                  iterations = 0
+                  max_iter = 100
+
+                  while iterations < max_iter:
+                      cur_date = event_date(current)
+                      if cur_date is None or cur_date > window_end:
+                          break
+                      if until:
+                          until_date = event_date(until)
+                          if until_date and cur_date > until_date:
+                              break
+                      if count and iterations >= count:
+                          break
+
+                      if cur_date >= today_kst and cur_date <= window_end:
+                          duration = end_dt - start_dt if isinstance(end_dt, type(start_dt)) else timedelta(0)
+                          cur_end = current + duration if isinstance(current, datetime) else current
+                          events.append({
+                              'summary': str(component.get('summary', '(제목 없음)')),
+                              'start': to_kst_iso(current),
+                              'end': to_kst_iso(cur_end),
+                              'location': str(component.get('location', '')) if component.get('location') else '',
+                              'all_day': not isinstance(current, datetime),
+                              'date': cur_date.isoformat(),
+                          })
+
+                      if freq == 'DAILY':
+                          current = current + timedelta(days=1)
+                      elif freq == 'WEEKLY':
+                          current = current + timedelta(weeks=1)
+                      elif freq == 'MONTHLY':
+                          current = current + timedelta(days=30)
+                      elif freq == 'YEARLY':
+                          current = current + timedelta(days=365)
+                      else:
+                          break
+                      iterations += 1
+              else:
+                  if start_date and today_kst <= start_date <= window_end:
+                      events.append({
+                          'summary': str(component.get('summary', '(제목 없음)')),
+                          'start': to_kst_iso(start_dt),
+                          'end': to_kst_iso(end_dt),
+                          'location': str(component.get('location', '')) if component.get('location') else '',
+                          'all_day': not isinstance(start_dt, datetime),
+                          'date': start_date.isoformat(),
+                      })
+
+          events.sort(key=lambda e: (e['date'], e['start']))
+
+          payload = {
+              'updated_at': now_kst.isoformat(),
+              'timezone': 'Asia/Seoul',
+              'events': events,
+          }
+
+          gist_id = os.environ['CALENDAR_GIST_ID']
+          token = os.environ['GIST_TOKEN']
+
+          r = requests.patch(
+              f'https://api.github.com/gists/{gist_id}',
+              headers={
+                  'Authorization': f'token {token}',
+                  'Accept': 'application/vnd.github+json',
+              },
+              json={
+                  'files': {
+                      'calendar.json': {
+                          'content': json.dumps(payload, ensure_ascii=False, indent=2)
+                      }
+                  }
+              },
+              timeout=30,
+          )
+          r.raise_for_status()
+          print(f'Synced {len(events)} events. Updated at {now_kst.isoformat()}')
+          EOF
