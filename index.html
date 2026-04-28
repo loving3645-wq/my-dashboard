@@ -34,7 +34,6 @@
     --line: #e8e4dc;
     --line-strong: #d4cfc4;
     --accent: #b8421f;
-    --accent-soft: #d97757;
     --accent-bg: #fbeae3;
     --gold: #b8923f;
     --gold-bg: #f7eecf;
@@ -49,7 +48,6 @@
     --sans: 'Pretendard', -apple-system, sans-serif;
     --mono: 'JetBrains Mono', ui-monospace, monospace;
     --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
-    --shadow-md: 0 4px 12px rgba(40,30,20,0.06);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
@@ -92,22 +90,52 @@
   .sync-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-faint); }
   .sync-pill.live .dot { background: var(--green); box-shadow: 0 0 6px rgba(74,124,78,0.4); }
   .sync-pill.error .dot { background: var(--accent); }
-  .board { display: grid; grid-template-columns: 1.05fr 1fr 1fr 1fr; gap: 14px; }
+  .col-tabs { display: none; gap: 6px; margin-bottom: 14px; background: var(--surface); padding: 4px; border-radius: 8px; border: 1px solid var(--line); overflow-x: auto; }
+  .col-tab { flex: 1; min-width: max-content; padding: 8px 10px; font-size: 12px; color: var(--ink-soft); border-radius: 5px; transition: all 0.15s; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; }
+  .col-tab:hover { color: var(--ink); }
+  .col-tab.active { background: var(--ink); color: var(--bg); }
+  .col-tab .icon { width: 5px; height: 5px; border-radius: 50%; }
+  .col-tab.cal-tab .icon { background: var(--accent); }
+  .col-tab.todo-tab .icon { background: var(--gold); }
+  .col-tab.deals-tab .icon { background: var(--blue); }
+  .col-tab.done-tab .icon { background: var(--green); }
+  .col-tab.active.cal-tab .icon, .col-tab.active.todo-tab .icon, .col-tab.active.deals-tab .icon, .col-tab.active.done-tab .icon { background: var(--bg); }
+  .col-tab .badge { font-family: var(--mono); font-size: 9px; opacity: 0.7; }
+  .board { display: grid; grid-template-columns: 1.05fr 1fr 1.1fr 1fr; gap: 14px; }
   @media (max-width: 1100px) { .board { grid-template-columns: 1fr 1fr; } }
-  @media (max-width: 640px) {
-    .board { grid-template-columns: 1fr; }
-    .app { padding: 18px 14px 60px; }
-    .header-right { gap: 14px; }
-    .header-left h1 { font-size: 24px; }
+  @media (max-width: 700px) {
+    .board { grid-template-columns: 1fr; gap: 0; }
+    .col-tabs { display: flex; }
+    .col { display: none; }
+    .col.col-active { display: flex; }
+    .app { padding: 16px 12px 60px; }
+    .header { margin-bottom: 16px; padding-bottom: 12px; gap: 10px; }
+    .header-left h1 { font-size: 22px; }
+    .header-left .subtitle { font-size: 10px; margin-top: 4px; }
+    .header-right { gap: 12px; flex-wrap: wrap; width: 100%; justify-content: space-between; }
+    .stat .num { font-size: 18px; }
+    .stat .lbl { font-size: 8px; }
+    .clock { display: none; }
+    .toolbar { gap: 6px; margin-bottom: 12px; }
+    .toolbar-divider { display: none; }
+    .filter-label { display: none; }
+    .filter-btn { padding: 5px 9px; font-size: 11px; }
+    .tab { padding: 5px 12px; font-size: 12px; }
+    .toolbar-spacer { display: none; }
+    .sync-pill { margin-left: auto; }
+  }
+  @media (max-width: 380px) {
+    .stat:nth-child(n+5) { display: none; }
   }
   .col { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; display: flex; flex-direction: column; min-height: 70vh; max-height: 80vh; overflow: hidden; box-shadow: var(--shadow-sm); }
+  @media (max-width: 700px) { .col { min-height: calc(100vh - 280px); max-height: none; } }
   .col.cal { background: var(--surface-2); }
   .col-header { padding: 14px 16px 10px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
   .col-title { font-family: var(--serif); font-weight: 500; font-size: 14px; color: var(--ink); display: flex; align-items: center; gap: 8px; }
   .col-title .icon { width: 6px; height: 6px; border-radius: 50%; }
   .col.cal .col-title .icon { background: var(--accent); }
   .col.todo .col-title .icon { background: var(--gold); }
-  .col.doing .col-title .icon { background: var(--blue); }
+  .col.deals .col-title .icon { background: var(--blue); }
   .col.done .col-title .icon { background: var(--green); }
   .col-count { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); background: var(--bg); padding: 2px 7px; border-radius: 9px; letter-spacing: 0.05em; }
   .col-body { flex: 1; overflow-y: auto; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
@@ -122,7 +150,7 @@
   .ev-action { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; border-radius: 4px; background: var(--bg-warm); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; opacity: 0.4; transition: all 0.15s; font-size: 13px; color: var(--ink-mid); }
   .ev-action:hover { background: var(--accent); color: white; border-color: var(--accent); opacity: 1; }
   .ev-action::after { content: '+'; line-height: 1; }
-  @media (max-width: 640px) { .ev-action { opacity: 0.6; } }
+  @media (max-width: 700px) { .ev-action { opacity: 0.7; width: 28px; height: 28px; } }
   .day-marker { font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em; color: var(--ink-faint); padding: 8px 0 4px; text-transform: uppercase; border-top: 1px dashed var(--line); margin-top: 4px; }
   .day-marker:first-child { border-top: none; padding-top: 4px; margin-top: 0; }
   .day-marker.today { color: var(--accent); font-weight: 500; }
@@ -130,7 +158,7 @@
   .card:active { cursor: grabbing; }
   .card:hover { border-color: var(--line-strong); box-shadow: var(--shadow-sm); }
   .card.dragging { opacity: 0.4; transform: rotate(1deg); }
-  .card-text { font-size: 13px; color: var(--ink); word-break: break-word; line-height: 1.4; padding-right: 22px; }
+  .card-text { font-size: 13px; color: var(--ink); word-break: break-word; line-height: 1.4; padding-right: 60px; }
   .card.done .card-text { text-decoration: line-through; color: var(--ink-faint); }
   .card-meta { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
   .tag { font-family: var(--mono); font-size: 9px; padding: 2px 6px; border-radius: 3px; letter-spacing: 0.08em; font-weight: 500; }
@@ -141,14 +169,30 @@
   .tag.pri-3 { background: var(--bg-warm); color: var(--p3-color); }
   .tag.time { background: var(--bg-warm); color: var(--ink-mid); }
   .tag.from-cal { background: var(--surface-2); color: var(--ink-soft); border: 1px dashed var(--line-strong); }
-  .card-actions { position: absolute; top: 8px; right: 8px; display: flex; gap: 2px; opacity: 0; transition: opacity 0.15s; }
+  .card-actions { position: absolute; top: 6px; right: 6px; display: flex; gap: 2px; opacity: 0; transition: opacity 0.15s; }
   .card:hover .card-actions { opacity: 1; }
-  @media (max-width: 640px) { .card-actions { opacity: 0.5; } }
-  .card-btn { width: 20px; height: 20px; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--ink-faint); transition: all 0.15s; line-height: 1; }
-  .card-btn:hover { background: var(--bg-warm); color: var(--ink); }
-  .card-btn.del:hover { color: var(--accent); }
+  @media (max-width: 700px) { .card-actions { opacity: 1; gap: 4px; } }
+  .card-btn { width: 28px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--ink-faint); transition: all 0.15s; line-height: 1; background: var(--bg-warm); border: 1px solid var(--line); font-family: var(--mono); }
+  .card-btn:hover { color: var(--ink); border-color: var(--line-strong); }
+  .card-btn.del { font-size: 14px; }
+  .card-btn.del:hover { color: var(--accent); border-color: var(--accent); }
+  .card-btn.move { font-size: 12px; font-weight: 500; }
+  .card-btn.move:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* Deal stage tracker */
+  .deal-stages { display: flex; gap: 4px; margin-top: 4px; padding-top: 7px; border-top: 1px dashed var(--line); }
+  .deal-stage { flex: 1; padding: 5px 6px; border-radius: 4px; font-family: var(--mono); font-size: 9px; letter-spacing: 0.05em; text-align: center; background: var(--bg-warm); color: var(--ink-faint); border: 1px solid transparent; transition: all 0.15s; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; line-height: 1.2; user-select: none; }
+  .deal-stage:hover { color: var(--ink-mid); }
+  .deal-stage .dot { width: 7px; height: 7px; border-radius: 50%; border: 1px solid var(--ink-faint); background: transparent; transition: all 0.15s; }
+  .deal-stage.done { color: var(--ink); background: var(--surface-2); border-color: var(--line-strong); }
+  .deal-stage.done .dot { background: var(--ink-soft); border-color: var(--ink-soft); }
+  .deal-stage.current { color: var(--accent); background: var(--accent-bg); border-color: var(--accent); font-weight: 600; }
+  .deal-stage.current .dot { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 2px rgba(184,66,31,0.15); }
+  .deal-progress { height: 2px; background: var(--bg-warm); border-radius: 1px; overflow: hidden; margin-top: 4px; }
+  .deal-progress-bar { height: 100%; background: var(--accent); transition: width 0.3s; }
+
   .col-add { padding: 10px 12px; border-top: 1px solid var(--line); flex-shrink: 0; background: var(--surface); }
-  .col-add-btn { width: 100%; padding: 7px; border: 1px dashed var(--line-strong); border-radius: 5px; font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.1em; text-transform: uppercase; transition: all 0.15s; }
+  .col-add-btn { width: 100%; padding: 9px; border: 1px dashed var(--line-strong); border-radius: 5px; font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.1em; text-transform: uppercase; transition: all 0.15s; }
   .col-add-btn:hover { border-color: var(--accent); color: var(--accent); border-style: solid; }
   .col-body.drag-over { background: var(--bg-warm); }
   .modal-overlay { position: fixed; inset: 0; background: rgba(20,15,10,0.5); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 100; animation: fadein 0.2s; }
@@ -191,7 +235,7 @@
     <div class="header-right">
       <div class="stat"><div class="num" id="stat-total">0</div><div class="lbl">전체</div></div>
       <div class="stat"><div class="num" id="stat-todo">0</div><div class="lbl">할일</div></div>
-      <div class="stat"><div class="num" id="stat-doing">0</div><div class="lbl">진행</div></div>
+      <div class="stat"><div class="num" id="stat-deals">0</div><div class="lbl">검토딜</div></div>
       <div class="stat"><div class="num" id="stat-done">0</div><div class="lbl">완료</div></div>
       <div class="clock" id="clock">--:--</div>
     </div>
@@ -211,15 +255,21 @@
     <div class="toolbar-spacer"></div>
     <span class="sync-pill" id="sync-pill"><span class="dot"></span><span class="lbl">SYNC</span></span>
   </div>
+  <div class="col-tabs" id="col-tabs">
+    <button class="col-tab cal-tab active" data-col="cal"><span class="icon"></span>캘린더<span class="badge" id="ct-cal">0</span></button>
+    <button class="col-tab todo-tab" data-col="todo"><span class="icon"></span>할 일<span class="badge" id="ct-todo">0</span></button>
+    <button class="col-tab deals-tab" data-col="deals"><span class="icon"></span>검토딜<span class="badge" id="ct-deals">0</span></button>
+    <button class="col-tab done-tab" data-col="done"><span class="icon"></span>완료<span class="badge" id="ct-done">0</span></button>
+  </div>
   <div class="board">
-    <div class="col cal">
+    <div class="col cal col-active" data-col="cal">
       <div class="col-header">
         <div class="col-title"><span class="icon"></span>캘린더</div>
         <div class="col-count" id="cal-count">—</div>
       </div>
       <div class="col-body" id="col-cal"></div>
     </div>
-    <div class="col todo" data-status="todo">
+    <div class="col todo" data-col="todo" data-status="todo">
       <div class="col-header">
         <div class="col-title"><span class="icon"></span>할 일</div>
         <div class="col-count" id="cnt-todo">0</div>
@@ -227,15 +277,15 @@
       <div class="col-body" id="col-todo" data-drop="todo"></div>
       <div class="col-add"><button class="col-add-btn" data-add="todo">+ 할 일 추가</button></div>
     </div>
-    <div class="col doing" data-status="doing">
+    <div class="col deals" data-col="deals" data-status="deals">
       <div class="col-header">
-        <div class="col-title"><span class="icon"></span>진행중</div>
-        <div class="col-count" id="cnt-doing">0</div>
+        <div class="col-title"><span class="icon"></span>검토중인 딜</div>
+        <div class="col-count" id="cnt-deals">0</div>
       </div>
-      <div class="col-body" id="col-doing" data-drop="doing"></div>
-      <div class="col-add"><button class="col-add-btn" data-add="doing">+ 진행중 추가</button></div>
+      <div class="col-body" id="col-deals" data-drop="deals"></div>
+      <div class="col-add"><button class="col-add-btn" data-add="deals">+ 검토 딜 추가</button></div>
     </div>
-    <div class="col done" data-status="done">
+    <div class="col done" data-col="done" data-status="done">
       <div class="col-header">
         <div class="col-title"><span class="icon"></span>완료</div>
         <div class="col-count" id="cnt-done">0</div>
@@ -297,10 +347,11 @@
   </div>
 </div>
 <script>
-const STORAGE_KEY = { TOKEN: 'dash_gist_token', CALENDAR_GIST_ID: 'dash_calendar_gist_id', TAB: 'dash_active_tab', PRI_FILTER: 'dash_pri_filter' };
+const STORAGE_KEY = { TOKEN: 'dash_gist_token', CALENDAR_GIST_ID: 'dash_calendar_gist_id', TAB: 'dash_active_tab', PRI_FILTER: 'dash_pri_filter', COL: 'dash_active_col' };
 const CONFIG = window.CONFIG;
 const KOREAN_DAYS = ['일','월','화','수','목','금','토'];
-let state = { token: null, calendarGistId: null, todos: [], events: [], activeTab: 'all', priFilter: 'all', modalContext: null };
+const DEAL_STAGES = ['검토', '보고예정', '계약예정'];
+let state = { token: null, calendarGistId: null, todos: [], events: [], activeTab: 'all', priFilter: 'all', activeCol: 'cal', modalContext: null };
 
 function todayKST() { const now = new Date(); return new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' })); }
 function isoDate(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
@@ -385,12 +436,18 @@ async function loadTodos() {
     let parsed = [];
     if (file && file.content) try { parsed = JSON.parse(file.content); } catch {}
     if (!Array.isArray(parsed)) parsed = [];
-    parsed = parsed.map(t => ({
-      id: t.id || (Date.now().toString(36) + Math.random().toString(36).slice(2,6)),
-      text: t.text || '', category: t.category || 'work', priority: t.priority || null,
-      time: t.time || null, status: t.status || (t.done ? 'done' : 'todo'),
-      fromCalendar: t.fromCalendar || false, created: t.created || Date.now(), ...t,
-    }));
+    parsed = parsed.map(t => {
+      // Migration: rename 'doing' -> 'deals'
+      let status = t.status || (t.done ? 'done' : 'todo');
+      if (status === 'doing') status = 'deals';
+      return {
+        id: t.id || (Date.now().toString(36) + Math.random().toString(36).slice(2,6)),
+        text: t.text || '', category: t.category || 'work', priority: t.priority || null,
+        time: t.time || null, status,
+        dealStage: typeof t.dealStage === 'number' ? t.dealStage : 0,
+        fromCalendar: t.fromCalendar || false, created: t.created || Date.now(), ...t, status,
+      };
+    });
     state.todos = parsed; renderBoard();
   } catch (e) { console.error(e); }
 }
@@ -411,6 +468,7 @@ function renderCalendar() {
   const today = isoDate(todayKST());
   const events = state.events.slice(0, 30);
   document.getElementById('cal-count').textContent = events.length;
+  document.getElementById('ct-cal').textContent = events.length;
   if (events.length === 0) { container.innerHTML = '<div class="empty">예정된 일정 없음</div>'; return; }
   let html = ''; let curDate = '';
   for (const ev of events) {
@@ -452,7 +510,7 @@ function filterTodos() {
 }
 function renderBoard() {
   const filtered = filterTodos();
-  const buckets = { todo: [], doing: [], done: [] };
+  const buckets = { todo: [], deals: [], done: [] };
   for (const t of filtered) { const s = t.status || 'todo'; if (buckets[s]) buckets[s].push(t); }
   const sorter = (a,b) => {
     const pa = a.priority || 99, pb = b.priority || 99;
@@ -461,19 +519,35 @@ function renderBoard() {
     if (a.time) return -1; if (b.time) return 1;
     return (a.created || 0) - (b.created || 0);
   };
-  buckets.todo.sort(sorter); buckets.doing.sort(sorter);
+  buckets.todo.sort(sorter);
+  // Deals sorted by stage progress (least progressed first), then priority
+  buckets.deals.sort((a,b) => {
+    const sa = a.dealStage || 0, sb = b.dealStage || 0;
+    if (sa !== sb) return sa - sb;
+    return sorter(a,b);
+  });
   buckets.done.sort((a,b) => (b.completedAt||0) - (a.completedAt||0));
-  for (const status of ['todo','doing','done']) {
+  for (const status of ['todo','deals','done']) {
     const el = document.getElementById('col-' + status);
     document.getElementById('cnt-' + status).textContent = buckets[status].length;
+    document.getElementById('ct-' + status).textContent = buckets[status].length;
     if (buckets[status].length === 0) { el.innerHTML = '<div class="empty">비어있음</div>'; }
     else { el.innerHTML = buckets[status].map(cardHTML).join(''); }
   }
   const inTab = t => state.activeTab === 'all' || t.category === state.activeTab;
   document.getElementById('stat-total').textContent = state.todos.filter(inTab).length;
   document.getElementById('stat-todo').textContent = state.todos.filter(t => (t.status||'todo')==='todo' && inTab(t)).length;
-  document.getElementById('stat-doing').textContent = state.todos.filter(t => t.status==='doing' && inTab(t)).length;
+  document.getElementById('stat-deals').textContent = state.todos.filter(t => t.status==='deals' && inTab(t)).length;
   document.getElementById('stat-done').textContent = state.todos.filter(t => t.status==='done' && inTab(t)).length;
+}
+function dealStagesHTML(t) {
+  const cur = t.dealStage || 0;
+  const stages = DEAL_STAGES.map((label, i) => {
+    const cls = i < cur ? 'done' : i === cur ? 'current' : '';
+    return `<div class="deal-stage ${cls}" data-action="stage-set" data-stage="${i}"><span class="dot"></span>${escapeHTML(label)}</div>`;
+  }).join('');
+  const pct = Math.round(((cur + 1) / DEAL_STAGES.length) * 100);
+  return `<div class="deal-stages">${stages}</div><div class="deal-progress"><div class="deal-progress-bar" style="width:${pct}%"></div></div>`;
 }
 function cardHTML(t) {
   const cat = { work: '회사', personal: '개인' }[t.category] || '회사';
@@ -482,9 +556,16 @@ function cardHTML(t) {
   if (t.priority) meta.push(`<span class="tag pri-${t.priority}">P${t.priority}</span>`);
   if (t.time) meta.push(`<span class="tag time">${escapeHTML(t.time)}</span>`);
   if (t.fromCalendar) meta.push(`<span class="tag from-cal">캘린더</span>`);
-  return `<div class="card${t.status==='done'?' done':''}" draggable="true" data-id="${t.id}"><div class="card-text">${escapeHTML(t.text)}</div><div class="card-meta">${meta.join('')}</div><div class="card-actions"><button class="card-btn del" data-action="delete" title="삭제">×</button></div></div>`;
+  let moveBtn = '';
+  const status = t.status || 'todo';
+  if (status === 'todo') moveBtn = `<button class="card-btn move" data-action="move" data-target="deals" title="검토 딜로">▶</button>`;
+  else if (status === 'deals') moveBtn = `<button class="card-btn move" data-action="move" data-target="done" title="완료로">✓</button>`;
+  else if (status === 'done') moveBtn = `<button class="card-btn move" data-action="move" data-target="todo" title="할일로 되돌리기">↺</button>`;
+  const dealBlock = status === 'deals' ? dealStagesHTML(t) : '';
+  return `<div class="card${status==='done'?' done':''}" draggable="true" data-id="${t.id}"><div class="card-text">${escapeHTML(t.text)}</div><div class="card-meta">${meta.join('')}</div>${dealBlock}<div class="card-actions">${moveBtn}<button class="card-btn del" data-action="delete" title="삭제">×</button></div></div>`;
 }
 function escapeHTML(s) { return String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
+
 let draggedId = null;
 document.addEventListener('dragstart', e => {
   const card = e.target.closest('.card'); if (!card) return;
@@ -501,21 +582,48 @@ document.querySelectorAll('[data-drop]').forEach(zone => {
   zone.addEventListener('drop', e => {
     e.preventDefault(); zone.classList.remove('drag-over');
     if (!draggedId) return;
-    const newStatus = zone.dataset.drop;
-    const todo = state.todos.find(t => t.id === draggedId);
-    if (!todo || todo.status === newStatus) return;
-    todo.status = newStatus;
-    if (newStatus === 'done') todo.completedAt = Date.now();
-    renderBoard(); scheduleSave();
+    moveTodo(draggedId, zone.dataset.drop);
   });
 });
-document.addEventListener('click', e => {
-  const btn = e.target.closest('[data-action="delete"]'); if (!btn) return;
-  const card = btn.closest('.card'); if (!card) return;
-  const id = card.dataset.id;
-  if (!confirm('이 항목을 삭제할까요?')) return;
-  state.todos = state.todos.filter(t => t.id !== id);
+function moveTodo(id, newStatus) {
+  const todo = state.todos.find(t => t.id === id);
+  if (!todo || todo.status === newStatus) return;
+  todo.status = newStatus;
+  if (newStatus === 'done') todo.completedAt = Date.now();
+  if (newStatus === 'deals' && typeof todo.dealStage !== 'number') todo.dealStage = 0;
   renderBoard(); scheduleSave();
+}
+document.addEventListener('click', e => {
+  // Stage tracker click
+  const stageBtn = e.target.closest('[data-action="stage-set"]');
+  if (stageBtn) {
+    e.stopPropagation();
+    const card = stageBtn.closest('.card'); if (!card) return;
+    const todo = state.todos.find(t => t.id === card.dataset.id);
+    if (!todo) return;
+    const target = parseInt(stageBtn.dataset.stage);
+    // If clicking current stage, advance to next; otherwise jump to clicked stage
+    if (todo.dealStage === target) {
+      todo.dealStage = (target + 1) % DEAL_STAGES.length;
+    } else {
+      todo.dealStage = target;
+    }
+    renderBoard(); scheduleSave();
+    return;
+  }
+  const moveBtn = e.target.closest('[data-action="move"]');
+  if (moveBtn) {
+    const card = moveBtn.closest('.card'); if (!card) return;
+    moveTodo(card.dataset.id, moveBtn.dataset.target);
+    return;
+  }
+  const delBtn = e.target.closest('[data-action="delete"]');
+  if (delBtn) {
+    const card = delBtn.closest('.card'); if (!card) return;
+    if (!confirm('이 항목을 삭제할까요?')) return;
+    state.todos = state.todos.filter(t => t.id !== card.dataset.id);
+    renderBoard(); scheduleSave();
+  }
 });
 document.querySelectorAll('.tab').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -535,10 +643,23 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
     renderBoard();
   });
 });
+function setActiveCol(colName) {
+  state.activeCol = colName;
+  localStorage.setItem(STORAGE_KEY.COL, colName);
+  document.querySelectorAll('.col-tab').forEach(b => b.classList.toggle('active', b.dataset.col === colName));
+  document.querySelectorAll('.col').forEach(c => c.classList.toggle('col-active', c.dataset.col === colName));
+}
+document.querySelectorAll('.col-tab').forEach(btn => {
+  btn.addEventListener('click', () => setActiveCol(btn.dataset.col));
+});
 function openTodoModal(ctx) {
   state.modalContext = ctx;
   const isFromCal = ctx.mode === 'add-from-calendar';
-  document.getElementById('todo-modal-title').innerHTML = isFromCal ? '캘린더 → <span class="accent">할 일</span>' : `${ctx.statusLabel || '할 일'} <span class="accent">추가</span>`;
+  let titleHTML;
+  if (isFromCal) titleHTML = '캘린더 → <span class="accent">할 일</span>';
+  else if (ctx.targetStatus === 'deals') titleHTML = '검토 딜 <span class="accent">추가</span>';
+  else titleHTML = `${ctx.statusLabel || '할 일'} <span class="accent">추가</span>`;
+  document.getElementById('todo-modal-title').innerHTML = titleHTML;
   const preset = ctx.preset || {};
   document.getElementById('todo-text').value = preset.text || '';
   document.getElementById('todo-cat').value = preset.category || (state.activeTab !== 'all' ? state.activeTab : 'work');
@@ -552,23 +673,26 @@ function confirmTodoModal() {
   const text = document.getElementById('todo-text').value.trim();
   if (!text) { document.getElementById('todo-text').focus(); return; }
   const ctx = state.modalContext || {};
+  const status = ctx.targetStatus || 'todo';
   const todo = {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
     text,
     category: document.getElementById('todo-cat').value,
     priority: parseInt(document.getElementById('todo-pri').value) || null,
     time: document.getElementById('todo-time').value || null,
-    status: ctx.targetStatus || 'todo',
+    status,
+    dealStage: status === 'deals' ? 0 : undefined,
     fromCalendar: !!(ctx.preset && ctx.preset.fromCalendar),
     created: Date.now(),
   };
   state.todos.push(todo);
   closeTodoModal(); renderBoard(); scheduleSave();
+  if (window.innerWidth <= 700) setActiveCol(todo.status);
 }
 document.querySelectorAll('[data-add]').forEach(btn => {
   btn.addEventListener('click', () => {
     const status = btn.dataset.add;
-    const labels = { todo: '할 일', doing: '진행중' };
+    const labels = { todo: '할 일', deals: '검토 딜' };
     openTodoModal({ mode: 'add', targetStatus: status, statusLabel: labels[status] });
   });
 });
@@ -584,8 +708,11 @@ async function bootstrap() {
   state.calendarGistId = localStorage.getItem(STORAGE_KEY.CALENDAR_GIST_ID);
   state.activeTab = localStorage.getItem(STORAGE_KEY.TAB) || 'all';
   state.priFilter = localStorage.getItem(STORAGE_KEY.PRI_FILTER) || 'all';
+  state.activeCol = localStorage.getItem(STORAGE_KEY.COL) || 'cal';
+  if (state.activeCol === 'doing') state.activeCol = 'deals';
   document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.tab === state.activeTab));
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.pri === state.priFilter));
+  setActiveCol(state.activeCol);
   if (!state.token) { showTokenModal(); return; }
   await Promise.all([loadCalendar(), loadTodos()]);
   setInterval(() => { if (!document.hidden) loadCalendar(); }, 5 * 60 * 1000);
