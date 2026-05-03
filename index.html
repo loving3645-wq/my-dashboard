@@ -654,6 +654,7 @@ function cardHTML(t) {
   let actionBtns = '';
   const status = t.status || 'todo';
   if (status === 'todo') {
+    // 할 일: ✓로 바로 완료, ▶로 검토 딜로 (선택)
     actionBtns = `
       <button class="card-btn complete" data-action="move" data-target="done" title="바로 완료로">✓</button>
       <button class="card-btn move deal" data-action="move" data-target="deals" title="검토 딜로 보내기">▶</button>`;
