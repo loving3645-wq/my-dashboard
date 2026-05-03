@@ -1545,9 +1545,44 @@ function renderEmptyFundamentals() {
 /* =====================================================================
  * Master loadStock — async, fetches Stooq data
  * ===================================================================== */
+function enterLoadingState(ticker, reg, curated) {
+  // Header
+  $('sh-ticker').textContent = ticker;
+  $('sh-name').textContent = reg ? reg.name : (curated ? curated.name : '조회 중…');
+  $('sh-exch').textContent = reg ? `${reg.mkt} · KRW` : (curated ? `${curated.exch} · ${curated.ccy}` : 'KRW');
+  $('sh-sector').textContent = reg ? reg.sector : (curated ? curated.sector : '—');
+  $('sh-industry').textContent = reg ? (reg.sector || '—') : (curated ? curated.industry : '—');
+  $('sh-country').textContent = '대한민국';
+  // Price
+  $('sh-price').textContent = '—';
+  $('sh-price').classList.add('loading-shimmer');
+  $('sh-currency').textContent = '원';
+  const chgEl = $('sh-change');
+  chgEl.classList.remove('up', 'down');
+  chgEl.querySelector('.arrow').textContent = '·';
+  $('sh-change-abs').textContent = '—';
+  $('sh-change-pct').textContent = '';
+  $('sh-updated').textContent = '불러오는 중…';
+  setSourceState(null, '불러오는 중…');
+  // KPI strip skeleton
+  const kpiHTML = ['시가총액','PER','EPS','배당수익률','52주 최고','52주 최저','거래량','베타'].map(lbl => `
+    <div class="kpi"><div class="kpi-label">${lbl}</div><div class="kpi-value loading-shimmer">—</div><div class="kpi-sub">…</div></div>
+  `).join('');
+  $('kpi-strip').innerHTML = kpiHTML;
+  // Clear charts
+  if (priceChart) { priceChart.destroy(); priceChart = null; }
+  if (volumeChart) { volumeChart.destroy(); volumeChart = null; }
+  // Reset secondary sections to placeholders (will be overwritten if curated/data arrives)
+  renderEmptyFundamentals();
+  // Reset company desc
+  $('company-desc').textContent = reg ? `${reg.name} (${ticker}) 시세를 불러오는 중입니다.` : '종목 정보를 불러오는 중…';
+  $('company-meta').innerHTML = '';
+  // Update URL early
+  try { window.history.replaceState(null, '', '#' + ticker); } catch(e) {}
+}
+
 async function loadStock(ticker) {
   ticker = String(ticker).toUpperCase().padStart(6, '0').slice(-6);
-  // Allow only digits (Korean code) — for now reject non-numeric
   if (!/^\d{6}$/.test(ticker)) {
     flashSearchError();
     return;
@@ -1556,41 +1591,38 @@ async function loadStock(ticker) {
   const reg = (window.TICKER_REGISTRY || {})[ticker];
   const curated = STOCKS[ticker];
 
-  // Show skeleton state
-  setSourceState(null, '불러오는 중…');
-  $('sh-ticker').textContent = ticker;
-  $('sh-name').textContent = reg ? reg.name : (curated ? curated.name : '종목 조회 중…');
-  $('sh-exch').textContent = reg ? `${reg.mkt} · KRW` : (curated ? `${curated.exch} · ${curated.ccy}` : 'KRW');
-  $('sh-price').textContent = '—';
-  $('sh-price').classList.add('loading-shimmer');
-  $('sh-updated').textContent = '불러오는 중…';
+  // 1) Reset entire page to a clean loading state for this ticker
+  enterLoadingState(ticker, reg, curated);
+  renderQuicklist();
 
-  let quote, hist;
+  // 2) Try fetching live quote from Stooq
+  let quote;
   try {
     quote = await fetchQuote(ticker);
   } catch (e) {
-    setSourceState('error', 'Stooq 조회 실패');
     $('sh-price').classList.remove('loading-shimmer');
-    $('sh-price').textContent = '—';
-    $('sh-updated').textContent = '데이터 없음 · 종목코드 확인';
     if (curated) {
       // Fall back to curated mock entirely
       renderCurated(curated, false);
+      $('sh-updated').textContent = '실데이터 조회 실패 · 샘플 표시';
       return;
     }
+    // Non-curated + fetch failed → keep placeholders, show clear error
+    setSourceState('error', 'Stooq 조회 실패');
+    $('sh-price').textContent = '데이터 없음';
+    $('sh-updated').textContent = '실시간 시세 미수신 · 종목코드 확인';
     flashSearchError();
     return;
   }
 
-  // Build stock object (curated vs non-curated)
+  // 3) Build stock object (curated extras vs minimal)
   const { stock, isCurated } = buildLiveStock(ticker, quote);
 
-  // Render header + KPIs immediately with quote data
+  // 4) Render header + KPIs with real quote
   $('sh-price').classList.remove('loading-shimmer');
   renderHeader(stock);
   renderKPIs(stock);
 
-  // Curated-only sections
   if (isCurated) {
     renderCompany(stock);
     renderValuation(stock);
@@ -1604,16 +1636,15 @@ async function loadStock(ticker) {
     buildMarginChart(stock.fin);
   } else {
     renderCompany(stock);
-    renderEmptyFundamentals();
+    // Placeholders already in place from enterLoadingState — no action needed
   }
-  renderQuicklist();
 
-  // Fetch chart history (real data)
+  // 5) Fetch chart history
   try {
-    hist = await fetchHistory(ticker, currentRange);
+    const hist = await fetchHistory(ticker, currentRange);
     refineFromHistory(stock, hist);
-    renderHeader(stock); // refresh with refined change %
-    renderKPIs(stock);   // refresh with refined 52W
+    renderHeader(stock);
+    renderKPIs(stock);
     const isUp = stock.change >= 0;
     buildPriceChart(hist, isUp);
     buildVolumeChart(hist, isUp);
@@ -1622,9 +1653,8 @@ async function loadStock(ticker) {
     $('sh-updated').textContent = `${quote.date} · 종가 기준`;
   } catch (e) {
     setSourceState('error', '차트 조회 실패');
+    $('sh-updated').textContent = '시세는 수신, 차트 데이터 없음';
   }
-
-  try { window.history.replaceState(null, '', '#' + ticker); } catch(e) {}
 }
 
 function flashSearchError() {
