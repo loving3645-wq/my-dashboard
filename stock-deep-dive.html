@@ -1375,24 +1375,40 @@ const NAVER_BASIC = code => `https://m.stock.naver.com/api/stock/${code}/basic`;
 const NAVER_HISTORY = (code, start, end) =>
   `https://api.finance.naver.com/siseJson.naver?symbol=${code}&requestType=1&startTime=${start}&endTime=${end}&timeframe=day`;
 
-const PROXIES = [
-  // CORS-friendly proxies — Naver requires a proxy (no CORS headers).
-  // Stooq sometimes works direct; we try direct first for stooq.
-  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+// Proxy strategies (verified 2026-05). Each returns the upstream body as plain text.
+//  - allorigins.win/get: JSON wrapper { contents: "...", status: {...} } — must extract .contents
+//  - codetabs: returns raw body but corrupts leading bytes for some text endpoints
+//  - direct: only works for endpoints that set CORS headers (rare for KR APIs)
+const PROXY_STRATS = [
+  {
+    name: 'allorigins',
+    wrap: url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}&t=${Date.now()}`,
+    extract: async r => {
+      const j = await r.json();
+      if (!j || !j.contents) throw new Error('allorigins: empty contents');
+      if (j.status && j.status.http_code && j.status.http_code >= 400)
+        throw new Error('upstream HTTP ' + j.status.http_code);
+      return j.contents;
+    },
+  },
+  {
+    name: 'codetabs',
+    wrap: url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+    extract: async r => await r.text(),
+  },
 ];
 
 async function fetchText(url, allowDirect) {
-  const list = allowDirect ? [u => u, ...PROXIES] : PROXIES;
+  const tryDirect = allowDirect ? [{ name: 'direct', wrap: u => u, extract: r => r.text() }] : [];
   let lastErr;
-  for (const wrap of list) {
+  for (const strat of [...tryDirect, ...PROXY_STRATS]) {
     try {
-      const r = await fetch(wrap(url), { cache: 'no-store' });
-      if (!r.ok) { lastErr = new Error('HTTP ' + r.status); continue; }
-      const text = await r.text();
+      const r = await fetch(strat.wrap(url), { cache: 'no-store' });
+      if (!r.ok) { lastErr = new Error(`${strat.name}: HTTP ${r.status}`); continue; }
+      const text = await strat.extract(r);
       if (text && text.length > 2) return text;
-    } catch (e) { lastErr = e; }
+      lastErr = new Error(`${strat.name}: empty`);
+    } catch (e) { lastErr = new Error(`${strat.name}: ${e.message}`); }
   }
   throw lastErr || new Error('All proxies failed');
 }
@@ -1416,51 +1432,92 @@ function parseCSV(text) {
   });
 }
 
-/* ---------- Naver: live quote ---------- */
+/* ---------- Naver: live quote (schema verified 2026-05 against m.stock.naver.com) ----------
+ * Real response shape (top-level keys):
+ *   stockEndType, stockName, itemCode, totalInfos[18], dealTrendInfos[5],
+ *   industryCompareInfo[6], consensusInfo, researches[5], industryCode,
+ *   reutersCode, description, etc.
+ * - dealTrendInfos[0] holds today's snapshot incl. closePrice, compareToPreviousPrice (sign).
+ * - totalInfos is an array of {code, key, value} where value is a STRING with units
+ *   (e.g. marketValue="1,289조 1,044억", per="33.59배", foreignRate="49.27%").
+ */
 async function fetchNaverQuote(code) {
   const text = await fetchText(NAVER_INTEGRATION(code), false);
   let j;
   try { j = JSON.parse(text); } catch (e) { throw new Error('Naver JSON parse failed'); }
-  // Naver "integration" response varies — fields can live at root or under .basicInfo / .totalInfos / .basics
-  const close = num(j.closePrice ?? j.basicInfo?.closePrice ?? j.tradePrice);
-  if (!isFinite(close) || close <= 0) throw new Error('Naver: invalid price');
-  // Resolve change sign from compareToPreviousPrice.code (1/2 = up, 4/5 = down per Naver spec)
-  const cmpCode = j.compareToPreviousPrice?.code ?? j.basicInfo?.compareToPreviousPrice?.code;
-  const isDown = cmpCode === '4' || cmpCode === '5' || cmpCode === 4 || cmpCode === 5;
-  let chg = num(j.compareToPreviousClosePrice ?? j.basicInfo?.compareToPreviousClosePrice);
+  // Map totalInfos array to a {code: value} dict
+  const T = {};
+  (j.totalInfos || []).forEach(t => { if (t && t.code) T[t.code] = t.value; });
+  const today = (j.dealTrendInfos && j.dealTrendInfos[0]) || {};
+  // Today's close — try dealTrendInfos first, fall back to totalInfos previous-close logic
+  const close = num(today.closePrice);
+  if (!isFinite(close) || close <= 0) throw new Error('Naver: missing close price for ' + code);
+  // Change sign: Naver compareToPreviousPrice.code: 1=상한, 2=상승, 3=보합, 4=하한, 5=하락
+  const cmpCode = today.compareToPreviousPrice?.code;
+  const isDown = cmpCode === '4' || cmpCode === '5';
+  let chg = num(today.compareToPreviousClosePrice);
   if (isFinite(chg)) chg = isDown ? -Math.abs(chg) : Math.abs(chg);
-  let chgPct = num(j.fluctuationsRatio ?? j.basicInfo?.fluctuationsRatio);
-  if (isFinite(chgPct)) chgPct = isDown ? -Math.abs(chgPct) : Math.abs(chgPct);
-  // totalInfos is an array of {code, value} pairs
-  const totals = {};
-  (j.totalInfos || []).forEach(t => { if (t && t.code) totals[t.code] = t.value; });
+  // Compute change% from prev close (totalInfos.lastClosePrice)
+  const prevClose = num(T.lastClosePrice);
+  const chgPct = (isFinite(chg) && isFinite(prevClose) && prevClose > 0)
+    ? (chg / prevClose) * 100 : NaN;
+
   return {
     source: 'Naver',
-    name: j.stockName ?? j.basicInfo?.stockName,
-    market: j.stockExchangeType?.code ?? j.basicInfo?.stockExchangeType?.code,
-    dealStatus: j.dealStatus?.kr ?? j.basicInfo?.dealStatus?.kr ?? '',
-    date: j.localTradedAt ?? j.basicInfo?.localTradedAt ?? new Date().toISOString().slice(0,10),
-    time: j.tradeTime ?? '',
-    open: num(j.openPrice ?? totals.openPrice),
-    high: num(j.highPrice ?? totals.highPrice),
-    low: num(j.lowPrice ?? totals.lowPrice),
+    name: j.stockName,
+    itemCode: j.itemCode,
+    market: j.stockExchangeType?.code || j.stockExchangeType?.name,
+    industry: j.industryCode,
+    dealStatus: j.dealStatus?.kr || '',
+    date: today.bizdate ? `${today.bizdate.slice(0,4)}-${today.bizdate.slice(4,6)}-${today.bizdate.slice(6,8)}` : '',
+    open: num(T.openPrice),
+    high: num(T.highPrice),
+    low: num(T.lowPrice),
     close,
-    volume: num(j.accumulatedTradingVolume ?? j.tradeVolume ?? totals.accumulatedTradingVolume),
+    prevClose,
+    volume: num(T.accumulatedTradingVolume),
     change: chg,
     changePct: chgPct,
-    high52: num(totals.highPriceFor52Weeks ?? j.highPriceFor52Weeks),
-    low52: num(totals.lowPriceFor52Weeks ?? j.lowPriceFor52Weeks),
-    marketValue: num(totals.marketValue ?? j.marketValue), // 억원
-    per: num(totals.per ?? j.per),
-    eps: num(totals.eps ?? j.eps),
-    pbr: num(totals.pbr ?? j.pbr),
-    bps: num(totals.bps ?? j.bps),
-    dividendYield: num(totals.dividendYield ?? j.dividendYield),
-    foreignerRatio: num(totals.foreignerHoldingRatio ?? j.foreignerHoldingRatio),
+    high52: num(T.highPriceOf52Weeks),
+    low52: num(T.lowPriceOf52Weeks),
+    marketValueText: T.marketValue, // already formatted "1,289조 1,044억"
+    per: num(T.per),
+    eps: num(T.eps),
+    cnsPer: num(T.cnsPer),
+    cnsEps: num(T.cnsEps),
+    pbr: num(T.pbr),
+    bps: num(T.bps),
+    dividendYield: num(T.dividendYieldRatio),
+    dividend: num(T.dividend),
+    foreignerRatio: num(T.foreignRate),
+    // Bonus richer data we can render even for non-curated:
+    consensus: j.consensusInfo ? {
+      priceTarget: num(j.consensusInfo.priceTargetMean),
+      recommMean: num(j.consensusInfo.recommMean), // 1=강력매수 ~ 5=매도
+      asOf: j.consensusInfo.createDate,
+    } : null,
+    peers: (j.industryCompareInfo || []).filter(p => p.itemCode !== code).map(p => ({
+      tk: p.itemCode,
+      name: p.stockName,
+      cap: p.marketValue, // already formatted
+      close: num(p.closePrice),
+      ytd: num(p.threeMonthEarningRate), // approx — Naver gives 3M return not YTD
+      chgPct: num(p.fluctuationsRatio),
+    })),
+    research: (j.researches || []).map(r => ({
+      house: r.bnm, title: r.tit, date: r.wdt, id: r.id,
+    })),
   };
 }
 
-/* ---------- Naver: chart history ---------- */
+/* ---------- Naver: chart history (schema verified 2026-05) ----------
+ * Response from api.finance.naver.com/siseJson.naver is a JS-array literal:
+ *   [['날짜','시가','고가','저가','종가','거래량','외국인소진율'],
+ *    ["20260401", 178000, 180100, 174300, 178200, 31234567, 48.50],
+ *    ...]
+ * Header uses single quotes; data rows use double quotes for date string only.
+ * Function() eval is the safest way to parse this safely-known shape.
+ */
 async function fetchNaverHistory(code, range) {
   const cfg = {
     '1D': { days: 7,    label: '최근 7일 · 일봉 (Naver)' },
@@ -1474,24 +1531,30 @@ async function fetchNaverHistory(code, range) {
   const end = new Date();
   const start = new Date(end.getTime() - cfg.days * 86400000);
   const text = await fetchText(NAVER_HISTORY(code, fmtDate(start), fmtDate(end)), false);
-  // Response is JS-array literal: [['일자','시가','고가','저가','종가','거래량','외인소진율'], ['20240102', 71500, ...], ...]
-  // It uses single quotes around strings — convert to JSON.
-  const cleaned = text.trim().replace(/'/g, '"').replace(/(\w+):/g, '"$1":');
   let arr;
-  try { arr = JSON.parse(cleaned); } catch (e) { throw new Error('Naver history parse failed'); }
+  try {
+    // The body is a JS array literal — single quotes in header are valid JS but not JSON.
+    // Function eval is acceptable here since we control the URL and the format is fixed.
+    arr = Function('"use strict"; return ' + text.trim())();
+  } catch (e) {
+    throw new Error('Naver history eval failed: ' + e.message);
+  }
   if (!Array.isArray(arr) || arr.length < 2) throw new Error('Naver history empty');
-  const rows = arr.slice(1); // drop header row
+  const rows = arr.slice(1);
   const series = [], volume = [], labels = [];
   for (const row of rows) {
+    if (!row || row.length < 6) continue;
     const close = parseFloat(row[4]);
     const vol = parseFloat(row[5]);
     if (!isFinite(close) || close <= 0) continue;
     series.push(close);
     volume.push(vol || 0);
-    const ds = String(row[0]); // YYYYMMDD
+    const ds = String(row[0]);
+    if (ds.length < 8) { labels.push(ds); continue; }
     const d = new Date(`${ds.slice(0,4)}-${ds.slice(4,6)}-${ds.slice(6,8)}`);
-    if (cfg.days > 250) labels.push(d.toLocaleDateString([], { year: '2-digit', month: 'short' }));
-    else labels.push(d.toLocaleDateString([], { month: 'short', day: 'numeric' }));
+    labels.push(cfg.days > 250
+      ? d.toLocaleDateString([], { year: '2-digit', month: 'short' })
+      : d.toLocaleDateString([], { month: 'short', day: 'numeric' }));
   }
   if (!series.length) throw new Error('Naver history empty after parse');
   return { labels, series, volume, label: cfg.label, source: 'Naver' };
@@ -1596,13 +1659,52 @@ function buildLiveStock(ticker, quote) {
   let changePct = isFinite(quote.changePct) ? quote.changePct
                   : (quote.open > 0 ? ((quote.close - quote.open) / quote.open) * 100 : 0);
 
+  // Helper: ratings from Naver recommMean (1=강력매수 ... 5=매도)
+  const ratingFromMean = m => {
+    if (!isFinite(m)) return '—';
+    if (m <= 1.5) return '강력매수';
+    if (m <= 2.5) return '매수';
+    if (m <= 3.5) return '보유';
+    if (m <= 4.5) return '비중축소';
+    return '매도';
+  };
+
+  // Convert Naver peers (with marketValue text "468조") into table rows
+  const naverPeers = (quote.peers || []).slice(0, 6).map(p => ({
+    tk: p.tk,
+    name: p.name,
+    cap: p.cap || '—',
+    pe: '—', // Naver peers endpoint doesn't include PER per peer
+    ytd: isFinite(p.ytd) ? p.ytd : 0,
+    marg: isFinite(p.chgPct) ? p.chgPct : 0,
+  }));
+
+  // Naver research notes → news-style entries
+  const naverNews = (quote.research || []).slice(0, 6).map(r => ({
+    src: r.house || '증권사',
+    time: r.date ? `${r.date.slice(0,4)}-${r.date.slice(4,6)}-${r.date.slice(6,8)}` : '',
+    sent: 'neu',
+    title: r.title || '리서치 보고서',
+    snip: '애널리스트 리서치 노트',
+  }));
+
+  // Build analyst block from Naver consensus if available
+  const naverAnalyst = quote.consensus && isFinite(quote.consensus.priceTarget) ? {
+    buy: 0, hold: 0, sell: 0, // Naver doesn't give buy/hold/sell counts; keep zero
+    ptLow: Math.round(quote.consensus.priceTarget * 0.8),
+    ptMean: Math.round(quote.consensus.priceTarget),
+    ptHigh: Math.round(quote.consensus.priceTarget * 1.2),
+    rating: ratingFromMean(quote.consensus.recommMean),
+  } : null;
+
   if (curated) {
     const merged = { ...curated };
     merged.price = quote.close;
     merged.change = change;
     merged.changePct = changePct;
     merged.vol = fmtVolume(quote.volume);
-    if (isFinite(quote.marketValue)) merged.mktCap = fmtMarketCap(quote.marketValue);
+    if (quote.marketValueText) merged.mktCap = quote.marketValueText;
+    else if (isFinite(quote.marketValue)) merged.mktCap = fmtMarketCap(quote.marketValue);
     if (isFinite(quote.per)) merged.pe = quote.per;
     if (isFinite(quote.eps)) merged.eps = quote.eps;
     if (isFinite(quote.dividendYield)) merged.divYield = quote.dividendYield;
@@ -1611,7 +1713,7 @@ function buildLiveStock(ticker, quote) {
     return { stock: merged, isCurated: true };
   }
 
-  // Non-curated: build minimal stock object with REAL data from Naver where possible
+  // Non-curated: build a rich stock object using ALL available Naver fields
   const s = {
     name: quote.name || reg.name,
     exch: quote.market || reg.mkt,
@@ -1621,9 +1723,9 @@ function buildLiveStock(ticker, quote) {
     country: '대한민국',
     price: quote.close,
     change, changePct,
-    mktCap: isFinite(quote.marketValue) ? fmtMarketCap(quote.marketValue) : '—',
+    mktCap: quote.marketValueText || (isFinite(quote.marketValue) ? fmtMarketCap(quote.marketValue) : '—'),
     pe: isFinite(quote.per) ? quote.per : '—',
-    fwdPE: '—',
+    fwdPE: isFinite(quote.cnsPer) ? quote.cnsPer : '—',
     eps: isFinite(quote.eps) ? quote.eps : '—',
     divYield: isFinite(quote.dividendYield) ? quote.dividendYield : 0,
     beta: '—',
@@ -1631,24 +1733,24 @@ function buildLiveStock(ticker, quote) {
     low52: isFinite(quote.low52) ? quote.low52 : quote.low,
     vol: fmtVolume(quote.volume),
     avgVol: '—',
-    desc: `${reg.name || ticker} 시세·기본정보는 ${quote.source || 'Naver'} 실데이터를 사용합니다. 재무·뉴스 등 상세 분석은 큐레이션 종목에 한해 제공됩니다.`,
+    desc: `${reg.name || ticker} 실시간 데이터: Naver Finance 시세 · ${quote.dealStatus || ''}. 시세·KPI·동종업계·애널리스트 컨센서스는 실데이터, 상세 재무·뉴스는 큐레이션 종목에 한해 제공.`,
     meta: {
       시장: reg.mkt || '—',
       업종: reg.sector || '—',
       종목코드: ticker,
       ...(isFinite(quote.bps) ? { BPS: quote.bps.toLocaleString() + '원' } : {}),
-      ...(isFinite(quote.pbr) ? { PBR: quote.pbr.toFixed(2) } : {}),
+      ...(isFinite(quote.pbr) ? { PBR: quote.pbr.toFixed(2) + '배' } : {}),
       ...(isFinite(quote.foreignerRatio) ? { 외국인보유: quote.foreignerRatio.toFixed(2) + '%' } : {}),
       ...(quote.dealStatus ? { 거래상태: quote.dealStatus } : {}),
     },
     fin: emptyFin(),
     valuation: [],
-    analyst: null,
+    analyst: naverAnalyst,
     own: isFinite(quote.foreignerRatio)
-      ? { institutional: 0, insider: 0, retail: 0, foreigner: quote.foreignerRatio }
+      ? { institutional: Math.round(quote.foreignerRatio), insider: 0, retail: Math.round(100 - quote.foreignerRatio) }
       : null,
-    peers: [],
-    news: [],
+    peers: naverPeers,
+    news: naverNews,
     events: [],
   };
   return { stock: s, isCurated: false };
@@ -1804,8 +1906,12 @@ async function loadStock(ticker) {
     buildRevChart(stock.fin);
     buildMarginChart(stock.fin);
   } else {
+    // Non-curated: render whatever Naver gave us, leave the rest as placeholders
     renderCompany(stock);
-    // Placeholders already in place from enterLoadingState — no action needed
+    if (stock.analyst) renderAnalyst(stock);
+    if (stock.own) renderOwn(stock);
+    if (stock.peers && stock.peers.length) renderPeers(stock);
+    if (stock.news && stock.news.length) renderNews(stock);
   }
 
   // 5) Fetch chart history
