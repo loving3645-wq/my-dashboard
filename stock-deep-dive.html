@@ -12,6 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..600,0..100&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="tickers.js"></script>
 
 <style>
   :root {
@@ -98,10 +99,28 @@
   .sh-change.down { color: var(--red); }
   .sh-change .arrow { font-size: 10px; }
   .sh-updated { font-family: var(--mono); font-size: 9px; color: var(--ink-faint); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 2px; }
+  .sh-source { display: flex; gap: 6px; align-items: center; font-family: var(--mono); font-size: 9px; color: var(--ink-soft); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 4px; }
+  .sh-source .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-faint); }
+  .sh-source.live .dot { background: var(--green); box-shadow: 0 0 6px rgba(74,124,78,0.4); animation: pulse 2s infinite; }
+  .sh-source.error .dot { background: var(--red); }
+  @keyframes pulse { 50% { opacity: 0.4; } }
+  .pending-badge { font-family: var(--mono); font-size: 9px; padding: 2px 7px; border-radius: 3px; letter-spacing: 0.1em; text-transform: uppercase; background: var(--gold-bg); color: var(--gold); border: 1px dashed var(--gold); margin-left: 8px; }
+  .pending-block { padding: 32px 16px; text-align: center; font-family: var(--serif); font-size: 13px; color: var(--ink-faint); font-style: italic; border: 1px dashed var(--line-strong); border-radius: 6px; background: var(--bg-warm); }
+  .pending-block .label { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 6px; font-style: normal; }
+  .loading-shimmer { background: linear-gradient(90deg, var(--bg-warm) 0%, var(--surface-2) 50%, var(--bg-warm) 100%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 4px; color: transparent !important; }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .ac-list { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 6px; box-shadow: var(--shadow-md); max-height: 300px; overflow-y: auto; z-index: 50; display: none; }
+  .ac-list.show { display: block; }
+  .ac-item { padding: 8px 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; border-bottom: 1px solid var(--line); }
+  .ac-item:last-child { border-bottom: none; }
+  .ac-item:hover, .ac-item.active { background: var(--bg-warm); }
+  .ac-item .code { font-family: var(--mono); font-size: 11px; color: var(--ink); font-weight: 600; min-width: 56px; }
+  .ac-item .name { color: var(--ink); flex: 1; }
+  .ac-item .mkt { font-family: var(--mono); font-size: 9px; color: var(--ink-soft); letter-spacing: 0.1em; padding: 2px 5px; background: var(--bg-warm); border-radius: 3px; }
 
   .sh-switcher { display: flex; flex-direction: column; gap: 6px; min-width: 200px; }
   .sh-switcher-label { font-family: var(--mono); font-size: 9px; color: var(--ink-soft); letter-spacing: 0.18em; text-transform: uppercase; }
-  .sh-search { display: flex; gap: 6px; }
+  .sh-search { display: flex; gap: 6px; position: relative; }
   .sh-search input { flex: 1; padding: 8px 10px; border: 1px solid var(--line); border-radius: 5px; background: var(--bg); font-family: var(--mono); font-size: 12px; outline: none; transition: border-color 0.15s; text-transform: uppercase; letter-spacing: 0.05em; }
   .sh-search input:focus { border-color: var(--accent); }
   .sh-quicklist { display: flex; gap: 4px; flex-wrap: wrap; }
@@ -310,12 +329,14 @@
         <span id="sh-change-abs">+1,200</span>
         <span id="sh-change-pct">(+1.55%)</span>
       </div>
-      <div class="sh-updated" id="sh-updated">장마감 기준</div>
+      <div class="sh-updated" id="sh-updated">불러오는 중…</div>
+      <div class="sh-source" id="sh-source"><span class="dot"></span><span id="sh-source-lbl">Stooq · 종가</span></div>
     </div>
     <div class="sh-switcher">
       <div class="sh-switcher-label">종목 검색</div>
       <div class="sh-search">
-        <input type="text" id="ticker-input" placeholder="종목코드 (예: 005930)" maxlength="6" />
+        <input type="text" id="ticker-input" placeholder="종목코드 또는 이름 검색" maxlength="20" autocomplete="off" />
+        <div class="ac-list" id="ac-list"></div>
       </div>
       <div class="sh-quicklist" id="quicklist"></div>
     </div>
@@ -1334,24 +1355,286 @@ function renderEvents(s) {
 }
 
 function renderQuicklist() {
-  $('quicklist').innerHTML = Object.keys(STOCKS).map(k => `
-    <button class="sh-quick ${k === currentTicker ? 'active' : ''}" data-ticker="${k}">${k}</button>
-  `).join('');
+  // Show curated tickers (rich data) first, then a few popular registry entries
+  const curated = Object.keys(STOCKS);
+  $('quicklist').innerHTML = curated.map(k => {
+    const meta = STOCKS[k];
+    return `<button class="sh-quick ${k === currentTicker ? 'active' : ''}" data-ticker="${k}" title="${meta.name}">${k}</button>`;
+  }).join('');
 }
 
-function renderChart() {
-  const s = STOCKS[currentTicker];
-  const data = buildPriceSeries(currentTicker, currentRange, s.price);
-  const isUp = s.change >= 0;
-  buildPriceChart(data, isUp);
-  buildVolumeChart(data, isUp);
-  $('chart-range-lbl').textContent = data.label;
+/* =====================================================================
+ * Stooq fetch layer (real data, end-of-day, no API key)
+ * ===================================================================== */
+const STOOQ_QUOTE = code => `https://stooq.com/q/l/?s=${code.toLowerCase()}.kr&f=sd2t2ohlcv&h&e=csv`;
+const STOOQ_HISTORY = (code, d1, d2, interval) =>
+  `https://stooq.com/q/d/l/?s=${code.toLowerCase()}.kr&d1=${d1}&d2=${d2}&i=${interval}`;
+
+const PROXIES = [
+  url => url, // direct first
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+];
+
+async function fetchCSV(url) {
+  let lastErr;
+  for (const wrap of PROXIES) {
+    try {
+      const r = await fetch(wrap(url), { cache: 'no-store' });
+      if (!r.ok) { lastErr = new Error('HTTP ' + r.status); continue; }
+      const text = await r.text();
+      if (text && text.length > 5 && !text.startsWith('<')) return text;
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('All proxies failed');
 }
 
-function loadStock(ticker) {
-  if (!STOCKS[ticker]) return;
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/);
+  const head = lines[0].split(',').map(s => s.trim());
+  return lines.slice(1).map(ln => {
+    const cells = ln.split(',');
+    const o = {};
+    head.forEach((h, i) => { o[h] = cells[i]; });
+    return o;
+  });
+}
+
+async function fetchQuote(code) {
+  const csv = await fetchCSV(STOOQ_QUOTE(code));
+  const rows = parseCSV(csv);
+  if (!rows.length) throw new Error('Stooq returned no rows');
+  const r = rows[0];
+  const close = parseFloat(r.Close);
+  if (!isFinite(close) || close <= 0) throw new Error('Invalid quote');
+  return {
+    date: r.Date, time: r.Time,
+    open: parseFloat(r.Open), high: parseFloat(r.High), low: parseFloat(r.Low),
+    close, volume: parseFloat(r.Volume),
+  };
+}
+
+function fmtDate(d) { return d.toISOString().slice(0, 10).replace(/-/g, ''); }
+
+async function fetchHistory(code, range) {
+  const cfg = {
+    '1D': { days: 5,    interval: 'd', label: '최근 5일 · 일봉 (Stooq 종가)' },
+    '1W': { days: 14,   interval: 'd', label: '최근 2주 · 일봉' },
+    '1M': { days: 35,   interval: 'd', label: '최근 1개월 · 일봉' },
+    '3M': { days: 100,  interval: 'd', label: '최근 3개월 · 일봉' },
+    '6M': { days: 200,  interval: 'd', label: '최근 6개월 · 일봉' },
+    '1Y': { days: 380,  interval: 'd', label: '최근 1년 · 일봉' },
+    '5Y': { days: 1900, interval: 'w', label: '최근 5년 · 주봉' },
+  }[range] || { days: 380, interval: 'd', label: '최근 1년 · 일봉' };
+  const end = new Date();
+  const start = new Date(end.getTime() - cfg.days * 86400000);
+  const csv = await fetchCSV(STOOQ_HISTORY(code, fmtDate(start), fmtDate(end), cfg.interval));
+  const rows = parseCSV(csv);
+  if (!rows.length) throw new Error('History empty');
+  const series = rows.map(r => parseFloat(r.Close)).filter(v => isFinite(v));
+  const volume = rows.map(r => parseFloat(r.Volume) || 0);
+  const labels = rows.map(r => {
+    const d = new Date(r.Date);
+    if (cfg.interval === 'w' || cfg.days > 250)
+      return d.toLocaleDateString([], { year: '2-digit', month: 'short' });
+    return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  });
+  return { labels, series, volume, label: cfg.label };
+}
+
+/* =====================================================================
+ * Live-data adapter — merges Stooq quote with curated detail
+ * ===================================================================== */
+function emptyFin() {
+  return { years: [], revenue: [], netIncome: [], grossMargin: [], opMargin: [], netMargin: [], revGrowth: [] };
+}
+
+function buildLiveStock(ticker, quote) {
+  const reg = (window.TICKER_REGISTRY || {})[ticker] || { name: ticker, mkt: '—', sector: '—' };
+  const curated = STOCKS[ticker];
+  if (curated) {
+    // Override curated price/change with real data
+    const merged = { ...curated };
+    merged.price = quote.close;
+    // Use yesterday's close from history if available; fallback: open
+    const prev = curated.price; // we'll recompute change after fetching history
+    merged.change = quote.close - quote.open;
+    merged.changePct = (merged.change / quote.open) * 100;
+    merged.vol = (quote.volume / 1e6).toFixed(1) + 'M';
+    return { stock: merged, isCurated: true };
+  }
+  // Non-curated: build minimal stock object with placeholders
+  const s = {
+    name: reg.name, exch: reg.mkt, ccy: '원',
+    sector: reg.sector || '—', industry: '—', country: '대한민국',
+    price: quote.close, change: quote.close - quote.open,
+    changePct: ((quote.close - quote.open) / quote.open) * 100,
+    mktCap: '—', pe: '—', fwdPE: '—', eps: '—', divYield: 0, beta: '—',
+    high52: quote.high, low52: quote.low,
+    vol: (quote.volume / 1e6).toFixed(1) + 'M', avgVol: '—',
+    desc: '상세 기업 정보는 큐레이션 종목에 한해 제공됩니다. 시세·차트는 Stooq 실데이터를 사용합니다.',
+    meta: { 시장: reg.mkt, 업종: reg.sector || '—', 종목코드: ticker },
+    fin: emptyFin(),
+    valuation: [],
+    analyst: null,
+    own: null,
+    peers: [],
+    news: [],
+    events: [],
+  };
+  return { stock: s, isCurated: false };
+}
+
+function refineFromHistory(s, history) {
+  if (!history.series.length) return;
+  // Use first point of history as the prior baseline if longer than 2
+  const last = history.series[history.series.length - 1];
+  const prevDay = history.series.length >= 2 ? history.series[history.series.length - 2] : history.series[0];
+  s.change = last - prevDay;
+  s.changePct = (s.change / prevDay) * 100;
+  // 52W high/low from 1Y series if applicable
+  if (history.series.length > 100) {
+    s.high52 = Math.max(...history.series);
+    s.low52 = Math.min(...history.series);
+  }
+}
+
+/* =====================================================================
+ * Render helpers — skeletons + non-curated placeholder rendering
+ * ===================================================================== */
+function setSourceState(state, label) {
+  const el = $('sh-source');
+  el.classList.remove('live', 'error');
+  if (state) el.classList.add(state);
+  if (label) $('sh-source-lbl').textContent = label;
+}
+
+function renderEmptyFundamentals() {
+  // Replace fundamentals-heavy sections with placeholders
+  ['valuation-bars', 'rating-bars', 'pt-bar', 'own-rows'].forEach(id => {
+    const el = $(id); if (el) el.innerHTML = '';
+  });
+  $('analyst-count').textContent = '큐레이션 외';
+  $('analyst-rating').textContent = '—';
+  ['pt-mean','pt-low','pt-high','pt-upside'].forEach(id => $(id).textContent = '—');
+
+  $('valuation-bars').innerHTML = `<div class="pending-block"><div class="label">데이터 준비 중</div>밸류에이션 비교는 큐레이션 종목에 한해 제공됩니다.</div>`;
+  $('rating-bars').innerHTML = `<div class="pending-block" style="margin-top:8px;"><div class="label">데이터 준비 중</div>애널리스트 컨센서스 데이터 미연동</div>`;
+  $('own-rows').innerHTML = `<div class="pending-block"><div class="label">데이터 준비 중</div>지분 구조 정보 미연동</div>`;
+
+  // Clear donut charts
+  if (donutChart) { donutChart.destroy(); donutChart = null; }
+  if (ownChart) { ownChart.destroy(); ownChart = null; }
+  if (revChart) { revChart.destroy(); revChart = null; }
+  if (marginChart) { marginChart.destroy(); marginChart = null; }
+  // Optional: clear canvases visually
+  ['rev-chart','margin-chart','analyst-donut','own-chart'].forEach(id => {
+    const c = document.getElementById(id);
+    if (c && c.getContext) c.getContext('2d').clearRect(0, 0, c.width, c.height);
+  });
+
+  $('peers-tbl').querySelector('tbody').innerHTML = `<tr><td colspan="6" class="pending-block" style="padding:24px 12px;"><div class="label">데이터 준비 중</div>피어 그룹 데이터는 큐레이션 종목 한정</td></tr>`;
+  const itbl = $('income-tbl');
+  itbl.querySelector('thead').innerHTML = '<tr><th>항목</th></tr>';
+  itbl.querySelector('tbody').innerHTML = `<tr><td class="pending-block" style="padding:24px 12px;"><div class="label">데이터 준비 중</div>손익계산서 미연동</td></tr>`;
+  $('news-count').textContent = '준비 중';
+  $('news-list').innerHTML = `<div class="pending-block"><div class="label">데이터 준비 중</div>뉴스 피드는 큐레이션 종목에 한해 제공됩니다.</div>`;
+  $('events-rows').innerHTML = `<div class="pending-block"><div class="label">데이터 준비 중</div>주요 일정 미연동</div>`;
+}
+
+/* =====================================================================
+ * Master loadStock — async, fetches Stooq data
+ * ===================================================================== */
+async function loadStock(ticker) {
+  ticker = String(ticker).toUpperCase().padStart(6, '0').slice(-6);
+  // Allow only digits (Korean code) — for now reject non-numeric
+  if (!/^\d{6}$/.test(ticker)) {
+    flashSearchError();
+    return;
+  }
   currentTicker = ticker;
-  const s = STOCKS[ticker];
+  const reg = (window.TICKER_REGISTRY || {})[ticker];
+  const curated = STOCKS[ticker];
+
+  // Show skeleton state
+  setSourceState(null, '불러오는 중…');
+  $('sh-ticker').textContent = ticker;
+  $('sh-name').textContent = reg ? reg.name : (curated ? curated.name : '종목 조회 중…');
+  $('sh-exch').textContent = reg ? `${reg.mkt} · KRW` : (curated ? `${curated.exch} · ${curated.ccy}` : 'KRW');
+  $('sh-price').textContent = '—';
+  $('sh-price').classList.add('loading-shimmer');
+  $('sh-updated').textContent = '불러오는 중…';
+
+  let quote, hist;
+  try {
+    quote = await fetchQuote(ticker);
+  } catch (e) {
+    setSourceState('error', 'Stooq 조회 실패');
+    $('sh-price').classList.remove('loading-shimmer');
+    $('sh-price').textContent = '—';
+    $('sh-updated').textContent = '데이터 없음 · 종목코드 확인';
+    if (curated) {
+      // Fall back to curated mock entirely
+      renderCurated(curated, false);
+      return;
+    }
+    flashSearchError();
+    return;
+  }
+
+  // Build stock object (curated vs non-curated)
+  const { stock, isCurated } = buildLiveStock(ticker, quote);
+
+  // Render header + KPIs immediately with quote data
+  $('sh-price').classList.remove('loading-shimmer');
+  renderHeader(stock);
+  renderKPIs(stock);
+
+  // Curated-only sections
+  if (isCurated) {
+    renderCompany(stock);
+    renderValuation(stock);
+    renderAnalyst(stock);
+    renderOwn(stock);
+    renderPeers(stock);
+    renderIncome(stock);
+    renderNews(stock);
+    renderEvents(stock);
+    buildRevChart(stock.fin);
+    buildMarginChart(stock.fin);
+  } else {
+    renderCompany(stock);
+    renderEmptyFundamentals();
+  }
+  renderQuicklist();
+
+  // Fetch chart history (real data)
+  try {
+    hist = await fetchHistory(ticker, currentRange);
+    refineFromHistory(stock, hist);
+    renderHeader(stock); // refresh with refined change %
+    renderKPIs(stock);   // refresh with refined 52W
+    const isUp = stock.change >= 0;
+    buildPriceChart(hist, isUp);
+    buildVolumeChart(hist, isUp);
+    $('chart-range-lbl').textContent = hist.label;
+    setSourceState('live', `Stooq · 종가 (${quote.date})`);
+    $('sh-updated').textContent = `${quote.date} · 종가 기준`;
+  } catch (e) {
+    setSourceState('error', '차트 조회 실패');
+  }
+
+  try { window.history.replaceState(null, '', '#' + ticker); } catch(e) {}
+}
+
+function flashSearchError() {
+  const inp = $('ticker-input');
+  inp.style.borderColor = 'var(--accent)';
+  setTimeout(() => inp.style.borderColor = '', 900);
+}
+
+function renderCurated(s, withSource) {
+  // Used as fallback when API fails but curated data exists
   renderHeader(s);
   renderKPIs(s);
   renderCompany(s);
@@ -1365,38 +1648,112 @@ function loadStock(ticker) {
   renderQuicklist();
   buildRevChart(s.fin);
   buildMarginChart(s.fin);
-  renderChart();
-  history.replaceState(null, '', '#' + ticker);
+  // Synthetic chart fallback
+  const data = buildPriceSeries(currentTicker, currentRange, s.price);
+  buildPriceChart(data, s.change >= 0);
+  buildVolumeChart(data, s.change >= 0);
+  $('chart-range-lbl').textContent = data.label + ' (샘플)';
+  if (withSource !== false) setSourceState('error', '샘플 데이터');
+}
+
+async function changeRange(range) {
+  currentRange = range;
+  try {
+    const history = await fetchHistory(currentTicker, range);
+    const stock = buildLiveStock(currentTicker, { close: history.series.at(-1), open: history.series[0], high: Math.max(...history.series), low: Math.min(...history.series), volume: history.volume.at(-1) || 0, date: '', time: '' }).stock;
+    refineFromHistory(stock, history);
+    const isUp = stock.change >= 0;
+    buildPriceChart(history, isUp);
+    buildVolumeChart(history, isUp);
+    $('chart-range-lbl').textContent = history.label;
+  } catch (e) {
+    setSourceState('error', '차트 조회 실패');
+  }
+}
+
+/* =====================================================================
+ * Autocomplete
+ * ===================================================================== */
+function buildAutocomplete(query) {
+  const list = $('ac-list');
+  if (!query) { list.classList.remove('show'); list.innerHTML = ''; return; }
+  const q = query.trim().toLowerCase();
+  const reg = window.TICKER_REGISTRY || {};
+  const matches = [];
+  for (const [code, meta] of Object.entries(reg)) {
+    if (code.startsWith(q) || meta.name.toLowerCase().includes(q)) {
+      matches.push({ code, ...meta });
+      if (matches.length >= 12) break;
+    }
+  }
+  if (/^\d{6}$/.test(q) && !reg[q]) matches.unshift({ code: q, name: '종목코드 직접 조회', mkt: '?' });
+  if (!matches.length) { list.classList.remove('show'); list.innerHTML = ''; return; }
+  list.innerHTML = matches.map(m => `
+    <div class="ac-item" data-ticker="${m.code}">
+      <span class="code">${m.code}</span>
+      <span class="name">${m.name}</span>
+      <span class="mkt">${m.mkt}</span>
+    </div>
+  `).join('');
+  list.classList.add('show');
 }
 
 /* =====================================================================
  * Events
  * ===================================================================== */
 document.addEventListener('click', (e) => {
+  const ac = e.target.closest('#ac-list .ac-item');
+  if (ac) {
+    $('ticker-input').value = '';
+    $('ac-list').classList.remove('show');
+    loadStock(ac.dataset.ticker);
+    return;
+  }
   const q = e.target.closest('[data-ticker]');
   if (q) { loadStock(q.dataset.ticker); return; }
   const tt = e.target.closest('[data-range]');
   if (tt) {
     document.querySelectorAll('.time-tab').forEach(b => b.classList.toggle('active', b === tt));
-    currentRange = tt.dataset.range;
-    renderChart();
+    changeRange(tt.dataset.range);
     return;
   }
   const nv = e.target.closest('[data-section]');
   if (nv) {
     document.querySelectorAll('.nav-tab').forEach(b => b.classList.toggle('active', b === nv));
-    // Soft scroll to corresponding section
     const map = { overview: '.kpi-strip', financials: '.grid-2', valuation: '.grid-3', analyst: '.grid-3', news: '.news-list' };
     const sel = map[nv.dataset.section];
     if (sel) document.querySelector(sel)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
+  // Close autocomplete on outside click
+  if (!e.target.closest('.sh-search')) $('ac-list').classList.remove('show');
 });
 
+$('ticker-input').addEventListener('input', (e) => {
+  buildAutocomplete(e.target.value);
+});
 $('ticker-input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
     const v = e.target.value.trim().toUpperCase();
-    if (STOCKS[v]) { loadStock(v); e.target.value = ''; }
-    else { e.target.style.borderColor = 'var(--accent)'; setTimeout(() => e.target.style.borderColor = '', 800); }
+    const numeric = v.replace(/[^0-9]/g, '');
+    if (numeric.length === 6) {
+      $('ac-list').classList.remove('show');
+      e.target.value = '';
+      loadStock(numeric);
+    } else if ((window.TICKER_REGISTRY || {})[v]) {
+      $('ac-list').classList.remove('show');
+      e.target.value = '';
+      loadStock(v);
+    } else {
+      // pick first autocomplete match
+      const first = document.querySelector('#ac-list .ac-item');
+      if (first) {
+        $('ac-list').classList.remove('show');
+        e.target.value = '';
+        loadStock(first.dataset.ticker);
+      } else flashSearchError();
+    }
+  } else if (e.key === 'Escape') {
+    $('ac-list').classList.remove('show');
   }
 });
 
@@ -1407,8 +1764,8 @@ function tick() {
 tick(); setInterval(tick, 30000);
 
 // Boot — pull ticker from hash if present
-const hash = location.hash.replace('#','').toUpperCase();
-loadStock(STOCKS[hash] ? hash : '005930');
+const _hash = location.hash.replace('#','').toUpperCase();
+loadStock(/^\d{6}$/.test(_hash) ? _hash : '005930');
 </script>
 </body>
 </html>
