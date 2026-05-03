@@ -1364,29 +1364,45 @@ function renderQuicklist() {
 }
 
 /* =====================================================================
- * Stooq fetch layer (real data, end-of-day, no API key)
+ * Data fetch layer — Naver Finance (primary, full KRX coverage) + Stooq fallback
+ * Last-known-source is exposed via window._lastSource for UI badge.
  * ===================================================================== */
 const STOOQ_QUOTE = code => `https://stooq.com/q/l/?s=${code.toLowerCase()}.kr&f=sd2t2ohlcv&h&e=csv`;
 const STOOQ_HISTORY = (code, d1, d2, interval) =>
   `https://stooq.com/q/d/l/?s=${code.toLowerCase()}.kr&d1=${d1}&d2=${d2}&i=${interval}`;
+const NAVER_INTEGRATION = code => `https://m.stock.naver.com/api/stock/${code}/integration`;
+const NAVER_BASIC = code => `https://m.stock.naver.com/api/stock/${code}/basic`;
+const NAVER_HISTORY = (code, start, end) =>
+  `https://api.finance.naver.com/siseJson.naver?symbol=${code}&requestType=1&startTime=${start}&endTime=${end}&timeframe=day`;
 
 const PROXIES = [
-  url => url, // direct first
+  // CORS-friendly proxies — Naver requires a proxy (no CORS headers).
+  // Stooq sometimes works direct; we try direct first for stooq.
   url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
   url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
 ];
 
-async function fetchCSV(url) {
+async function fetchText(url, allowDirect) {
+  const list = allowDirect ? [u => u, ...PROXIES] : PROXIES;
   let lastErr;
-  for (const wrap of PROXIES) {
+  for (const wrap of list) {
     try {
       const r = await fetch(wrap(url), { cache: 'no-store' });
       if (!r.ok) { lastErr = new Error('HTTP ' + r.status); continue; }
       const text = await r.text();
-      if (text && text.length > 5 && !text.startsWith('<')) return text;
+      if (text && text.length > 2) return text;
     } catch (e) { lastErr = e; }
   }
   throw lastErr || new Error('All proxies failed');
+}
+
+function num(v) {
+  if (v == null) return NaN;
+  if (typeof v === 'number') return v;
+  const cleaned = String(v).replace(/[,\s%원]/g, '');
+  const n = parseFloat(cleaned);
+  return isFinite(n) ? n : NaN;
 }
 
 function parseCSV(text) {
@@ -1400,37 +1416,125 @@ function parseCSV(text) {
   });
 }
 
-async function fetchQuote(code) {
-  const csv = await fetchCSV(STOOQ_QUOTE(code));
-  const rows = parseCSV(csv);
-  if (!rows.length) throw new Error('Stooq returned no rows');
+/* ---------- Naver: live quote ---------- */
+async function fetchNaverQuote(code) {
+  const text = await fetchText(NAVER_INTEGRATION(code), false);
+  let j;
+  try { j = JSON.parse(text); } catch (e) { throw new Error('Naver JSON parse failed'); }
+  // Naver "integration" response varies — fields can live at root or under .basicInfo / .totalInfos / .basics
+  const close = num(j.closePrice ?? j.basicInfo?.closePrice ?? j.tradePrice);
+  if (!isFinite(close) || close <= 0) throw new Error('Naver: invalid price');
+  // Resolve change sign from compareToPreviousPrice.code (1/2 = up, 4/5 = down per Naver spec)
+  const cmpCode = j.compareToPreviousPrice?.code ?? j.basicInfo?.compareToPreviousPrice?.code;
+  const isDown = cmpCode === '4' || cmpCode === '5' || cmpCode === 4 || cmpCode === 5;
+  let chg = num(j.compareToPreviousClosePrice ?? j.basicInfo?.compareToPreviousClosePrice);
+  if (isFinite(chg)) chg = isDown ? -Math.abs(chg) : Math.abs(chg);
+  let chgPct = num(j.fluctuationsRatio ?? j.basicInfo?.fluctuationsRatio);
+  if (isFinite(chgPct)) chgPct = isDown ? -Math.abs(chgPct) : Math.abs(chgPct);
+  // totalInfos is an array of {code, value} pairs
+  const totals = {};
+  (j.totalInfos || []).forEach(t => { if (t && t.code) totals[t.code] = t.value; });
+  return {
+    source: 'Naver',
+    name: j.stockName ?? j.basicInfo?.stockName,
+    market: j.stockExchangeType?.code ?? j.basicInfo?.stockExchangeType?.code,
+    dealStatus: j.dealStatus?.kr ?? j.basicInfo?.dealStatus?.kr ?? '',
+    date: j.localTradedAt ?? j.basicInfo?.localTradedAt ?? new Date().toISOString().slice(0,10),
+    time: j.tradeTime ?? '',
+    open: num(j.openPrice ?? totals.openPrice),
+    high: num(j.highPrice ?? totals.highPrice),
+    low: num(j.lowPrice ?? totals.lowPrice),
+    close,
+    volume: num(j.accumulatedTradingVolume ?? j.tradeVolume ?? totals.accumulatedTradingVolume),
+    change: chg,
+    changePct: chgPct,
+    high52: num(totals.highPriceFor52Weeks ?? j.highPriceFor52Weeks),
+    low52: num(totals.lowPriceFor52Weeks ?? j.lowPriceFor52Weeks),
+    marketValue: num(totals.marketValue ?? j.marketValue), // 억원
+    per: num(totals.per ?? j.per),
+    eps: num(totals.eps ?? j.eps),
+    pbr: num(totals.pbr ?? j.pbr),
+    bps: num(totals.bps ?? j.bps),
+    dividendYield: num(totals.dividendYield ?? j.dividendYield),
+    foreignerRatio: num(totals.foreignerHoldingRatio ?? j.foreignerHoldingRatio),
+  };
+}
+
+/* ---------- Naver: chart history ---------- */
+async function fetchNaverHistory(code, range) {
+  const cfg = {
+    '1D': { days: 7,    label: '최근 7일 · 일봉 (Naver)' },
+    '1W': { days: 14,   label: '최근 2주 · 일봉' },
+    '1M': { days: 40,   label: '최근 1개월 · 일봉' },
+    '3M': { days: 110,  label: '최근 3개월 · 일봉' },
+    '6M': { days: 210,  label: '최근 6개월 · 일봉' },
+    '1Y': { days: 400,  label: '최근 1년 · 일봉' },
+    '5Y': { days: 1850, label: '최근 5년 · 일봉' },
+  }[range] || { days: 400, label: '최근 1년 · 일봉' };
+  const end = new Date();
+  const start = new Date(end.getTime() - cfg.days * 86400000);
+  const text = await fetchText(NAVER_HISTORY(code, fmtDate(start), fmtDate(end)), false);
+  // Response is JS-array literal: [['일자','시가','고가','저가','종가','거래량','외인소진율'], ['20240102', 71500, ...], ...]
+  // It uses single quotes around strings — convert to JSON.
+  const cleaned = text.trim().replace(/'/g, '"').replace(/(\w+):/g, '"$1":');
+  let arr;
+  try { arr = JSON.parse(cleaned); } catch (e) { throw new Error('Naver history parse failed'); }
+  if (!Array.isArray(arr) || arr.length < 2) throw new Error('Naver history empty');
+  const rows = arr.slice(1); // drop header row
+  const series = [], volume = [], labels = [];
+  for (const row of rows) {
+    const close = parseFloat(row[4]);
+    const vol = parseFloat(row[5]);
+    if (!isFinite(close) || close <= 0) continue;
+    series.push(close);
+    volume.push(vol || 0);
+    const ds = String(row[0]); // YYYYMMDD
+    const d = new Date(`${ds.slice(0,4)}-${ds.slice(4,6)}-${ds.slice(6,8)}`);
+    if (cfg.days > 250) labels.push(d.toLocaleDateString([], { year: '2-digit', month: 'short' }));
+    else labels.push(d.toLocaleDateString([], { month: 'short', day: 'numeric' }));
+  }
+  if (!series.length) throw new Error('Naver history empty after parse');
+  return { labels, series, volume, label: cfg.label, source: 'Naver' };
+}
+
+/* ---------- Stooq: live quote (fallback) ---------- */
+async function fetchStooqQuote(code) {
+  const text = await fetchText(STOOQ_QUOTE(code), true);
+  if (text.startsWith('<') || text.length < 10) throw new Error('Stooq empty');
+  const rows = parseCSV(text);
+  if (!rows.length) throw new Error('Stooq no rows');
   const r = rows[0];
   const close = parseFloat(r.Close);
-  if (!isFinite(close) || close <= 0) throw new Error('Invalid quote');
+  if (!isFinite(close) || close <= 0) throw new Error('Stooq invalid');
   return {
-    date: r.Date, time: r.Time,
+    source: 'Stooq', date: r.Date, time: r.Time,
     open: parseFloat(r.Open), high: parseFloat(r.High), low: parseFloat(r.Low),
     close, volume: parseFloat(r.Volume),
+    change: NaN, changePct: NaN,
+    high52: NaN, low52: NaN, marketValue: NaN, per: NaN, eps: NaN, pbr: NaN, bps: NaN,
+    dividendYield: NaN, foreignerRatio: NaN,
   };
 }
 
 function fmtDate(d) { return d.toISOString().slice(0, 10).replace(/-/g, ''); }
 
-async function fetchHistory(code, range) {
+/* ---------- Stooq: chart history (fallback) ---------- */
+async function fetchStooqHistory(code, range) {
   const cfg = {
-    '1D': { days: 5,    interval: 'd', label: '최근 5일 · 일봉 (Stooq 종가)' },
+    '1D': { days: 7,    interval: 'd', label: '최근 7일 · 일봉 (Stooq)' },
     '1W': { days: 14,   interval: 'd', label: '최근 2주 · 일봉' },
-    '1M': { days: 35,   interval: 'd', label: '최근 1개월 · 일봉' },
-    '3M': { days: 100,  interval: 'd', label: '최근 3개월 · 일봉' },
-    '6M': { days: 200,  interval: 'd', label: '최근 6개월 · 일봉' },
-    '1Y': { days: 380,  interval: 'd', label: '최근 1년 · 일봉' },
+    '1M': { days: 40,   interval: 'd', label: '최근 1개월 · 일봉' },
+    '3M': { days: 110,  interval: 'd', label: '최근 3개월 · 일봉' },
+    '6M': { days: 210,  interval: 'd', label: '최근 6개월 · 일봉' },
+    '1Y': { days: 400,  interval: 'd', label: '최근 1년 · 일봉' },
     '5Y': { days: 1900, interval: 'w', label: '최근 5년 · 주봉' },
-  }[range] || { days: 380, interval: 'd', label: '최근 1년 · 일봉' };
+  }[range] || { days: 400, interval: 'd', label: '최근 1년 · 일봉' };
   const end = new Date();
   const start = new Date(end.getTime() - cfg.days * 86400000);
-  const csv = await fetchCSV(STOOQ_HISTORY(code, fmtDate(start), fmtDate(end), cfg.interval));
-  const rows = parseCSV(csv);
-  if (!rows.length) throw new Error('History empty');
+  const text = await fetchText(STOOQ_HISTORY(code, fmtDate(start), fmtDate(end), cfg.interval), true);
+  if (text.startsWith('<')) throw new Error('Stooq history empty');
+  const rows = parseCSV(text);
+  if (!rows.length) throw new Error('Stooq history no rows');
   const series = rows.map(r => parseFloat(r.Close)).filter(v => isFinite(v));
   const volume = rows.map(r => parseFloat(r.Volume) || 0);
   const labels = rows.map(r => {
@@ -1439,7 +1543,24 @@ async function fetchHistory(code, range) {
       return d.toLocaleDateString([], { year: '2-digit', month: 'short' });
     return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
   });
-  return { labels, series, volume, label: cfg.label };
+  return { labels, series, volume, label: cfg.label, source: 'Stooq' };
+}
+
+/* ---------- Master fetch: try Naver first, fallback to Stooq ---------- */
+async function fetchQuote(code) {
+  try { return await fetchNaverQuote(code); }
+  catch (e) {
+    console.warn('[Naver quote failed]', code, e.message);
+    return await fetchStooqQuote(code);
+  }
+}
+
+async function fetchHistory(code, range) {
+  try { return await fetchNaverHistory(code, range); }
+  catch (e) {
+    console.warn('[Naver history failed]', code, e.message);
+    return await fetchStooqHistory(code, range);
+  }
 }
 
 /* =====================================================================
@@ -1449,35 +1570,83 @@ function emptyFin() {
   return { years: [], revenue: [], netIncome: [], grossMargin: [], opMargin: [], netMargin: [], revGrowth: [] };
 }
 
+// 억원 단위 시총 → "468조" / "1,234억" 표현
+function fmtMarketCap(eokWon) {
+  if (!isFinite(eokWon) || eokWon <= 0) return '—';
+  if (eokWon >= 10000) {
+    const jo = eokWon / 10000;
+    return jo.toFixed(jo >= 100 ? 0 : 1) + '조';
+  }
+  return Math.round(eokWon).toLocaleString() + '억';
+}
+
+function fmtVolume(v) {
+  if (!isFinite(v) || v <= 0) return '—';
+  if (v >= 1e8) return (v / 1e8).toFixed(2) + '억';
+  if (v >= 1e4) return (v / 1e4).toFixed(0) + '만';
+  return v.toLocaleString();
+}
+
 function buildLiveStock(ticker, quote) {
   const reg = (window.TICKER_REGISTRY || {})[ticker] || { name: ticker, mkt: '—', sector: '—' };
   const curated = STOCKS[ticker];
+
+  // Compute change/changePct: prefer Naver-provided values, fallback to (close - open)
+  let change = isFinite(quote.change) ? quote.change : (quote.close - quote.open);
+  let changePct = isFinite(quote.changePct) ? quote.changePct
+                  : (quote.open > 0 ? ((quote.close - quote.open) / quote.open) * 100 : 0);
+
   if (curated) {
-    // Override curated price/change with real data
     const merged = { ...curated };
     merged.price = quote.close;
-    // Use yesterday's close from history if available; fallback: open
-    const prev = curated.price; // we'll recompute change after fetching history
-    merged.change = quote.close - quote.open;
-    merged.changePct = (merged.change / quote.open) * 100;
-    merged.vol = (quote.volume / 1e6).toFixed(1) + 'M';
+    merged.change = change;
+    merged.changePct = changePct;
+    merged.vol = fmtVolume(quote.volume);
+    if (isFinite(quote.marketValue)) merged.mktCap = fmtMarketCap(quote.marketValue);
+    if (isFinite(quote.per)) merged.pe = quote.per;
+    if (isFinite(quote.eps)) merged.eps = quote.eps;
+    if (isFinite(quote.dividendYield)) merged.divYield = quote.dividendYield;
+    if (isFinite(quote.high52)) merged.high52 = quote.high52;
+    if (isFinite(quote.low52)) merged.low52 = quote.low52;
     return { stock: merged, isCurated: true };
   }
-  // Non-curated: build minimal stock object with placeholders
+
+  // Non-curated: build minimal stock object with REAL data from Naver where possible
   const s = {
-    name: reg.name, exch: reg.mkt, ccy: '원',
-    sector: reg.sector || '—', industry: '—', country: '대한민국',
-    price: quote.close, change: quote.close - quote.open,
-    changePct: ((quote.close - quote.open) / quote.open) * 100,
-    mktCap: '—', pe: '—', fwdPE: '—', eps: '—', divYield: 0, beta: '—',
-    high52: quote.high, low52: quote.low,
-    vol: (quote.volume / 1e6).toFixed(1) + 'M', avgVol: '—',
-    desc: '상세 기업 정보는 큐레이션 종목에 한해 제공됩니다. 시세·차트는 Stooq 실데이터를 사용합니다.',
-    meta: { 시장: reg.mkt, 업종: reg.sector || '—', 종목코드: ticker },
+    name: quote.name || reg.name,
+    exch: quote.market || reg.mkt,
+    ccy: '원',
+    sector: reg.sector || '—',
+    industry: reg.sector || '—',
+    country: '대한민국',
+    price: quote.close,
+    change, changePct,
+    mktCap: isFinite(quote.marketValue) ? fmtMarketCap(quote.marketValue) : '—',
+    pe: isFinite(quote.per) ? quote.per : '—',
+    fwdPE: '—',
+    eps: isFinite(quote.eps) ? quote.eps : '—',
+    divYield: isFinite(quote.dividendYield) ? quote.dividendYield : 0,
+    beta: '—',
+    high52: isFinite(quote.high52) ? quote.high52 : quote.high,
+    low52: isFinite(quote.low52) ? quote.low52 : quote.low,
+    vol: fmtVolume(quote.volume),
+    avgVol: '—',
+    desc: `${reg.name || ticker} 시세·기본정보는 ${quote.source || 'Naver'} 실데이터를 사용합니다. 재무·뉴스 등 상세 분석은 큐레이션 종목에 한해 제공됩니다.`,
+    meta: {
+      시장: reg.mkt || '—',
+      업종: reg.sector || '—',
+      종목코드: ticker,
+      ...(isFinite(quote.bps) ? { BPS: quote.bps.toLocaleString() + '원' } : {}),
+      ...(isFinite(quote.pbr) ? { PBR: quote.pbr.toFixed(2) } : {}),
+      ...(isFinite(quote.foreignerRatio) ? { 외국인보유: quote.foreignerRatio.toFixed(2) + '%' } : {}),
+      ...(quote.dealStatus ? { 거래상태: quote.dealStatus } : {}),
+    },
     fin: emptyFin(),
     valuation: [],
     analyst: null,
-    own: null,
+    own: isFinite(quote.foreignerRatio)
+      ? { institutional: 0, insider: 0, retail: 0, foreigner: quote.foreignerRatio }
+      : null,
     peers: [],
     news: [],
     events: [],
@@ -1649,8 +1818,9 @@ async function loadStock(ticker) {
     buildPriceChart(hist, isUp);
     buildVolumeChart(hist, isUp);
     $('chart-range-lbl').textContent = hist.label;
-    setSourceState('live', `Stooq · 종가 (${quote.date})`);
-    $('sh-updated').textContent = `${quote.date} · 종가 기준`;
+    const srcLbl = `${quote.source || 'API'} · ${quote.dealStatus || '시세'}`;
+    setSourceState('live', srcLbl);
+    $('sh-updated').textContent = `${quote.date || hist.label} · ${quote.source || 'Naver'}`;
   } catch (e) {
     setSourceState('error', '차트 조회 실패');
     $('sh-updated').textContent = '시세는 수신, 차트 데이터 없음';
