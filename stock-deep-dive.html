@@ -12,7 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..600,0..100&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script src="tickers.js"></script>
+<script src="tickers-full.js"></script>
 
 <style>
   :root {
@@ -1683,7 +1683,7 @@ function buildAutocomplete(query) {
   for (const [code, meta] of Object.entries(reg)) {
     if (code.startsWith(q) || meta.name.toLowerCase().includes(q)) {
       matches.push({ code, ...meta });
-      if (matches.length >= 12) break;
+      if (matches.length >= 30) break;
     }
   }
   if (/^\d{6}$/.test(q) && !reg[q]) matches.unshift({ code: q, name: '종목코드 직접 조회', mkt: '?' });
