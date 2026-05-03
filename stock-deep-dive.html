@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#fafaf7" />
+<title>Stock Deep Dive · 지니의 대시보드</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..600,0..100&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<style>
+  :root {
+    --bg: #fafaf7;
+    --bg-warm: #f4f1ea;
+    --surface: #ffffff;
+    --surface-2: #f7f5f0;
+    --ink: #1a1a1a;
+    --ink-mid: #555;
+    --ink-soft: #8a8580;
+    --ink-faint: #b8b3ad;
+    --line: #e8e4dc;
+    --line-strong: #d4cfc4;
+    --accent: #b8421f;
+    --accent-bg: #fbeae3;
+    --gold: #b8923f;
+    --gold-bg: #f7eecf;
+    --green: #4a7c4e;
+    --green-bg: #e0ebd9;
+    --red: #c43e3e;
+    --red-bg: #fbe4e4;
+    --blue: #3a5e7e;
+    --blue-bg: #dde6ee;
+    --purple: #6b4a7c;
+    --purple-bg: #ebe0ee;
+    --serif: 'Fraunces', 'Nanum Myeongjo', serif;
+    --sans: 'Pretendard', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 14px rgba(0,0,0,0.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse 70% 40% at 100% 0%, rgba(184,66,31,0.04), transparent),
+      radial-gradient(ellipse 60% 50% at 0% 100%, rgba(184,146,63,0.03), transparent),
+      var(--bg);
+    background-attachment: fixed;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; background: none; border: none; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  .app { max-width: 1700px; margin: 0 auto; padding: 24px 28px 80px; }
+
+  /* ========== Top nav ========== */
+  .topnav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; gap: 12px; }
+  .topnav-left { display: flex; align-items: baseline; gap: 18px; }
+  .brand { font-family: var(--serif); font-weight: 400; font-size: 22px; letter-spacing: -0.02em; }
+  .brand em { font-style: italic; color: var(--accent); font-weight: 500; }
+  .crumbs { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.18em; text-transform: uppercase; }
+  .crumbs a { color: var(--ink-soft); text-decoration: none; transition: color 0.15s; }
+  .crumbs a:hover { color: var(--accent); }
+  .crumbs .sep { margin: 0 8px; color: var(--ink-faint); }
+  .topnav-right { display: flex; gap: 10px; align-items: center; }
+  .nav-tabs { display: flex; gap: 2px; background: var(--surface); padding: 3px; border-radius: 6px; border: 1px solid var(--line); }
+  .nav-tab { padding: 6px 12px; font-size: 12px; color: var(--ink-soft); border-radius: 4px; transition: all 0.15s; font-weight: 500; }
+  .nav-tab:hover { color: var(--ink); }
+  .nav-tab.active { background: var(--ink); color: var(--bg); }
+  .clock { font-family: var(--mono); font-size: 11px; color: var(--ink-mid); padding: 6px 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
+
+  /* ========== Stock header card ========== */
+  .stock-header { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 22px 24px; box-shadow: var(--shadow-sm); margin-bottom: 16px; display: grid; grid-template-columns: minmax(260px, 1fr) auto auto; gap: 24px; align-items: center; }
+  .sh-id { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .sh-ticker-row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .sh-ticker { font-family: var(--serif); font-weight: 500; font-size: 36px; letter-spacing: -0.02em; line-height: 1; }
+  .sh-exch { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.15em; text-transform: uppercase; padding: 3px 7px; border: 1px solid var(--line); border-radius: 3px; }
+  .sh-name { font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--ink-mid); font-weight: 400; }
+  .sh-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+  .sh-tag { font-family: var(--mono); font-size: 9px; padding: 3px 7px; border-radius: 3px; letter-spacing: 0.08em; text-transform: uppercase; background: var(--bg-warm); color: var(--ink-mid); }
+  .sh-tag.sector { background: var(--blue-bg); color: var(--blue); }
+  .sh-tag.country { background: var(--gold-bg); color: var(--gold); }
+
+  .sh-price { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .sh-price-num { font-family: var(--serif); font-size: 42px; font-weight: 500; line-height: 1; letter-spacing: -0.01em; }
+  .sh-price-curr { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); margin-left: 6px; vertical-align: super; }
+  .sh-change { display: flex; gap: 8px; align-items: center; font-family: var(--mono); font-size: 13px; font-weight: 500; }
+  .sh-change.up { color: var(--green); }
+  .sh-change.down { color: var(--red); }
+  .sh-change .arrow { font-size: 10px; }
+  .sh-updated { font-family: var(--mono); font-size: 9px; color: var(--ink-faint); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 2px; }
+
+  .sh-switcher { display: flex; flex-direction: column; gap: 6px; min-width: 200px; }
+  .sh-switcher-label { font-family: var(--mono); font-size: 9px; color: var(--ink-soft); letter-spacing: 0.18em; text-transform: uppercase; }
+  .sh-search { display: flex; gap: 6px; }
+  .sh-search input { flex: 1; padding: 8px 10px; border: 1px solid var(--line); border-radius: 5px; background: var(--bg); font-family: var(--mono); font-size: 12px; outline: none; transition: border-color 0.15s; text-transform: uppercase; letter-spacing: 0.05em; }
+  .sh-search input:focus { border-color: var(--accent); }
+  .sh-quicklist { display: flex; gap: 4px; flex-wrap: wrap; }
+  .sh-quick { font-family: var(--mono); font-size: 10px; padding: 4px 7px; border: 1px solid var(--line); border-radius: 3px; color: var(--ink-mid); transition: all 0.15s; }
+  .sh-quick:hover { border-color: var(--accent); color: var(--accent); }
+  .sh-quick.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+  @media (max-width: 980px) {
+    .stock-header { grid-template-columns: 1fr; gap: 16px; }
+    .sh-price { align-items: flex-start; }
+    .sh-ticker { font-size: 30px; }
+    .sh-price-num { font-size: 34px; }
+  }
+
+  /* ========== KPI strip ========== */
+  .kpi-strip { display: grid; grid-template-columns: repeat(8, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-bottom: 16px; box-shadow: var(--shadow-sm); }
+  .kpi { background: var(--surface); padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; }
+  .kpi-label { font-family: var(--mono); font-size: 9px; color: var(--ink-soft); letter-spacing: 0.15em; text-transform: uppercase; }
+  .kpi-value { font-family: var(--serif); font-size: 18px; font-weight: 500; color: var(--ink); line-height: 1.1; }
+  .kpi-sub { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); }
+  .kpi-sub.up { color: var(--green); }
+  .kpi-sub.down { color: var(--red); }
+  @media (max-width: 1300px) { .kpi-strip { grid-template-columns: repeat(4, 1fr); } }
+  @media (max-width: 700px) { .kpi-strip { grid-template-columns: repeat(2, 1fr); } }
+
+  /* ========== Grid layout ========== */
+  .grid { display: grid; grid-template-columns: 2.2fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  @media (max-width: 1100px) {
+    .grid, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  /* ========== Card ========== */
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px 16px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; min-width: 0; }
+  .card-warm { background: var(--surface-2); }
+  .card-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; gap: 10px; flex-wrap: wrap; }
+  .card-title { font-family: var(--serif); font-weight: 500; font-size: 15px; color: var(--ink); display: flex; align-items: center; gap: 8px; }
+  .card-title .icon { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .card-title em { font-style: italic; color: var(--accent); font-weight: 500; }
+  .card-meta { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.1em; text-transform: uppercase; }
+
+  /* ========== Time tabs (for chart) ========== */
+  .time-tabs { display: flex; gap: 2px; background: var(--bg-warm); padding: 3px; border-radius: 6px; }
+  .time-tab { padding: 5px 10px; font-family: var(--mono); font-size: 11px; color: var(--ink-soft); border-radius: 4px; transition: all 0.15s; letter-spacing: 0.05em; }
+  .time-tab:hover { color: var(--ink); }
+  .time-tab.active { background: var(--ink); color: var(--bg); }
+
+  .chart-wrap { position: relative; height: 320px; }
+  .chart-wrap.short { height: 180px; }
+  .chart-wrap.tall { height: 380px; }
+
+  /* ========== Tables ========== */
+  .tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .tbl th { text-align: left; font-family: var(--mono); font-size: 9px; color: var(--ink-soft); letter-spacing: 0.15em; text-transform: uppercase; padding: 8px 10px; border-bottom: 1px solid var(--line); font-weight: 500; }
+  .tbl th.num, .tbl td.num { text-align: right; font-family: var(--mono); }
+  .tbl td { padding: 9px 10px; border-bottom: 1px solid var(--line); color: var(--ink-mid); }
+  .tbl tr:last-child td { border-bottom: none; }
+  .tbl tr:hover td { background: var(--bg-warm); }
+  .tbl td.label { color: var(--ink); font-weight: 500; }
+  .tbl .pos { color: var(--green); }
+  .tbl .neg { color: var(--red); }
+  .tbl .ticker { font-family: var(--mono); font-weight: 600; color: var(--ink); letter-spacing: 0.05em; }
+
+  /* ========== Pillar / metric rows ========== */
+  .metric-rows { display: flex; flex-direction: column; gap: 0; }
+  .metric-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--line); }
+  .metric-row:last-child { border-bottom: none; }
+  .metric-row .lbl { font-size: 12px; color: var(--ink-mid); }
+  .metric-row .val { font-family: var(--mono); font-size: 13px; color: var(--ink); font-weight: 500; }
+  .metric-row .sub { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); margin-left: 8px; }
+
+  /* ========== Bar (for valuation comparison) ========== */
+  .bar-row { display: grid; grid-template-columns: 90px 1fr 60px; align-items: center; gap: 10px; padding: 7px 0; }
+  .bar-row .lbl { font-size: 12px; color: var(--ink-mid); }
+  .bar-row .val { font-family: var(--mono); font-size: 12px; color: var(--ink); text-align: right; }
+  .bar-track { position: relative; height: 6px; background: var(--bg-warm); border-radius: 3px; overflow: hidden; }
+  .bar-fill { position: absolute; top: 0; left: 0; height: 100%; background: linear-gradient(90deg, var(--accent), var(--gold)); border-radius: 3px; transition: width 0.4s; }
+  .bar-fill.green { background: linear-gradient(90deg, var(--green), #6fa872); }
+  .bar-fill.blue { background: linear-gradient(90deg, var(--blue), #6b8eaa); }
+
+  /* ========== Analyst ratings donut + bars ========== */
+  .analyst-grid { display: grid; grid-template-columns: 140px 1fr; gap: 18px; align-items: center; }
+  @media (max-width: 600px) { .analyst-grid { grid-template-columns: 1fr; } }
+  .donut-wrap { position: relative; width: 140px; height: 140px; margin: 0 auto; }
+  .donut-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+  .donut-center .num { font-family: var(--serif); font-size: 22px; font-weight: 500; line-height: 1; color: var(--ink); }
+  .donut-center .lbl { font-family: var(--mono); font-size: 9px; color: var(--ink-soft); letter-spacing: 0.18em; text-transform: uppercase; margin-top: 4px; }
+
+  .rating-bars { display: flex; flex-direction: column; gap: 7px; }
+  .rb-row { display: grid; grid-template-columns: 70px 1fr 30px; align-items: center; gap: 8px; }
+  .rb-row .lbl { font-family: var(--mono); font-size: 10px; color: var(--ink-mid); letter-spacing: 0.05em; text-transform: uppercase; }
+  .rb-track { position: relative; height: 8px; background: var(--bg-warm); border-radius: 4px; overflow: hidden; }
+  .rb-fill { position: absolute; top: 0; left: 0; height: 100%; border-radius: 4px; transition: width 0.4s; }
+  .rb-fill.buy { background: var(--green); }
+  .rb-fill.hold { background: var(--gold); }
+  .rb-fill.sell { background: var(--red); }
+  .rb-row .val { font-family: var(--mono); font-size: 11px; color: var(--ink); text-align: right; }
+
+  .pt-block { display: flex; flex-direction: column; gap: 6px; padding-top: 12px; border-top: 1px solid var(--line); margin-top: 12px; }
+  .pt-row { display: flex; justify-content: space-between; align-items: baseline; }
+  .pt-row .lbl { font-family: var(--mono); font-size: 9px; color: var(--ink-soft); letter-spacing: 0.18em; text-transform: uppercase; }
+  .pt-row .val { font-family: var(--serif); font-size: 18px; font-weight: 500; }
+  .pt-row .val.high { color: var(--green); }
+  .pt-row .val.low { color: var(--red); }
+  .pt-bar-wrap { position: relative; height: 8px; background: var(--bg-warm); border-radius: 4px; margin-top: 4px; overflow: visible; }
+  .pt-range { position: absolute; height: 100%; background: linear-gradient(90deg, var(--red-bg), var(--gold-bg), var(--green-bg)); border-radius: 4px; }
+  .pt-marker { position: absolute; top: -3px; width: 2px; height: 14px; background: var(--ink); }
+  .pt-marker .lbl { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-family: var(--mono); font-size: 9px; color: var(--ink); white-space: nowrap; }
+  .pt-marker.target { background: var(--accent); }
+  .pt-marker.target .lbl { color: var(--accent); }
+
+  /* ========== News list ========== */
+  .news-list { display: flex; flex-direction: column; gap: 0; max-height: 360px; overflow-y: auto; }
+  .news-item { padding: 12px 0; border-bottom: 1px dashed var(--line); display: flex; flex-direction: column; gap: 4px; }
+  .news-item:last-child { border-bottom: none; }
+  .news-meta { display: flex; gap: 8px; align-items: center; font-family: var(--mono); font-size: 9px; color: var(--ink-soft); letter-spacing: 0.1em; text-transform: uppercase; }
+  .news-source { color: var(--accent); font-weight: 500; }
+  .news-time { color: var(--ink-faint); }
+  .news-title { font-size: 13px; color: var(--ink); line-height: 1.45; font-weight: 500; }
+  .news-title a { color: inherit; text-decoration: none; transition: color 0.15s; }
+  .news-title a:hover { color: var(--accent); }
+  .news-snippet { font-size: 11.5px; color: var(--ink-mid); line-height: 1.5; margin-top: 2px; }
+  .news-sentiment { font-family: var(--mono); font-size: 9px; padding: 2px 6px; border-radius: 3px; letter-spacing: 0.08em; text-transform: uppercase; margin-left: auto; }
+  .news-sentiment.pos { background: var(--green-bg); color: var(--green); }
+  .news-sentiment.neg { background: var(--red-bg); color: var(--red); }
+  .news-sentiment.neu { background: var(--bg-warm); color: var(--ink-mid); }
+
+  /* ========== Description block ========== */
+  .desc { font-family: var(--serif); font-size: 13.5px; color: var(--ink-mid); line-height: 1.7; padding: 4px 0; }
+  .desc-meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 16px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .dm-row { display: flex; flex-direction: column; gap: 3px; }
+  .dm-row .lbl { font-family: var(--mono); font-size: 9px; color: var(--ink-soft); letter-spacing: 0.15em; text-transform: uppercase; }
+  .dm-row .val { font-size: 12px; color: var(--ink); font-weight: 500; }
+
+  /* ========== Insider / ownership ========== */
+  .own-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .own-grid { grid-template-columns: 1fr; } }
+  .own-block { display: flex; flex-direction: column; gap: 10px; }
+  .own-pie { position: relative; height: 140px; }
+
+  /* ========== Footer ========== */
+  .footer { margin-top: 30px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10px; color: var(--ink-faint); letter-spacing: 0.1em; flex-wrap: wrap; gap: 8px; }
+  .footer .left { display: flex; gap: 16px; align-items: center; }
+  .footer a { color: var(--ink-faint); text-decoration: none; transition: color 0.15s; }
+  .footer a:hover { color: var(--accent); }
+
+  .stagger { opacity: 0; transform: translateY(4px); animation: stagger 0.5s ease-out forwards; }
+  @keyframes stagger { to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 700px) {
+    .app { padding: 16px 12px 60px; }
+    .stock-header { padding: 16px; }
+    .card { padding: 14px 14px 12px; }
+    .chart-wrap { height: 240px; }
+    .chart-wrap.tall { height: 280px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ TOP NAV ============ -->
+  <header class="topnav stagger">
+    <div class="topnav-left">
+      <div class="brand">지니의 <em>리서치</em></div>
+      <div class="crumbs">
+        <a href="index.html">대시보드</a>
+        <span class="sep">›</span>
+        <span>Stock Deep Dive</span>
+      </div>
+    </div>
+    <div class="topnav-right">
+      <div class="nav-tabs">
+        <button class="nav-tab active" data-section="overview">Overview</button>
+        <button class="nav-tab" data-section="financials">Financials</button>
+        <button class="nav-tab" data-section="valuation">Valuation</button>
+        <button class="nav-tab" data-section="analyst">Analysts</button>
+        <button class="nav-tab" data-section="news">News</button>
+      </div>
+      <div class="clock" id="clock">--:--</div>
+    </div>
+  </header>
+
+  <!-- ============ STOCK HEADER ============ -->
+  <section class="stock-header stagger" style="animation-delay:0.05s;">
+    <div class="sh-id">
+      <div class="sh-ticker-row">
+        <div class="sh-ticker" id="sh-ticker">AAPL</div>
+        <div class="sh-exch" id="sh-exch">NASDAQ · USD</div>
+      </div>
+      <div class="sh-name" id="sh-name">Apple Inc.</div>
+      <div class="sh-tags">
+        <span class="sh-tag sector" id="sh-sector">Technology</span>
+        <span class="sh-tag" id="sh-industry">Consumer Electronics</span>
+        <span class="sh-tag country" id="sh-country">United States</span>
+      </div>
+    </div>
+    <div class="sh-price">
+      <div>
+        <span class="sh-price-num" id="sh-price">187.42</span>
+        <span class="sh-price-curr" id="sh-currency">USD</span>
+      </div>
+      <div class="sh-change up" id="sh-change">
+        <span class="arrow">▲</span>
+        <span id="sh-change-abs">+2.18</span>
+        <span id="sh-change-pct">(+1.18%)</span>
+      </div>
+      <div class="sh-updated" id="sh-updated">As of — Market Close</div>
+    </div>
+    <div class="sh-switcher">
+      <div class="sh-switcher-label">Search Ticker</div>
+      <div class="sh-search">
+        <input type="text" id="ticker-input" placeholder="AAPL, MSFT, NVDA…" maxlength="6" />
+      </div>
+      <div class="sh-quicklist" id="quicklist"></div>
+    </div>
+  </section>
+
+  <!-- ============ KPI STRIP ============ -->
+  <section class="kpi-strip stagger" style="animation-delay:0.1s;" id="kpi-strip"></section>
+
+  <!-- ============ ROW 1: PRICE CHART + COMPANY ============ -->
+  <section class="grid stagger" style="animation-delay:0.15s;">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><span class="icon"></span>Price <em>·</em> <span id="chart-range-lbl">1 Year</span></div>
+        <div class="time-tabs" id="time-tabs">
+          <button class="time-tab" data-range="1D">1D</button>
+          <button class="time-tab" data-range="1W">1W</button>
+          <button class="time-tab" data-range="1M">1M</button>
+          <button class="time-tab" data-range="3M">3M</button>
+          <button class="time-tab" data-range="6M">6M</button>
+          <button class="time-tab active" data-range="1Y">1Y</button>
+          <button class="time-tab" data-range="5Y">5Y</button>
+        </div>
+      </div>
+      <div class="chart-wrap tall"><canvas id="price-chart"></canvas></div>
+      <div class="chart-wrap short" style="margin-top:8px;"><canvas id="volume-chart"></canvas></div>
+    </div>
+
+    <div class="card card-warm">
+      <div class="card-head">
+        <div class="card-title"><span class="icon"></span>About the <em>Company</em></div>
+      </div>
+      <div class="desc" id="company-desc">—</div>
+      <div class="desc-meta" id="company-meta"></div>
+    </div>
+  </section>
+
+  <!-- ============ ROW 2: FINANCIALS (revenue/net income chart + table) ============ -->
+  <section class="grid-2 stagger" style="animation-delay:0.2s;">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><span class="icon"></span>Revenue &amp; <em>Net Income</em></div>
+        <div class="card-meta">FY · USD Billions</div>
+      </div>
+      <div class="chart-wrap"><canvas id="rev-chart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><span class="icon"></span>Margins &amp; <em>Growth</em></div>
+        <div class="card-meta">Trailing 12M</div>
+      </div>
+      <div class="chart-wrap"><canvas id="margin-chart"></canvas></div>
+    </div>
+  </section>
+
+  <!-- ============ ROW 3: VALUATION + ANALYST + OWNERSHIP ============ -->
+  <section class="grid-3 stagger" style="animation-delay:0.25s;">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><span class="icon"></span>Valuation <em>Snapshot</em></div>
+        <div class="card-meta">vs Sector Median</div>
+      </div>
+      <div id="valuation-bars"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><span class="icon"></span>Analyst <em>Consensus</em></div>
+        <div class="card-meta" id="analyst-count">— analysts</div>
+      </div>
+      <div class="analyst-grid">
+        <div class="donut-wrap">
+          <canvas id="analyst-donut"></canvas>
+          <div class="donut-center">
+            <div class="num" id="analyst-rating">BUY</div>
+            <div class="lbl">Consensus</div>
+          </div>
+        </div>
+        <div class="rating-bars" id="rating-bars"></div>
+      </div>
+      <div class="pt-block">
+        <div class="pt-row"><span class="lbl">12M Price Target</span><span class="val" id="pt-mean">—</span></div>
+        <div class="pt-bar-wrap" id="pt-bar"></div>
+        <div class="pt-row" style="margin-top:14px;"><span class="lbl">Low</span><span class="val low" id="pt-low">—</span></div>
+        <div class="pt-row"><span class="lbl">High</span><span class="val high" id="pt-high">—</span></div>
+        <div class="pt-row"><span class="lbl">Upside</span><span class="val" id="pt-upside">—</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><span class="icon"></span>Ownership <em>&amp; Insiders</em></div>
+        <div class="card-meta">Latest Filing</div>
+      </div>
+      <div class="own-pie"><canvas id="own-chart"></canvas></div>
+      <div class="metric-rows" style="margin-top:12px;" id="own-rows"></div>
+    </div>
+  </section>
+
+  <!-- ============ ROW 4: PEERS + INCOME STATEMENT ============ -->
+  <section class="grid-2 stagger" style="animation-delay:0.3s;">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><span class="icon"></span>Peer <em>Comparison</em></div>
+        <div class="card-meta">Industry Group</div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="tbl" id="peers-tbl">
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Name</th>
+              <th class="num">Mkt Cap</th>
+              <th class="num">P/E</th>
+              <th class="num">YTD</th>
+              <th class="num">Margin</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><span class="icon"></span>Income <em>Statement</em></div>
+        <div class="card-meta">Annual · USD M</div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="tbl" id="income-tbl">
+          <thead><tr><th>Item</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ROW 5: NEWS ============ -->
+  <section class="grid stagger" style="animation-delay:0.35s;">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><span class="icon"></span>Latest <em>News</em></div>
+        <div class="card-meta" id="news-count">— headlines</div>
+      </div>
+      <div class="news-list" id="news-list"></div>
+    </div>
+    <div class="card card-warm">
+      <div class="card-head">
+        <div class="card-title"><span class="icon"></span>Key <em>Events</em></div>
+        <div class="card-meta">Calendar</div>
+      </div>
+      <div class="metric-rows" id="events-rows"></div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="left">
+      <span id="data-status">DATA · MOCK SAMPLE</span>
+      <a href="index.html">← 대시보드로</a>
+    </div>
+    <div>지니 RESEARCH · STOCK DEEP DIVE</div>
+  </footer>
+</div>
+
+<script>
+/* =====================================================================
+ * Stock Deep Dive — mock data (deterministic, no live API)
+ * ===================================================================== */
+
+const STOCKS = {
+  AAPL: {
+    name: 'Apple Inc.', exch: 'NASDAQ', ccy: 'USD',
+    sector: 'Technology', industry: 'Consumer Electronics', country: 'United States',
+    price: 187.42, change: 2.18, changePct: 1.18, mktCap: '2.93T',
+    pe: 31.2, fwdPE: 27.8, eps: 6.01, divYield: 0.51, beta: 1.28,
+    high52: 199.62, low52: 164.08, vol: '52.4M', avgVol: '58.1M',
+    desc: '애플은 스마트폰, 개인용 컴퓨터, 태블릿, 웨어러블 및 액세서리를 설계·제조·판매하며, 다양한 관련 서비스를 제공한다. iPhone은 매출의 가장 큰 비중을 차지하며, Services 부문은 가장 빠르게 성장하는 사업이다.',
+    meta: { CEO: 'Tim Cook', HQ: 'Cupertino, CA', Employees: '161,000', Founded: '1976', Website: 'apple.com', IPO: '1980-12-12' },
+    fin: {
+      years: ['FY20','FY21','FY22','FY23','FY24'],
+      revenue: [274.5, 365.8, 394.3, 383.3, 391.0],
+      netIncome: [57.4, 94.7, 99.8, 97.0, 93.7],
+      grossMargin: [38.2, 41.8, 43.3, 44.1, 46.2],
+      opMargin: [24.1, 29.8, 30.3, 29.8, 31.5],
+      netMargin: [20.9, 25.9, 25.3, 25.3, 24.0],
+      revGrowth: [5.5, 33.3, 7.8, -2.8, 2.0],
+    },
+    valuation: [
+      { lbl: 'P/E', stock: 31.2, peer: 24.1, max: 50 },
+      { lbl: 'Fwd P/E', stock: 27.8, peer: 22.0, max: 50 },
+      { lbl: 'PEG', stock: 2.1, peer: 1.8, max: 5 },
+      { lbl: 'P/B', stock: 48.2, peer: 8.1, max: 60 },
+      { lbl: 'P/S', stock: 7.5, peer: 4.6, max: 15 },
+      { lbl: 'EV/EBITDA', stock: 22.4, peer: 16.2, max: 40 },
+    ],
+    analyst: { buy: 32, hold: 9, sell: 2, ptLow: 158, ptMean: 215, ptHigh: 250, rating: 'BUY' },
+    own: { institutional: 61.2, insider: 0.07, retail: 38.7 },
+    peers: [
+      { tk:'MSFT', name:'Microsoft', cap:'3.10T', pe:34.8, ytd:14.2, marg:36.2 },
+      { tk:'GOOGL', name:'Alphabet', cap:'2.18T', pe:25.4, ytd:11.6, marg:28.4 },
+      { tk:'AMZN', name:'Amazon', cap:'2.05T', pe:42.1, ytd:18.3, marg:9.1 },
+      { tk:'META', name:'Meta', cap:'1.32T', pe:26.7, ytd:21.4, marg:34.5 },
+      { tk:'NVDA', name:'NVIDIA', cap:'2.85T', pe:62.3, ytd:42.1, marg:48.9 },
+    ],
+    news: [
+      { src:'Bloomberg', time:'2h ago', sent:'pos', title:'Apple Vision Pro 2 reportedly enters production with lighter design', snip:'Suppliers begin tooling for second-generation mixed-reality headset targeting H2 launch.' },
+      { src:'Reuters', time:'5h ago', sent:'neu', title:'Apple expands India manufacturing footprint with new Tata partnership', snip:'Move continues diversification away from China amid tariff concerns.' },
+      { src:'WSJ', time:'1d ago', sent:'pos', title:'Services revenue hits record on App Store strength', snip:'Subscription mix and ad revenue drive 14% YoY growth in latest quarter.' },
+      { src:'CNBC', time:'1d ago', sent:'neg', title:'iPhone 17 demand cools in China amid Huawei resurgence', snip:'Local rivals gain share in premium segment per Counterpoint data.' },
+      { src:'FT', time:'2d ago', sent:'neu', title:'EU opens new probe into App Store rules', snip:'Commission widens DMA investigation; Apple says it will cooperate.' },
+      { src:'Barron\'s', time:'3d ago', sent:'pos', title:'Buybacks cross $90B mark for fiscal year', snip:'Capital return program remains industry leading.' },
+    ],
+    events: [
+      { lbl:'Earnings', val:'2026-05-29', sub:'Q3 FY26' },
+      { lbl:'Ex-Dividend', val:'2026-05-12', sub:'$0.25/sh' },
+      { lbl:'WWDC', val:'2026-06-08', sub:'Developer event' },
+      { lbl:'Product Event', val:'2026-09-09 (e.)', sub:'iPhone 18' },
+    ],
+  },
+
+  MSFT: {
+    name: 'Microsoft Corp.', exch: 'NASDAQ', ccy: 'USD',
+    sector: 'Technology', industry: 'Software · Infrastructure', country: 'United States',
+    price: 416.78, change: -1.42, changePct: -0.34, mktCap: '3.10T',
+    pe: 34.8, fwdPE: 31.0, eps: 11.97, divYield: 0.72, beta: 0.91,
+    high52: 425.50, low52: 322.10, vol: '18.2M', avgVol: '21.4M',
+    desc: 'Microsoft은 클라우드, 생산성 소프트웨어, 게임, 디바이스, AI 인프라를 통해 매출을 창출한다. Azure는 가장 빠르게 성장하는 부문이며, OpenAI 파트너십을 통해 생성형 AI 시장을 선도하고 있다.',
+    meta: { CEO: 'Satya Nadella', HQ: 'Redmond, WA', Employees: '221,000', Founded: '1975', Website: 'microsoft.com', IPO: '1986-03-13' },
+    fin: {
+      years: ['FY20','FY21','FY22','FY23','FY24'],
+      revenue: [143.0, 168.1, 198.3, 211.9, 245.1],
+      netIncome: [44.3, 61.3, 72.7, 72.4, 88.1],
+      grossMargin: [67.8, 68.9, 68.4, 68.9, 69.8],
+      opMargin: [37.0, 41.6, 42.1, 41.8, 44.7],
+      netMargin: [31.0, 36.5, 36.7, 34.2, 35.9],
+      revGrowth: [13.6, 17.5, 18.0, 6.9, 15.7],
+    },
+    valuation: [
+      { lbl: 'P/E', stock: 34.8, peer: 24.1, max: 50 },
+      { lbl: 'Fwd P/E', stock: 31.0, peer: 22.0, max: 50 },
+      { lbl: 'PEG', stock: 2.4, peer: 1.8, max: 5 },
+      { lbl: 'P/B', stock: 11.2, peer: 8.1, max: 60 },
+      { lbl: 'P/S', stock: 12.6, peer: 4.6, max: 15 },
+      { lbl: 'EV/EBITDA', stock: 24.8, peer: 16.2, max: 40 },
+    ],
+    analyst: { buy: 48, hold: 5, sell: 0, ptLow: 380, ptMean: 470, ptHigh: 540, rating: 'STRONG BUY' },
+    own: { institutional: 71.8, insider: 0.04, retail: 28.16 },
+    peers: [
+      { tk:'AAPL', name:'Apple', cap:'2.93T', pe:31.2, ytd:8.4, marg:24.0 },
+      { tk:'GOOGL', name:'Alphabet', cap:'2.18T', pe:25.4, ytd:11.6, marg:28.4 },
+      { tk:'AMZN', name:'Amazon', cap:'2.05T', pe:42.1, ytd:18.3, marg:9.1 },
+      { tk:'ORCL', name:'Oracle', cap:'418B', pe:31.2, ytd:24.5, marg:21.8 },
+      { tk:'CRM', name:'Salesforce', cap:'278B', pe:48.5, ytd:9.1, marg:14.2 },
+    ],
+    news: [
+      { src:'Bloomberg', time:'1h ago', sent:'pos', title:'Azure AI revenue triples year over year, hits $14B run-rate', snip:'Copilot adoption across Office 365 also accelerating per CFO commentary.' },
+      { src:'The Verge', time:'4h ago', sent:'neu', title:'Microsoft restructures gaming division after Activision integration', snip:'Phil Spencer outlines new studio leadership model.' },
+      { src:'Reuters', time:'1d ago', sent:'neg', title:'EU regulators question Microsoft-OpenAI ties anew', snip:'Renewed antitrust scrutiny over partnership structure.' },
+      { src:'CNBC', time:'1d ago', sent:'pos', title:'Datacenter capex guidance raised to $80B for FY26', snip:'AI infrastructure spend continues acceleration.' },
+      { src:'WSJ', time:'2d ago', sent:'pos', title:'Microsoft secures $10B sovereign cloud deal in Germany', snip:'Public sector AI deployment milestone.' },
+    ],
+    events: [
+      { lbl:'Earnings', val:'2026-04-25', sub:'Q3 FY26' },
+      { lbl:'Ex-Dividend', val:'2026-05-15', sub:'$0.83/sh' },
+      { lbl:'Build Conf', val:'2026-05-19', sub:'Developer event' },
+      { lbl:'Ignite', val:'2026-11-17', sub:'IT Pro event' },
+    ],
+  },
+
+  NVDA: {
+    name: 'NVIDIA Corp.', exch: 'NASDAQ', ccy: 'USD',
+    sector: 'Technology', industry: 'Semiconductors', country: 'United States',
+    price: 116.92, change: 4.31, changePct: 3.83, mktCap: '2.85T',
+    pe: 62.3, fwdPE: 38.4, eps: 1.88, divYield: 0.03, beta: 1.74,
+    high52: 140.76, low52: 45.01, vol: '342.1M', avgVol: '298.5M',
+    desc: 'NVIDIA는 GPU와 AI 가속기, 데이터센터 컴퓨팅, 자동차/로보틱스 플랫폼을 설계한다. CUDA 생태계와 H100/B200 시리즈는 생성형 AI 학습·추론의 표준 인프라로 자리잡았다.',
+    meta: { CEO: 'Jensen Huang', HQ: 'Santa Clara, CA', Employees: '29,600', Founded: '1993', Website: 'nvidia.com', IPO: '1999-01-22' },
+    fin: {
+      years: ['FY21','FY22','FY23','FY24','FY25'],
+      revenue: [16.7, 26.9, 27.0, 60.9, 130.5],
+      netIncome: [4.3, 9.8, 4.4, 29.8, 72.9],
+      grossMargin: [62.3, 64.9, 56.9, 72.7, 75.0],
+      opMargin: [27.2, 37.3, 15.7, 54.1, 62.4],
+      netMargin: [25.8, 36.2, 16.2, 48.9, 55.9],
+      revGrowth: [52.7, 61.4, 0.2, 125.9, 114.3],
+    },
+    valuation: [
+      { lbl: 'P/E', stock: 62.3, peer: 24.1, max: 80 },
+      { lbl: 'Fwd P/E', stock: 38.4, peer: 22.0, max: 80 },
+      { lbl: 'PEG', stock: 1.2, peer: 1.8, max: 5 },
+      { lbl: 'P/B', stock: 48.6, peer: 8.1, max: 60 },
+      { lbl: 'P/S', stock: 21.8, peer: 4.6, max: 30 },
+      { lbl: 'EV/EBITDA', stock: 41.2, peer: 16.2, max: 60 },
+    ],
+    analyst: { buy: 56, hold: 4, sell: 1, ptLow: 90, ptMean: 162, ptHigh: 220, rating: 'STRONG BUY' },
+    own: { institutional: 67.4, insider: 4.2, retail: 28.4 },
+    peers: [
+      { tk:'AMD', name:'Adv Micro Dev', cap:'258B', pe:48.9, ytd:-12.4, marg:14.2 },
+      { tk:'INTC', name:'Intel', cap:'92B', pe:'—', ytd:-38.5, marg:-18.7 },
+      { tk:'TSM', name:'TSMC', cap:'820B', pe:28.4, ytd:34.2, marg:42.1 },
+      { tk:'AVGO', name:'Broadcom', cap:'690B', pe:48.6, ytd:42.8, marg:38.5 },
+      { tk:'QCOM', name:'Qualcomm', cap:'185B', pe:18.4, ytd:6.8, marg:24.2 },
+    ],
+    news: [
+      { src:'Reuters', time:'30m ago', sent:'pos', title:'NVIDIA B200 shipments exceed prior guidance, supply still tight', snip:'Hyperscaler orders extend into 2027 per supply chain sources.' },
+      { src:'Bloomberg', time:'3h ago', sent:'pos', title:'Saudi Arabia commits to $40B NVIDIA-powered AI factory', snip:'Sovereign AI deal latest in series of large GPU procurements.' },
+      { src:'CNBC', time:'1d ago', sent:'neg', title:'New US export restrictions to China weigh on data center outlook', snip:'Estimated $5-7B revenue impact for FY26 per management.' },
+      { src:'WSJ', time:'2d ago', sent:'pos', title:'GTC keynote unveils Rubin platform roadmap through 2027', snip:'Annual cadence for new architectures confirmed.' },
+      { src:'FT', time:'3d ago', sent:'neu', title:'Robotics platform Isaac gains Toyota and BMW as partners', snip:'Edge AI / humanoid robotics expansion continues.' },
+    ],
+    events: [
+      { lbl:'Earnings', val:'2026-05-21', sub:'Q1 FY27' },
+      { lbl:'GTC', val:'2026-03-17', sub:'Developer keynote' },
+      { lbl:'Ex-Dividend', val:'2026-06-05', sub:'$0.01/sh' },
+      { lbl:'Computex', val:'2026-06-02', sub:'Industry event' },
+    ],
+  },
+
+  TSLA: {
+    name: 'Tesla, Inc.', exch: 'NASDAQ', ccy: 'USD',
+    sector: 'Consumer Cyclical', industry: 'Auto Manufacturers', country: 'United States',
+    price: 184.55, change: -3.27, changePct: -1.74, mktCap: '588B',
+    pe: 58.7, fwdPE: 62.4, eps: 3.14, divYield: 0.0, beta: 2.31,
+    high52: 278.98, low52: 138.80, vol: '108.4M', avgVol: '92.3M',
+    desc: 'Tesla는 전기차, 에너지 저장 시스템, 태양광 패널, FSD 자율주행 소프트웨어, 휴머노이드 로봇 Optimus를 개발한다. 차량 판매가 매출의 대부분을 차지하지만 에너지·서비스 부문이 빠르게 성장하고 있다.',
+    meta: { CEO: 'Elon Musk', HQ: 'Austin, TX', Employees: '140,500', Founded: '2003', Website: 'tesla.com', IPO: '2010-06-29' },
+    fin: {
+      years: ['FY20','FY21','FY22','FY23','FY24'],
+      revenue: [31.5, 53.8, 81.5, 96.8, 97.7],
+      netIncome: [0.7, 5.5, 12.6, 15.0, 7.1],
+      grossMargin: [21.0, 25.3, 25.6, 18.2, 17.9],
+      opMargin: [6.3, 12.1, 16.8, 9.2, 7.2],
+      netMargin: [2.2, 10.2, 15.5, 15.5, 7.3],
+      revGrowth: [28.3, 70.7, 51.4, 18.8, 0.9],
+    },
+    valuation: [
+      { lbl: 'P/E', stock: 58.7, peer: 12.4, max: 80 },
+      { lbl: 'Fwd P/E', stock: 62.4, peer: 10.8, max: 80 },
+      { lbl: 'PEG', stock: 3.8, peer: 1.2, max: 5 },
+      { lbl: 'P/B', stock: 9.2, peer: 1.6, max: 15 },
+      { lbl: 'P/S', stock: 6.1, peer: 0.8, max: 10 },
+      { lbl: 'EV/EBITDA', stock: 38.5, peer: 8.4, max: 50 },
+    ],
+    analyst: { buy: 18, hold: 22, sell: 12, ptLow: 110, ptMean: 198, ptHigh: 320, rating: 'HOLD' },
+    own: { institutional: 46.1, insider: 13.0, retail: 40.9 },
+    peers: [
+      { tk:'TM', name:'Toyota', cap:'258B', pe:8.4, ytd:-4.2, marg:9.6 },
+      { tk:'GM', name:'General Motors', cap:'52B', pe:5.7, ytd:14.8, marg:5.2 },
+      { tk:'F', name:'Ford', cap:'46B', pe:11.2, ytd:-12.4, marg:3.1 },
+      { tk:'BYDDF', name:'BYD Co.', cap:'82B', pe:18.4, ytd:8.2, marg:8.4 },
+      { tk:'RIVN', name:'Rivian', cap:'12B', pe:'—', ytd:-22.1, marg:-58.3 },
+    ],
+    news: [
+      { src:'Reuters', time:'1h ago', sent:'neg', title:'Tesla deliveries miss in Q1; price cuts continue', snip:'Volume softness in Europe and China continues into spring.' },
+      { src:'Bloomberg', time:'4h ago', sent:'pos', title:'Robotaxi event scheduled for August 8 in Austin', snip:'Musk frames event as inflection point for autonomy thesis.' },
+      { src:'Electrek', time:'1d ago', sent:'pos', title:'FSD v13 wide-release rolls out to all eligible vehicles', snip:'Notable improvements in unprotected left turns.' },
+      { src:'WSJ', time:'2d ago', sent:'neg', title:'Cybertruck recall covers 46,000 vehicles for accelerator pedal', snip:'Latest in series of recalls for new model.' },
+      { src:'CNBC', time:'3d ago', sent:'neu', title:'Optimus Gen-3 demo planned for Q3 production line trial', snip:'Humanoid robot to begin internal manufacturing tasks.' },
+    ],
+    events: [
+      { lbl:'Earnings', val:'2026-04-22', sub:'Q1 FY26' },
+      { lbl:'Robotaxi Event', val:'2026-08-08', sub:'Product reveal' },
+      { lbl:'Annual Meeting', val:'2026-06-13', sub:'Shareholder vote' },
+      { lbl:'Delivery #', val:'2026-07-02', sub:'Q2 production' },
+    ],
+  },
+
+  '005930': {
+    name: '삼성전자', exch: 'KOSPI', ccy: 'KRW',
+    sector: 'Technology', industry: '반도체 · 소비전자', country: 'South Korea',
+    price: 78400, change: 1200, changePct: 1.55, mktCap: '468조',
+    pe: 14.2, fwdPE: 11.8, eps: 5520, divYield: 1.85, beta: 1.05,
+    high52: 88800, low52: 49900, vol: '14.2M', avgVol: '18.4M',
+    desc: '삼성전자는 메모리 반도체(DRAM, NAND), 시스템 LSI/파운드리, 모바일/디스플레이, 소비자 가전을 영위하는 글로벌 종합 IT 기업이다. HBM3E 양산과 3nm 파운드리 수율 개선이 단기 모멘텀이다.',
+    meta: { 대표: '한종희 · 경계현', 본사: '수원, 경기', 임직원: '267,000', 설립: '1969', 홈페이지: 'samsung.com', 상장: '1975-06-11' },
+    fin: {
+      years: ['2020','2021','2022','2023','2024'],
+      revenue: [236.8, 279.6, 302.2, 258.9, 300.9],
+      netIncome: [26.4, 39.9, 55.7, 15.5, 32.4],
+      grossMargin: [38.5, 41.6, 39.2, 30.4, 35.8],
+      opMargin: [15.2, 18.5, 14.2, 2.5, 11.5],
+      netMargin: [11.2, 14.3, 18.4, 6.0, 10.8],
+      revGrowth: [2.8, 18.1, 8.1, -14.3, 16.2],
+    },
+    valuation: [
+      { lbl: 'P/E', stock: 14.2, peer: 18.4, max: 30 },
+      { lbl: 'Fwd P/E', stock: 11.8, peer: 16.2, max: 30 },
+      { lbl: 'PEG', stock: 0.9, peer: 1.4, max: 3 },
+      { lbl: 'P/B', stock: 1.4, peer: 2.8, max: 5 },
+      { lbl: 'P/S', stock: 1.6, peer: 3.2, max: 5 },
+      { lbl: 'EV/EBITDA', stock: 6.8, peer: 11.4, max: 20 },
+    ],
+    analyst: { buy: 38, hold: 6, sell: 1, ptLow: 65000, ptMean: 102000, ptHigh: 130000, rating: 'BUY' },
+    own: { institutional: 54.2, insider: 21.2, retail: 24.6 },
+    peers: [
+      { tk:'000660', name:'SK하이닉스', cap:'182조', pe:9.4, ytd:18.4, marg:21.2 },
+      { tk:'TSM', name:'TSMC', cap:'820B', pe:28.4, ytd:34.2, marg:42.1 },
+      { tk:'MU', name:'Micron', cap:'118B', pe:16.4, ytd:14.2, marg:18.8 },
+      { tk:'INTC', name:'Intel', cap:'92B', pe:'—', ytd:-38.5, marg:-18.7 },
+      { tk:'NVDA', name:'NVIDIA', cap:'2.85T', pe:62.3, ytd:42.1, marg:55.9 },
+    ],
+    news: [
+      { src:'한국경제', time:'1시간 전', sent:'pos', title:'삼성전자, HBM3E 12단 엔비디아 퀄 통과 임박', snip:'2분기 양산 체제 진입 가능성, 반도체 영업이익 회복 전망.' },
+      { src:'Reuters', time:'4시간 전', sent:'neu', title:'Samsung 3nm yields improve, Qualcomm tape-out reported', snip:'Foundry market share recovery still gradual.' },
+      { src:'전자신문', time:'1일 전', sent:'pos', title:'갤럭시 S26 시리즈, AI 기능 대폭 강화', snip:'온디바이스 LLM 채택 확대.' },
+      { src:'블룸버그', time:'2일 전', sent:'neg', title:'중국 메모리 가격 압박 지속', snip:'CXMT, YMTC 증설로 NAND 가격 약세.' },
+      { src:'매일경제', time:'3일 전', sent:'pos', title:'배당 확대, 자사주 소각 계획 발표', snip:'주주환원율 50% 목표 제시.' },
+    ],
+    events: [
+      { lbl:'실적발표', val:'2026-04-30', sub:'1분기' },
+      { lbl:'배당락', val:'2026-06-29', sub:'2분기 분기배당' },
+      { lbl:'주주총회', val:'2026-03-20', sub:'정기 총회' },
+      { lbl:'갤럭시 언팩', val:'2026-07-09 (e.)', sub:'폴더블 신제품' },
+    ],
+  },
+};
+
+/* =====================================================================
+ * Deterministic price series generator (seeded random walk)
+ * ===================================================================== */
+function seededRandom(seed) {
+  let s = seed >>> 0;
+  return function() {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return s / 4294967296;
+  };
+}
+function hashString(str) {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = (h * 16777619) >>> 0;
+  }
+  return h;
+}
+
+function buildPriceSeries(ticker, range, currentPrice) {
+  const cfg = {
+    '1D': { points: 78, stepMin: 5, vol: 0.0008, label: 'Today · 5min' },
+    '1W': { points: 35, stepMin: 60*2, vol: 0.0025, label: 'Past Week · 2hr' },
+    '1M': { points: 22, stepMin: 60*24, vol: 0.012, label: 'Past Month · Daily' },
+    '3M': { points: 64, stepMin: 60*24, vol: 0.014, label: 'Past 3 Months · Daily' },
+    '6M': { points: 130, stepMin: 60*24, vol: 0.016, label: 'Past 6 Months · Daily' },
+    '1Y': { points: 252, stepMin: 60*24, vol: 0.018, label: 'Past Year · Daily' },
+    '5Y': { points: 260, stepMin: 60*24*7, vol: 0.035, label: 'Past 5 Years · Weekly' },
+  }[range];
+  const rand = seededRandom(hashString(ticker + range));
+  const labels = [];
+  const series = [];
+  const volume = [];
+  const now = new Date();
+  // Walk backwards then we'll reverse so that the LAST point ends near currentPrice
+  const n = cfg.points;
+  // Generate raw walk from 0
+  const raw = [0];
+  for (let i = 1; i < n; i++) {
+    const drift = (rand() - 0.48) * cfg.vol;
+    raw.push(raw[i-1] + drift);
+  }
+  // Force the last raw value to exactly 0 by detrending
+  const tail = raw[n-1];
+  for (let i = 0; i < n; i++) {
+    raw[i] -= tail * (i / (n-1));
+  }
+  // Shift so range start is at some pct lower/higher (random target)
+  const startMult = 0.85 + rand() * 0.3; // start between 85% and 115% of current
+  const startPrice = currentPrice * startMult;
+  for (let i = 0; i < n; i++) {
+    const t = i / (n-1);
+    // linear interpolate from startPrice to currentPrice, plus volatility
+    const baseline = startPrice + (currentPrice - startPrice) * t;
+    const noise = baseline * raw[i] * 0.6;
+    const px = baseline * (1 + raw[i] * 0.6);
+    series.push(+(px).toFixed(2));
+    const v = Math.round((rand() * 0.6 + 0.4) * 1e7 * (range === '1D' ? 0.05 : 1));
+    volume.push(v);
+    const d = new Date(now.getTime() - (n - 1 - i) * cfg.stepMin * 60 * 1000);
+    if (range === '1D') labels.push(d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}));
+    else if (range === '1W') labels.push(d.toLocaleDateString([], {month:'short', day:'numeric'}) + ' ' + d.toLocaleTimeString([], {hour:'2-digit'}));
+    else if (range === '5Y') labels.push(d.toLocaleDateString([], {year:'2-digit', month:'short'}));
+    else labels.push(d.toLocaleDateString([], {month:'short', day:'numeric'}));
+  }
+  // Force last point to current price
+  series[n-1] = currentPrice;
+  return { labels, series, volume, label: cfg.label };
+}
+
+/* =====================================================================
+ * Charts
+ * ===================================================================== */
+const COLORS = {
+  ink: '#1a1a1a', soft: '#8a8580', line: '#e8e4dc',
+  accent: '#b8421f', accentBg: 'rgba(184,66,31,0.08)',
+  green: '#4a7c4e', greenBg: 'rgba(74,124,78,0.12)',
+  red: '#c43e3e', redBg: 'rgba(196,62,62,0.12)',
+  gold: '#b8923f', goldBg: 'rgba(184,146,63,0.12)',
+  blue: '#3a5e7e', blueBg: 'rgba(58,94,126,0.12)',
+};
+Chart.defaults.font.family = "'JetBrains Mono', 'Pretendard', monospace";
+Chart.defaults.font.size = 10;
+Chart.defaults.color = COLORS.soft;
+Chart.defaults.borderColor = COLORS.line;
+
+let priceChart, volumeChart, revChart, marginChart, donutChart, ownChart;
+
+function buildPriceChart(data, isUp) {
+  const ctx = document.getElementById('price-chart').getContext('2d');
+  const lineCol = isUp ? COLORS.green : COLORS.red;
+  const fillCol = isUp ? COLORS.greenBg : COLORS.redBg;
+  const grad = ctx.createLinearGradient(0, 0, 0, 320);
+  grad.addColorStop(0, fillCol);
+  grad.addColorStop(1, 'rgba(255,255,255,0)');
+  if (priceChart) priceChart.destroy();
+  priceChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.labels,
+      datasets: [{
+        data: data.series,
+        borderColor: lineCol,
+        backgroundColor: grad,
+        borderWidth: 1.8,
+        fill: true,
+        tension: 0.25,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        pointHoverBackgroundColor: lineCol,
+        pointHoverBorderColor: '#fff',
+        pointHoverBorderWidth: 2,
+      }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1a1a1a', titleColor: '#fafaf7', bodyColor: '#fafaf7',
+          borderColor: COLORS.accent, borderWidth: 1, padding: 10, displayColors: false,
+          titleFont: { family: 'JetBrains Mono', size: 10 },
+          bodyFont: { family: 'JetBrains Mono', size: 12, weight: 600 },
+          callbacks: { label: (c) => '  ' + c.parsed.y.toLocaleString() }
+        },
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { maxTicksLimit: 8, color: COLORS.soft } },
+        y: { position: 'right', grid: { color: COLORS.line, drawTicks: false }, ticks: { color: COLORS.soft, callback: v => v.toLocaleString() } },
+      },
+    },
+  });
+}
+
+function buildVolumeChart(data, isUp) {
+  const ctx = document.getElementById('volume-chart').getContext('2d');
+  if (volumeChart) volumeChart.destroy();
+  volumeChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: data.labels,
+      datasets: [{
+        data: data.volume,
+        backgroundColor: data.series.map((p, i) => i === 0 || data.series[i] >= data.series[i-1] ? COLORS.greenBg : COLORS.redBg),
+        borderColor: data.series.map((p, i) => i === 0 || data.series[i] >= data.series[i-1] ? COLORS.green : COLORS.red),
+        borderWidth: 0.5,
+        borderRadius: 1,
+      }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      scales: {
+        x: { display: false },
+        y: { position: 'right', grid: { display: false }, ticks: { maxTicksLimit: 3, color: COLORS.soft, callback: v => (v/1e6).toFixed(0)+'M' } },
+      },
+    },
+  });
+}
+
+function buildRevChart(fin) {
+  const ctx = document.getElementById('rev-chart').getContext('2d');
+  if (revChart) revChart.destroy();
+  revChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: fin.years,
+      datasets: [
+        { label: 'Revenue', data: fin.revenue, backgroundColor: COLORS.blueBg, borderColor: COLORS.blue, borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
+        { label: 'Net Income', data: fin.netIncome, backgroundColor: COLORS.accentBg, borderColor: COLORS.accent, borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', align: 'end', labels: { boxWidth: 8, boxHeight: 8, padding: 12, font: { family: 'JetBrains Mono', size: 10 } } },
+        tooltip: {
+          backgroundColor: '#1a1a1a', titleColor: '#fafaf7', bodyColor: '#fafaf7',
+          borderColor: COLORS.accent, borderWidth: 1, padding: 8,
+          callbacks: { label: c => '  ' + c.dataset.label + ': $' + c.parsed.y.toFixed(1) + 'B' }
+        },
+      },
+      scales: {
+        x: { grid: { display: false } },
+        y: { grid: { color: COLORS.line }, ticks: { callback: v => '$' + v + 'B' } },
+      },
+    },
+  });
+}
+
+function buildMarginChart(fin) {
+  const ctx = document.getElementById('margin-chart').getContext('2d');
+  if (marginChart) marginChart.destroy();
+  marginChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: fin.years,
+      datasets: [
+        { label: 'Gross %', data: fin.grossMargin, borderColor: COLORS.green, backgroundColor: 'transparent', borderWidth: 2, tension: 0.3, pointRadius: 3, pointBackgroundColor: COLORS.green },
+        { label: 'Operating %', data: fin.opMargin, borderColor: COLORS.gold, backgroundColor: 'transparent', borderWidth: 2, tension: 0.3, pointRadius: 3, pointBackgroundColor: COLORS.gold },
+        { label: 'Net %', data: fin.netMargin, borderColor: COLORS.accent, backgroundColor: 'transparent', borderWidth: 2, tension: 0.3, pointRadius: 3, pointBackgroundColor: COLORS.accent },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', align: 'end', labels: { boxWidth: 8, boxHeight: 8, padding: 10, font: { family: 'JetBrains Mono', size: 10 } } },
+        tooltip: {
+          backgroundColor: '#1a1a1a', titleColor: '#fafaf7', bodyColor: '#fafaf7',
+          borderColor: COLORS.accent, borderWidth: 1, padding: 8,
+          callbacks: { label: c => '  ' + c.dataset.label + ': ' + c.parsed.y.toFixed(1) + '%' }
+        },
+      },
+      scales: {
+        x: { grid: { display: false } },
+        y: { grid: { color: COLORS.line }, ticks: { callback: v => v + '%' } },
+      },
+    },
+  });
+}
+
+function buildDonut(a) {
+  const ctx = document.getElementById('analyst-donut').getContext('2d');
+  if (donutChart) donutChart.destroy();
+  donutChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Buy','Hold','Sell'],
+      datasets: [{
+        data: [a.buy, a.hold, a.sell],
+        backgroundColor: [COLORS.green, COLORS.gold, COLORS.red],
+        borderColor: '#fff', borderWidth: 2,
+      }],
+    },
+    options: {
+      cutout: '70%', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+    },
+  });
+}
+
+function buildOwn(o) {
+  const ctx = document.getElementById('own-chart').getContext('2d');
+  if (ownChart) ownChart.destroy();
+  ownChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Institutional','Insider','Retail / Other'],
+      datasets: [{
+        data: [o.institutional, o.insider, o.retail],
+        backgroundColor: [COLORS.blue, COLORS.accent, COLORS.gold],
+        borderColor: '#fff', borderWidth: 2,
+      }],
+    },
+    options: {
+      cutout: '60%', responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { boxWidth: 8, boxHeight: 8, padding: 8, font: { family: 'JetBrains Mono', size: 10 } } },
+        tooltip: {
+          backgroundColor: '#1a1a1a', titleColor: '#fafaf7', bodyColor: '#fafaf7',
+          borderColor: COLORS.accent, borderWidth: 1, padding: 8,
+          callbacks: { label: c => '  ' + c.label + ': ' + c.parsed.toFixed(1) + '%' }
+        },
+      },
+    },
+  });
+}
+
+/* =====================================================================
+ * Render functions
+ * ===================================================================== */
+const $ = (id) => document.getElementById(id);
+let currentTicker = 'AAPL';
+let currentRange = '1Y';
+
+function renderHeader(s) {
+  $('sh-ticker').textContent = currentTicker;
+  $('sh-exch').textContent = `${s.exch} · ${s.ccy}`;
+  $('sh-name').textContent = s.name;
+  $('sh-sector').textContent = s.sector;
+  $('sh-industry').textContent = s.industry;
+  $('sh-country').textContent = s.country;
+  $('sh-price').textContent = s.price.toLocaleString();
+  $('sh-currency').textContent = s.ccy;
+  const isUp = s.change >= 0;
+  const chgEl = $('sh-change');
+  chgEl.classList.toggle('up', isUp);
+  chgEl.classList.toggle('down', !isUp);
+  chgEl.querySelector('.arrow').textContent = isUp ? '▲' : '▼';
+  $('sh-change-abs').textContent = (isUp ? '+' : '') + s.change.toFixed(2);
+  $('sh-change-pct').textContent = `(${isUp ? '+' : ''}${s.changePct.toFixed(2)}%)`;
+  const now = new Date();
+  $('sh-updated').textContent = `As of ${now.toLocaleDateString()} · ${now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
+}
+
+function renderKPIs(s) {
+  const items = [
+    { lbl: 'Market Cap', val: s.mktCap, sub: 'Shares × Price' },
+    { lbl: 'P/E (TTM)', val: s.pe.toString(), sub: `Fwd ${s.fwdPE}` },
+    { lbl: 'EPS (TTM)', val: typeof s.eps === 'number' ? s.eps.toLocaleString() : s.eps, sub: 'Diluted' },
+    { lbl: 'Div Yield', val: s.divYield.toFixed(2) + '%', sub: 'Annualized' },
+    { lbl: '52W High', val: s.high52.toLocaleString(), sub: ((s.price/s.high52-1)*100).toFixed(1) + '%', subClass: s.price >= s.high52 ? 'up' : 'down' },
+    { lbl: '52W Low', val: s.low52.toLocaleString(), sub: '+' + ((s.price/s.low52-1)*100).toFixed(1) + '%', subClass: 'up' },
+    { lbl: 'Volume', val: s.vol, sub: 'Avg ' + s.avgVol },
+    { lbl: 'Beta (5Y)', val: s.beta.toFixed(2), sub: s.beta > 1 ? 'High vol' : 'Low vol' },
+  ];
+  $('kpi-strip').innerHTML = items.map(k => `
+    <div class="kpi">
+      <div class="kpi-label">${k.lbl}</div>
+      <div class="kpi-value">${k.val}</div>
+      <div class="kpi-sub ${k.subClass||''}">${k.sub}</div>
+    </div>
+  `).join('');
+}
+
+function renderCompany(s) {
+  $('company-desc').textContent = s.desc;
+  $('company-meta').innerHTML = Object.entries(s.meta).map(([k,v]) => `
+    <div class="dm-row"><div class="lbl">${k}</div><div class="val">${v}</div></div>
+  `).join('');
+}
+
+function renderValuation(s) {
+  $('valuation-bars').innerHTML = s.valuation.map(v => {
+    const w = Math.min(100, (v.stock / v.max) * 100);
+    const wp = Math.min(100, (v.peer / v.max) * 100);
+    const richer = v.stock > v.peer * 1.15;
+    return `
+      <div class="bar-row">
+        <div class="lbl">${v.lbl}</div>
+        <div>
+          <div class="bar-track" title="Stock: ${v.stock} · Peer: ${v.peer}">
+            <div class="bar-fill ${richer ? '' : 'green'}" style="width:${w}%;"></div>
+            <div style="position:absolute; top:-2px; left:${wp}%; width:2px; height:10px; background:var(--ink); transform:translateX(-1px);"></div>
+          </div>
+        </div>
+        <div class="val">${v.stock}</div>
+      </div>
+    `;
+  }).join('') + `
+    <div style="display:flex; gap:14px; margin-top:14px; padding-top:12px; border-top:1px dashed var(--line); font-family:var(--mono); font-size:9px; color:var(--ink-soft); letter-spacing:0.1em; text-transform:uppercase;">
+      <div style="display:flex; align-items:center; gap:5px;"><span style="width:18px; height:6px; background:linear-gradient(90deg,var(--accent),var(--gold)); border-radius:2px;"></span>Stock</div>
+      <div style="display:flex; align-items:center; gap:5px;"><span style="width:2px; height:10px; background:var(--ink); display:inline-block;"></span>Peer Median</div>
+    </div>
+  `;
+}
+
+function renderAnalyst(s) {
+  const a = s.analyst;
+  const total = a.buy + a.hold + a.sell;
+  $('analyst-count').textContent = total + ' analysts';
+  $('analyst-rating').textContent = a.rating;
+  buildDonut(a);
+  $('rating-bars').innerHTML = [
+    { lbl: 'Buy', cls: 'buy', n: a.buy },
+    { lbl: 'Hold', cls: 'hold', n: a.hold },
+    { lbl: 'Sell', cls: 'sell', n: a.sell },
+  ].map(r => `
+    <div class="rb-row">
+      <div class="lbl">${r.lbl}</div>
+      <div class="rb-track"><div class="rb-fill ${r.cls}" style="width:${(r.n/total*100).toFixed(0)}%"></div></div>
+      <div class="val">${r.n}</div>
+    </div>
+  `).join('');
+  // PT block
+  const upside = ((a.ptMean / s.price - 1) * 100);
+  $('pt-mean').textContent = a.ptMean.toLocaleString() + ' ' + s.ccy;
+  $('pt-low').textContent = a.ptLow.toLocaleString();
+  $('pt-high').textContent = a.ptHigh.toLocaleString();
+  const upEl = $('pt-upside');
+  upEl.textContent = (upside >= 0 ? '+' : '') + upside.toFixed(1) + '%';
+  upEl.style.color = upside >= 0 ? 'var(--green)' : 'var(--red)';
+  // PT bar with current price marker + target marker
+  const range = a.ptHigh - a.ptLow;
+  const curPos = Math.max(0, Math.min(100, (s.price - a.ptLow) / range * 100));
+  const meanPos = Math.max(0, Math.min(100, (a.ptMean - a.ptLow) / range * 100));
+  $('pt-bar').innerHTML = `
+    <div class="pt-range" style="width:100%;"></div>
+    <div class="pt-marker" style="left:${curPos}%;"><span class="lbl">Now ${s.price.toLocaleString()}</span></div>
+    <div class="pt-marker target" style="left:${meanPos}%; top:auto; bottom:-3px; height:14px;"><span class="lbl" style="top:auto; bottom:-16px;">PT ${a.ptMean.toLocaleString()}</span></div>
+  `;
+}
+
+function renderOwn(s) {
+  buildOwn(s.own);
+  $('own-rows').innerHTML = [
+    { lbl: 'Institutional Holders', val: s.own.institutional.toFixed(1) + '%' },
+    { lbl: 'Insider Holdings', val: s.own.insider.toFixed(2) + '%' },
+    { lbl: 'Retail / Other', val: s.own.retail.toFixed(1) + '%' },
+    { lbl: 'Float', val: ((100 - s.own.insider).toFixed(1)) + '%' },
+  ].map(r => `<div class="metric-row"><span class="lbl">${r.lbl}</span><span class="val">${r.val}</span></div>`).join('');
+}
+
+function renderPeers(s) {
+  $('peers-tbl').querySelector('tbody').innerHTML = s.peers.map(p => `
+    <tr>
+      <td class="ticker">${p.tk}</td>
+      <td>${p.name}</td>
+      <td class="num">${p.cap}</td>
+      <td class="num">${p.pe}</td>
+      <td class="num ${p.ytd >= 0 ? 'pos' : 'neg'}">${p.ytd >= 0 ? '+' : ''}${p.ytd}%</td>
+      <td class="num ${p.marg >= 0 ? '' : 'neg'}">${p.marg >= 0 ? '' : ''}${p.marg}%</td>
+    </tr>
+  `).join('');
+}
+
+function renderIncome(s) {
+  const f = s.fin;
+  const tbl = $('income-tbl');
+  tbl.querySelector('thead').innerHTML = '<tr><th>Item</th>' + f.years.map(y => `<th class="num">${y}</th>`).join('') + '</tr>';
+  const cogs = f.revenue.map((r, i) => +(r * (1 - f.grossMargin[i]/100)).toFixed(1));
+  const gross = f.revenue.map((r, i) => +(r * f.grossMargin[i]/100).toFixed(1));
+  const op = f.revenue.map((r, i) => +(r * f.opMargin[i]/100).toFixed(1));
+  const rows = [
+    { lbl: 'Revenue', vals: f.revenue, cls: 'label' },
+    { lbl: 'Cost of Revenue', vals: cogs },
+    { lbl: 'Gross Profit', vals: gross, cls: 'label' },
+    { lbl: 'Operating Income', vals: op, cls: 'label' },
+    { lbl: 'Net Income', vals: f.netIncome, cls: 'label' },
+    { lbl: 'Revenue Growth', vals: f.revGrowth, suffix: '%' },
+    { lbl: 'Net Margin', vals: f.netMargin, suffix: '%' },
+  ];
+  tbl.querySelector('tbody').innerHTML = rows.map(r => `
+    <tr>
+      <td class="${r.cls||''}">${r.lbl}</td>
+      ${r.vals.map(v => `<td class="num">${typeof v === 'number' ? (r.suffix ? v.toFixed(1) + r.suffix : '$' + v.toFixed(1) + 'B') : v}</td>`).join('')}
+    </tr>
+  `).join('');
+}
+
+function renderNews(s) {
+  $('news-count').textContent = s.news.length + ' headlines';
+  $('news-list').innerHTML = s.news.map(n => `
+    <div class="news-item">
+      <div class="news-meta">
+        <span class="news-source">${n.src}</span>
+        <span class="news-time">${n.time}</span>
+        <span class="news-sentiment ${n.sent}">${n.sent === 'pos' ? '긍정' : n.sent === 'neg' ? '부정' : '중립'}</span>
+      </div>
+      <div class="news-title"><a href="#" onclick="return false;">${n.title}</a></div>
+      <div class="news-snippet">${n.snip}</div>
+    </div>
+  `).join('');
+}
+
+function renderEvents(s) {
+  $('events-rows').innerHTML = s.events.map(e => `
+    <div class="metric-row">
+      <span class="lbl">${e.lbl}<span class="sub">${e.sub}</span></span>
+      <span class="val">${e.val}</span>
+    </div>
+  `).join('');
+}
+
+function renderQuicklist() {
+  $('quicklist').innerHTML = Object.keys(STOCKS).map(k => `
+    <button class="sh-quick ${k === currentTicker ? 'active' : ''}" data-ticker="${k}">${k}</button>
+  `).join('');
+}
+
+function renderChart() {
+  const s = STOCKS[currentTicker];
+  const data = buildPriceSeries(currentTicker, currentRange, s.price);
+  const isUp = s.change >= 0;
+  buildPriceChart(data, isUp);
+  buildVolumeChart(data, isUp);
+  $('chart-range-lbl').textContent = data.label;
+}
+
+function loadStock(ticker) {
+  if (!STOCKS[ticker]) return;
+  currentTicker = ticker;
+  const s = STOCKS[ticker];
+  renderHeader(s);
+  renderKPIs(s);
+  renderCompany(s);
+  renderValuation(s);
+  renderAnalyst(s);
+  renderOwn(s);
+  renderPeers(s);
+  renderIncome(s);
+  renderNews(s);
+  renderEvents(s);
+  renderQuicklist();
+  buildRevChart(s.fin);
+  buildMarginChart(s.fin);
+  renderChart();
+  history.replaceState(null, '', '#' + ticker);
+}
+
+/* =====================================================================
+ * Events
+ * ===================================================================== */
+document.addEventListener('click', (e) => {
+  const q = e.target.closest('[data-ticker]');
+  if (q) { loadStock(q.dataset.ticker); return; }
+  const tt = e.target.closest('[data-range]');
+  if (tt) {
+    document.querySelectorAll('.time-tab').forEach(b => b.classList.toggle('active', b === tt));
+    currentRange = tt.dataset.range;
+    renderChart();
+    return;
+  }
+  const nv = e.target.closest('[data-section]');
+  if (nv) {
+    document.querySelectorAll('.nav-tab').forEach(b => b.classList.toggle('active', b === nv));
+    // Soft scroll to corresponding section
+    const map = { overview: '.kpi-strip', financials: '.grid-2', valuation: '.grid-3', analyst: '.grid-3', news: '.news-list' };
+    const sel = map[nv.dataset.section];
+    if (sel) document.querySelector(sel)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+});
+
+$('ticker-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const v = e.target.value.trim().toUpperCase();
+    if (STOCKS[v]) { loadStock(v); e.target.value = ''; }
+    else { e.target.style.borderColor = 'var(--accent)'; setTimeout(() => e.target.style.borderColor = '', 800); }
+  }
+});
+
+function tick() {
+  const d = new Date();
+  $('clock').textContent = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+tick(); setInterval(tick, 30000);
+
+// Boot — pull ticker from hash if present
+const hash = location.hash.replace('#','').toUpperCase();
+loadStock(STOCKS[hash] ? hash : 'AAPL');
+</script>
+</body>
+</html>
