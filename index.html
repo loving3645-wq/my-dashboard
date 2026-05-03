@@ -73,7 +73,9 @@
   .header-left h1 em { font-style: italic; color: var(--accent); font-weight: 500; }
   .header-left .subtitle { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); letter-spacing: 0.1em; margin-top: 6px; text-transform: uppercase; }
   .header-right { display: flex; gap: 22px; align-items: center; }
-  .stat { text-align: center; }
+  .stat { text-align: center; cursor: pointer; padding: 4px 6px; border-radius: 5px; transition: background-color 0.15s, transform 0.1s; -webkit-user-select: none; user-select: none; }
+  .stat:hover { background: var(--bg-warm); }
+  .stat:active { transform: scale(0.96); }
   .stat .num { font-family: var(--serif); font-size: 22px; font-weight: 500; color: var(--ink); line-height: 1; }
   .stat .lbl { font-family: var(--mono); font-size: 9px; color: var(--ink-soft); letter-spacing: 0.15em; text-transform: uppercase; margin-top: 4px; }
   .clock { font-family: var(--mono); font-size: 12px; color: var(--ink-mid); padding: 6px 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
@@ -262,11 +264,11 @@
       <div class="subtitle" id="subtitle">— · —</div>
     </div>
     <div class="header-right">
-      <div class="stat"><div class="num" id="stat-total">0</div><div class="lbl">전체</div></div>
-      <div class="stat"><div class="num" id="stat-todo">0</div><div class="lbl">할일</div></div>
-      <div class="stat"><div class="num" id="stat-deals">0</div><div class="lbl">검토딜</div></div>
-      <div class="stat"><div class="num" id="stat-done">0</div><div class="lbl">완료</div></div>
-      <div class="stat"><div class="num" id="stat-contacts">0</div><div class="lbl">연락처</div></div>
+      <div class="stat" data-stat-jump="cal" title="캘린더로 이동"><div class="num" id="stat-total">0</div><div class="lbl">전체</div></div>
+      <div class="stat" data-stat-jump="todo" title="할 일로 이동"><div class="num" id="stat-todo">0</div><div class="lbl">할일</div></div>
+      <div class="stat" data-stat-jump="deals" title="검토 딜로 이동"><div class="num" id="stat-deals">0</div><div class="lbl">검토딜</div></div>
+      <div class="stat" data-stat-jump="done" title="완료로 이동"><div class="num" id="stat-done">0</div><div class="lbl">완료</div></div>
+      <div class="stat" data-stat-jump="contacts" title="연락처로 이동"><div class="num" id="stat-contacts">0</div><div class="lbl">연락처</div></div>
       <div class="clock" id="clock">--:--</div>
     </div>
   </header>
@@ -814,7 +816,22 @@ function setActiveCol(colName) {
   document.querySelectorAll('.col').forEach(c => c.classList.toggle('col-active', c.dataset.col === colName));
 }
 document.querySelectorAll('.col-tab').forEach(btn => {
-  btn.addEventListener('click', () => setActiveCol(btn.dataset.col));
+  btn.addEventListener('click', () => {
+    setActiveCol(btn.dataset.col);
+    scrollToCol(btn.dataset.col);
+  });
+});
+function scrollToCol(colName) {
+  const target = document.querySelector(`.col[data-col="${colName}"]`);
+  if (!target) return;
+  requestAnimationFrame(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+}
+document.querySelectorAll('[data-stat-jump]').forEach(el => {
+  el.addEventListener('click', () => {
+    const col = el.dataset.statJump;
+    setActiveCol(col);
+    scrollToCol(col);
+  });
 });
 function openTodoModal(ctx) {
   state.modalContext = ctx;
