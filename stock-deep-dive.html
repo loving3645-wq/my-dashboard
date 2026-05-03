@@ -1196,15 +1196,25 @@ function renderHeader(s) {
 }
 
 function renderKPIs(s) {
+  // Safe numeric formatters that handle non-numeric placeholders ('—', strings, NaN)
+  const fmtNum = (v, digits = 2) => (typeof v === 'number' && isFinite(v)) ? v.toFixed(digits) : (v ?? '—');
+  const fmtLoc = (v) => (typeof v === 'number' && isFinite(v)) ? v.toLocaleString() : (v ?? '—');
+  const numOr = (v) => (typeof v === 'number' && isFinite(v)) ? v : null;
+
+  const high52n = numOr(s.high52), low52n = numOr(s.low52), priceN = numOr(s.price);
+  const high52sub = (high52n && priceN) ? ((priceN/high52n - 1) * 100).toFixed(1) + '%' : '—';
+  const low52sub  = (low52n  && priceN) ? '+' + ((priceN/low52n - 1) * 100).toFixed(1) + '%' : '—';
+  const betaN = numOr(s.beta);
+
   const items = [
-    { lbl: '시가총액', val: s.mktCap, sub: '발행주식 × 주가' },
-    { lbl: 'PER (TTM)', val: s.pe.toString(), sub: `예상 ${s.fwdPE}` },
-    { lbl: 'EPS (TTM)', val: typeof s.eps === 'number' ? s.eps.toLocaleString() : s.eps, sub: '희석 EPS' },
-    { lbl: '배당수익률', val: s.divYield.toFixed(2) + '%', sub: '연환산' },
-    { lbl: '52주 최고', val: s.high52.toLocaleString(), sub: ((s.price/s.high52-1)*100).toFixed(1) + '%', subClass: s.price >= s.high52 ? 'up' : 'down' },
-    { lbl: '52주 최저', val: s.low52.toLocaleString(), sub: '+' + ((s.price/s.low52-1)*100).toFixed(1) + '%', subClass: 'up' },
-    { lbl: '거래량', val: s.vol, sub: '평균 ' + s.avgVol },
-    { lbl: '베타 (5Y)', val: s.beta.toFixed(2), sub: s.beta > 1 ? '고변동' : '저변동' },
+    { lbl: '시가총액', val: s.mktCap || '—', sub: '발행주식 × 주가' },
+    { lbl: 'PER (TTM)', val: fmtNum(s.pe), sub: `예상 ${fmtNum(s.fwdPE)}` },
+    { lbl: 'EPS (TTM)', val: fmtLoc(s.eps), sub: '희석 EPS' },
+    { lbl: '배당수익률', val: fmtNum(s.divYield) + '%', sub: '연환산' },
+    { lbl: '52주 최고', val: fmtLoc(s.high52), sub: high52sub, subClass: priceN && high52n && priceN >= high52n ? 'up' : 'down' },
+    { lbl: '52주 최저', val: fmtLoc(s.low52), sub: low52sub, subClass: 'up' },
+    { lbl: '거래량', val: s.vol || '—', sub: '평균 ' + (s.avgVol || '—') },
+    { lbl: '베타 (5Y)', val: fmtNum(betaN), sub: betaN > 1 ? '고변동' : (betaN ? '저변동' : '—') },
   ];
   $('kpi-strip').innerHTML = items.map(k => `
     <div class="kpi">
@@ -1531,26 +1541,18 @@ async function fetchNaverHistory(code, range) {
   const end = new Date();
   const start = new Date(end.getTime() - cfg.days * 86400000);
   const text = await fetchText(NAVER_HISTORY(code, fmtDate(start), fmtDate(end)), false);
-  let arr;
-  try {
-    // The body is a JS array literal — single quotes in header are valid JS but not JSON.
-    // Function eval is acceptable here since we control the URL and the format is fixed.
-    arr = Function('"use strict"; return ' + text.trim())();
-  } catch (e) {
-    throw new Error('Naver history eval failed: ' + e.message);
-  }
-  if (!Array.isArray(arr) || arr.length < 2) throw new Error('Naver history empty');
-  const rows = arr.slice(1);
+  // Regex-based row extraction — robust against proxy truncation of leading bytes.
+  // Each row in the response: ["YYYYMMDD", open, high, low, close, volume, foreigner%]
+  const rowRe = /\[\s*"?(\d{8})"?\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/g;
   const series = [], volume = [], labels = [];
-  for (const row of rows) {
-    if (!row || row.length < 6) continue;
-    const close = parseFloat(row[4]);
-    const vol = parseFloat(row[5]);
+  let m;
+  while ((m = rowRe.exec(text)) !== null) {
+    const close = parseFloat(m[5]);
+    const vol = parseFloat(m[6]);
     if (!isFinite(close) || close <= 0) continue;
     series.push(close);
     volume.push(vol || 0);
-    const ds = String(row[0]);
-    if (ds.length < 8) { labels.push(ds); continue; }
+    const ds = m[1];
     const d = new Date(`${ds.slice(0,4)}-${ds.slice(4,6)}-${ds.slice(6,8)}`);
     labels.push(cfg.days > 250
       ? d.toLocaleDateString([], { year: '2-digit', month: 'short' })
