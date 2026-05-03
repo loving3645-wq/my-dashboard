@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#fafaf7" />
-<title>Stock Deep Dive · 지니의 대시보드</title>
+<title>한국 종목 딥다이브 · 지니의 리서치</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -271,16 +271,16 @@
       <div class="crumbs">
         <a href="index.html">대시보드</a>
         <span class="sep">›</span>
-        <span>Stock Deep Dive</span>
+        <span>한국 종목 딥다이브</span>
       </div>
     </div>
     <div class="topnav-right">
       <div class="nav-tabs">
-        <button class="nav-tab active" data-section="overview">Overview</button>
-        <button class="nav-tab" data-section="financials">Financials</button>
-        <button class="nav-tab" data-section="valuation">Valuation</button>
-        <button class="nav-tab" data-section="analyst">Analysts</button>
-        <button class="nav-tab" data-section="news">News</button>
+        <button class="nav-tab active" data-section="overview">개요</button>
+        <button class="nav-tab" data-section="financials">재무</button>
+        <button class="nav-tab" data-section="valuation">밸류에이션</button>
+        <button class="nav-tab" data-section="analyst">애널리스트</button>
+        <button class="nav-tab" data-section="news">뉴스</button>
       </div>
       <div class="clock" id="clock">--:--</div>
     </div>
@@ -290,32 +290,32 @@
   <section class="stock-header stagger" style="animation-delay:0.05s;">
     <div class="sh-id">
       <div class="sh-ticker-row">
-        <div class="sh-ticker" id="sh-ticker">AAPL</div>
-        <div class="sh-exch" id="sh-exch">NASDAQ · USD</div>
+        <div class="sh-ticker" id="sh-ticker">005930</div>
+        <div class="sh-exch" id="sh-exch">KOSPI · KRW</div>
       </div>
-      <div class="sh-name" id="sh-name">Apple Inc.</div>
+      <div class="sh-name" id="sh-name">삼성전자</div>
       <div class="sh-tags">
-        <span class="sh-tag sector" id="sh-sector">Technology</span>
-        <span class="sh-tag" id="sh-industry">Consumer Electronics</span>
-        <span class="sh-tag country" id="sh-country">United States</span>
+        <span class="sh-tag sector" id="sh-sector">반도체</span>
+        <span class="sh-tag" id="sh-industry">메모리 / 시스템 LSI</span>
+        <span class="sh-tag country" id="sh-country">대한민국</span>
       </div>
     </div>
     <div class="sh-price">
       <div>
-        <span class="sh-price-num" id="sh-price">187.42</span>
-        <span class="sh-price-curr" id="sh-currency">USD</span>
+        <span class="sh-price-num" id="sh-price">78,400</span>
+        <span class="sh-price-curr" id="sh-currency">원</span>
       </div>
       <div class="sh-change up" id="sh-change">
         <span class="arrow">▲</span>
-        <span id="sh-change-abs">+2.18</span>
-        <span id="sh-change-pct">(+1.18%)</span>
+        <span id="sh-change-abs">+1,200</span>
+        <span id="sh-change-pct">(+1.55%)</span>
       </div>
-      <div class="sh-updated" id="sh-updated">As of — Market Close</div>
+      <div class="sh-updated" id="sh-updated">장마감 기준</div>
     </div>
     <div class="sh-switcher">
-      <div class="sh-switcher-label">Search Ticker</div>
+      <div class="sh-switcher-label">종목 검색</div>
       <div class="sh-search">
-        <input type="text" id="ticker-input" placeholder="AAPL, MSFT, NVDA…" maxlength="6" />
+        <input type="text" id="ticker-input" placeholder="종목코드 (예: 005930)" maxlength="6" />
       </div>
       <div class="sh-quicklist" id="quicklist"></div>
     </div>
@@ -328,15 +328,15 @@
   <section class="grid stagger" style="animation-delay:0.15s;">
     <div class="card">
       <div class="card-head">
-        <div class="card-title"><span class="icon"></span>Price <em>·</em> <span id="chart-range-lbl">1 Year</span></div>
+        <div class="card-title"><span class="icon"></span>주가 <em>·</em> <span id="chart-range-lbl">최근 1년</span></div>
         <div class="time-tabs" id="time-tabs">
-          <button class="time-tab" data-range="1D">1D</button>
-          <button class="time-tab" data-range="1W">1W</button>
-          <button class="time-tab" data-range="1M">1M</button>
-          <button class="time-tab" data-range="3M">3M</button>
-          <button class="time-tab" data-range="6M">6M</button>
-          <button class="time-tab active" data-range="1Y">1Y</button>
-          <button class="time-tab" data-range="5Y">5Y</button>
+          <button class="time-tab" data-range="1D">1일</button>
+          <button class="time-tab" data-range="1W">1주</button>
+          <button class="time-tab" data-range="1M">1개월</button>
+          <button class="time-tab" data-range="3M">3개월</button>
+          <button class="time-tab" data-range="6M">6개월</button>
+          <button class="time-tab active" data-range="1Y">1년</button>
+          <button class="time-tab" data-range="5Y">5년</button>
         </div>
       </div>
       <div class="chart-wrap tall"><canvas id="price-chart"></canvas></div>
@@ -345,7 +345,7 @@
 
     <div class="card card-warm">
       <div class="card-head">
-        <div class="card-title"><span class="icon"></span>About the <em>Company</em></div>
+        <div class="card-title"><span class="icon"></span>기업 <em>개요</em></div>
       </div>
       <div class="desc" id="company-desc">—</div>
       <div class="desc-meta" id="company-meta"></div>
@@ -356,15 +356,15 @@
   <section class="grid-2 stagger" style="animation-delay:0.2s;">
     <div class="card">
       <div class="card-head">
-        <div class="card-title"><span class="icon"></span>Revenue &amp; <em>Net Income</em></div>
-        <div class="card-meta">FY · USD Billions</div>
+        <div class="card-title"><span class="icon"></span>매출 &amp; <em>순이익</em></div>
+        <div class="card-meta">연간 · 조원</div>
       </div>
       <div class="chart-wrap"><canvas id="rev-chart"></canvas></div>
     </div>
     <div class="card">
       <div class="card-head">
-        <div class="card-title"><span class="icon"></span>Margins &amp; <em>Growth</em></div>
-        <div class="card-meta">Trailing 12M</div>
+        <div class="card-title"><span class="icon"></span>마진 &amp; <em>성장</em></div>
+        <div class="card-meta">최근 5개 회계연도</div>
       </div>
       <div class="chart-wrap"><canvas id="margin-chart"></canvas></div>
     </div>
@@ -374,40 +374,40 @@
   <section class="grid-3 stagger" style="animation-delay:0.25s;">
     <div class="card">
       <div class="card-head">
-        <div class="card-title"><span class="icon"></span>Valuation <em>Snapshot</em></div>
-        <div class="card-meta">vs Sector Median</div>
+        <div class="card-title"><span class="icon"></span>밸류에이션 <em>스냅샷</em></div>
+        <div class="card-meta">vs 업종 중간값</div>
       </div>
       <div id="valuation-bars"></div>
     </div>
 
     <div class="card">
       <div class="card-head">
-        <div class="card-title"><span class="icon"></span>Analyst <em>Consensus</em></div>
-        <div class="card-meta" id="analyst-count">— analysts</div>
+        <div class="card-title"><span class="icon"></span>애널리스트 <em>컨센서스</em></div>
+        <div class="card-meta" id="analyst-count">— 애널리스트</div>
       </div>
       <div class="analyst-grid">
         <div class="donut-wrap">
           <canvas id="analyst-donut"></canvas>
           <div class="donut-center">
-            <div class="num" id="analyst-rating">BUY</div>
-            <div class="lbl">Consensus</div>
+            <div class="num" id="analyst-rating">매수</div>
+            <div class="lbl">컨센서스</div>
           </div>
         </div>
         <div class="rating-bars" id="rating-bars"></div>
       </div>
       <div class="pt-block">
-        <div class="pt-row"><span class="lbl">12M Price Target</span><span class="val" id="pt-mean">—</span></div>
+        <div class="pt-row"><span class="lbl">12개월 목표가</span><span class="val" id="pt-mean">—</span></div>
         <div class="pt-bar-wrap" id="pt-bar"></div>
-        <div class="pt-row" style="margin-top:14px;"><span class="lbl">Low</span><span class="val low" id="pt-low">—</span></div>
-        <div class="pt-row"><span class="lbl">High</span><span class="val high" id="pt-high">—</span></div>
-        <div class="pt-row"><span class="lbl">Upside</span><span class="val" id="pt-upside">—</span></div>
+        <div class="pt-row" style="margin-top:14px;"><span class="lbl">최저</span><span class="val low" id="pt-low">—</span></div>
+        <div class="pt-row"><span class="lbl">최고</span><span class="val high" id="pt-high">—</span></div>
+        <div class="pt-row"><span class="lbl">상승여력</span><span class="val" id="pt-upside">—</span></div>
       </div>
     </div>
 
     <div class="card">
       <div class="card-head">
-        <div class="card-title"><span class="icon"></span>Ownership <em>&amp; Insiders</em></div>
-        <div class="card-meta">Latest Filing</div>
+        <div class="card-title"><span class="icon"></span>지분 <em>구조</em></div>
+        <div class="card-meta">최근 공시</div>
       </div>
       <div class="own-pie"><canvas id="own-chart"></canvas></div>
       <div class="metric-rows" style="margin-top:12px;" id="own-rows"></div>
@@ -418,19 +418,19 @@
   <section class="grid-2 stagger" style="animation-delay:0.3s;">
     <div class="card">
       <div class="card-head">
-        <div class="card-title"><span class="icon"></span>Peer <em>Comparison</em></div>
-        <div class="card-meta">Industry Group</div>
+        <div class="card-title"><span class="icon"></span>동종업계 <em>비교</em></div>
+        <div class="card-meta">Peer Group</div>
       </div>
       <div style="overflow-x:auto;">
         <table class="tbl" id="peers-tbl">
           <thead>
             <tr>
-              <th>Ticker</th>
-              <th>Name</th>
-              <th class="num">Mkt Cap</th>
-              <th class="num">P/E</th>
+              <th>코드</th>
+              <th>종목명</th>
+              <th class="num">시가총액</th>
+              <th class="num">PER</th>
               <th class="num">YTD</th>
-              <th class="num">Margin</th>
+              <th class="num">영업이익률</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -439,12 +439,12 @@
     </div>
     <div class="card">
       <div class="card-head">
-        <div class="card-title"><span class="icon"></span>Income <em>Statement</em></div>
-        <div class="card-meta">Annual · USD M</div>
+        <div class="card-title"><span class="icon"></span>손익 <em>계산서</em></div>
+        <div class="card-meta">연간 · 조원</div>
       </div>
       <div style="overflow-x:auto;">
         <table class="tbl" id="income-tbl">
-          <thead><tr><th>Item</th></tr></thead>
+          <thead><tr><th>항목</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -455,15 +455,15 @@
   <section class="grid stagger" style="animation-delay:0.35s;">
     <div class="card">
       <div class="card-head">
-        <div class="card-title"><span class="icon"></span>Latest <em>News</em></div>
-        <div class="card-meta" id="news-count">— headlines</div>
+        <div class="card-title"><span class="icon"></span>최신 <em>뉴스</em></div>
+        <div class="card-meta" id="news-count">— 헤드라인</div>
       </div>
       <div class="news-list" id="news-list"></div>
     </div>
     <div class="card card-warm">
       <div class="card-head">
-        <div class="card-title"><span class="icon"></span>Key <em>Events</em></div>
-        <div class="card-meta">Calendar</div>
+        <div class="card-title"><span class="icon"></span>주요 <em>일정</em></div>
+        <div class="card-meta">캘린더</div>
       </div>
       <div class="metric-rows" id="events-rows"></div>
     </div>
@@ -471,10 +471,10 @@
 
   <footer class="footer">
     <div class="left">
-      <span id="data-status">DATA · MOCK SAMPLE</span>
+      <span id="data-status">샘플 데이터 · 실시간 아님</span>
       <a href="index.html">← 대시보드로</a>
     </div>
-    <div>지니 RESEARCH · STOCK DEEP DIVE</div>
+    <div>지니 RESEARCH · KOREA STOCK DEEP DIVE</div>
   </footer>
 </div>
 
@@ -484,211 +484,14 @@
  * ===================================================================== */
 
 const STOCKS = {
-  AAPL: {
-    name: 'Apple Inc.', exch: 'NASDAQ', ccy: 'USD',
-    sector: 'Technology', industry: 'Consumer Electronics', country: 'United States',
-    price: 187.42, change: 2.18, changePct: 1.18, mktCap: '2.93T',
-    pe: 31.2, fwdPE: 27.8, eps: 6.01, divYield: 0.51, beta: 1.28,
-    high52: 199.62, low52: 164.08, vol: '52.4M', avgVol: '58.1M',
-    desc: '애플은 스마트폰, 개인용 컴퓨터, 태블릿, 웨어러블 및 액세서리를 설계·제조·판매하며, 다양한 관련 서비스를 제공한다. iPhone은 매출의 가장 큰 비중을 차지하며, Services 부문은 가장 빠르게 성장하는 사업이다.',
-    meta: { CEO: 'Tim Cook', HQ: 'Cupertino, CA', Employees: '161,000', Founded: '1976', Website: 'apple.com', IPO: '1980-12-12' },
-    fin: {
-      years: ['FY20','FY21','FY22','FY23','FY24'],
-      revenue: [274.5, 365.8, 394.3, 383.3, 391.0],
-      netIncome: [57.4, 94.7, 99.8, 97.0, 93.7],
-      grossMargin: [38.2, 41.8, 43.3, 44.1, 46.2],
-      opMargin: [24.1, 29.8, 30.3, 29.8, 31.5],
-      netMargin: [20.9, 25.9, 25.3, 25.3, 24.0],
-      revGrowth: [5.5, 33.3, 7.8, -2.8, 2.0],
-    },
-    valuation: [
-      { lbl: 'P/E', stock: 31.2, peer: 24.1, max: 50 },
-      { lbl: 'Fwd P/E', stock: 27.8, peer: 22.0, max: 50 },
-      { lbl: 'PEG', stock: 2.1, peer: 1.8, max: 5 },
-      { lbl: 'P/B', stock: 48.2, peer: 8.1, max: 60 },
-      { lbl: 'P/S', stock: 7.5, peer: 4.6, max: 15 },
-      { lbl: 'EV/EBITDA', stock: 22.4, peer: 16.2, max: 40 },
-    ],
-    analyst: { buy: 32, hold: 9, sell: 2, ptLow: 158, ptMean: 215, ptHigh: 250, rating: 'BUY' },
-    own: { institutional: 61.2, insider: 0.07, retail: 38.7 },
-    peers: [
-      { tk:'MSFT', name:'Microsoft', cap:'3.10T', pe:34.8, ytd:14.2, marg:36.2 },
-      { tk:'GOOGL', name:'Alphabet', cap:'2.18T', pe:25.4, ytd:11.6, marg:28.4 },
-      { tk:'AMZN', name:'Amazon', cap:'2.05T', pe:42.1, ytd:18.3, marg:9.1 },
-      { tk:'META', name:'Meta', cap:'1.32T', pe:26.7, ytd:21.4, marg:34.5 },
-      { tk:'NVDA', name:'NVIDIA', cap:'2.85T', pe:62.3, ytd:42.1, marg:48.9 },
-    ],
-    news: [
-      { src:'Bloomberg', time:'2h ago', sent:'pos', title:'Apple Vision Pro 2 reportedly enters production with lighter design', snip:'Suppliers begin tooling for second-generation mixed-reality headset targeting H2 launch.' },
-      { src:'Reuters', time:'5h ago', sent:'neu', title:'Apple expands India manufacturing footprint with new Tata partnership', snip:'Move continues diversification away from China amid tariff concerns.' },
-      { src:'WSJ', time:'1d ago', sent:'pos', title:'Services revenue hits record on App Store strength', snip:'Subscription mix and ad revenue drive 14% YoY growth in latest quarter.' },
-      { src:'CNBC', time:'1d ago', sent:'neg', title:'iPhone 17 demand cools in China amid Huawei resurgence', snip:'Local rivals gain share in premium segment per Counterpoint data.' },
-      { src:'FT', time:'2d ago', sent:'neu', title:'EU opens new probe into App Store rules', snip:'Commission widens DMA investigation; Apple says it will cooperate.' },
-      { src:'Barron\'s', time:'3d ago', sent:'pos', title:'Buybacks cross $90B mark for fiscal year', snip:'Capital return program remains industry leading.' },
-    ],
-    events: [
-      { lbl:'Earnings', val:'2026-05-29', sub:'Q3 FY26' },
-      { lbl:'Ex-Dividend', val:'2026-05-12', sub:'$0.25/sh' },
-      { lbl:'WWDC', val:'2026-06-08', sub:'Developer event' },
-      { lbl:'Product Event', val:'2026-09-09 (e.)', sub:'iPhone 18' },
-    ],
-  },
-
-  MSFT: {
-    name: 'Microsoft Corp.', exch: 'NASDAQ', ccy: 'USD',
-    sector: 'Technology', industry: 'Software · Infrastructure', country: 'United States',
-    price: 416.78, change: -1.42, changePct: -0.34, mktCap: '3.10T',
-    pe: 34.8, fwdPE: 31.0, eps: 11.97, divYield: 0.72, beta: 0.91,
-    high52: 425.50, low52: 322.10, vol: '18.2M', avgVol: '21.4M',
-    desc: 'Microsoft은 클라우드, 생산성 소프트웨어, 게임, 디바이스, AI 인프라를 통해 매출을 창출한다. Azure는 가장 빠르게 성장하는 부문이며, OpenAI 파트너십을 통해 생성형 AI 시장을 선도하고 있다.',
-    meta: { CEO: 'Satya Nadella', HQ: 'Redmond, WA', Employees: '221,000', Founded: '1975', Website: 'microsoft.com', IPO: '1986-03-13' },
-    fin: {
-      years: ['FY20','FY21','FY22','FY23','FY24'],
-      revenue: [143.0, 168.1, 198.3, 211.9, 245.1],
-      netIncome: [44.3, 61.3, 72.7, 72.4, 88.1],
-      grossMargin: [67.8, 68.9, 68.4, 68.9, 69.8],
-      opMargin: [37.0, 41.6, 42.1, 41.8, 44.7],
-      netMargin: [31.0, 36.5, 36.7, 34.2, 35.9],
-      revGrowth: [13.6, 17.5, 18.0, 6.9, 15.7],
-    },
-    valuation: [
-      { lbl: 'P/E', stock: 34.8, peer: 24.1, max: 50 },
-      { lbl: 'Fwd P/E', stock: 31.0, peer: 22.0, max: 50 },
-      { lbl: 'PEG', stock: 2.4, peer: 1.8, max: 5 },
-      { lbl: 'P/B', stock: 11.2, peer: 8.1, max: 60 },
-      { lbl: 'P/S', stock: 12.6, peer: 4.6, max: 15 },
-      { lbl: 'EV/EBITDA', stock: 24.8, peer: 16.2, max: 40 },
-    ],
-    analyst: { buy: 48, hold: 5, sell: 0, ptLow: 380, ptMean: 470, ptHigh: 540, rating: 'STRONG BUY' },
-    own: { institutional: 71.8, insider: 0.04, retail: 28.16 },
-    peers: [
-      { tk:'AAPL', name:'Apple', cap:'2.93T', pe:31.2, ytd:8.4, marg:24.0 },
-      { tk:'GOOGL', name:'Alphabet', cap:'2.18T', pe:25.4, ytd:11.6, marg:28.4 },
-      { tk:'AMZN', name:'Amazon', cap:'2.05T', pe:42.1, ytd:18.3, marg:9.1 },
-      { tk:'ORCL', name:'Oracle', cap:'418B', pe:31.2, ytd:24.5, marg:21.8 },
-      { tk:'CRM', name:'Salesforce', cap:'278B', pe:48.5, ytd:9.1, marg:14.2 },
-    ],
-    news: [
-      { src:'Bloomberg', time:'1h ago', sent:'pos', title:'Azure AI revenue triples year over year, hits $14B run-rate', snip:'Copilot adoption across Office 365 also accelerating per CFO commentary.' },
-      { src:'The Verge', time:'4h ago', sent:'neu', title:'Microsoft restructures gaming division after Activision integration', snip:'Phil Spencer outlines new studio leadership model.' },
-      { src:'Reuters', time:'1d ago', sent:'neg', title:'EU regulators question Microsoft-OpenAI ties anew', snip:'Renewed antitrust scrutiny over partnership structure.' },
-      { src:'CNBC', time:'1d ago', sent:'pos', title:'Datacenter capex guidance raised to $80B for FY26', snip:'AI infrastructure spend continues acceleration.' },
-      { src:'WSJ', time:'2d ago', sent:'pos', title:'Microsoft secures $10B sovereign cloud deal in Germany', snip:'Public sector AI deployment milestone.' },
-    ],
-    events: [
-      { lbl:'Earnings', val:'2026-04-25', sub:'Q3 FY26' },
-      { lbl:'Ex-Dividend', val:'2026-05-15', sub:'$0.83/sh' },
-      { lbl:'Build Conf', val:'2026-05-19', sub:'Developer event' },
-      { lbl:'Ignite', val:'2026-11-17', sub:'IT Pro event' },
-    ],
-  },
-
-  NVDA: {
-    name: 'NVIDIA Corp.', exch: 'NASDAQ', ccy: 'USD',
-    sector: 'Technology', industry: 'Semiconductors', country: 'United States',
-    price: 116.92, change: 4.31, changePct: 3.83, mktCap: '2.85T',
-    pe: 62.3, fwdPE: 38.4, eps: 1.88, divYield: 0.03, beta: 1.74,
-    high52: 140.76, low52: 45.01, vol: '342.1M', avgVol: '298.5M',
-    desc: 'NVIDIA는 GPU와 AI 가속기, 데이터센터 컴퓨팅, 자동차/로보틱스 플랫폼을 설계한다. CUDA 생태계와 H100/B200 시리즈는 생성형 AI 학습·추론의 표준 인프라로 자리잡았다.',
-    meta: { CEO: 'Jensen Huang', HQ: 'Santa Clara, CA', Employees: '29,600', Founded: '1993', Website: 'nvidia.com', IPO: '1999-01-22' },
-    fin: {
-      years: ['FY21','FY22','FY23','FY24','FY25'],
-      revenue: [16.7, 26.9, 27.0, 60.9, 130.5],
-      netIncome: [4.3, 9.8, 4.4, 29.8, 72.9],
-      grossMargin: [62.3, 64.9, 56.9, 72.7, 75.0],
-      opMargin: [27.2, 37.3, 15.7, 54.1, 62.4],
-      netMargin: [25.8, 36.2, 16.2, 48.9, 55.9],
-      revGrowth: [52.7, 61.4, 0.2, 125.9, 114.3],
-    },
-    valuation: [
-      { lbl: 'P/E', stock: 62.3, peer: 24.1, max: 80 },
-      { lbl: 'Fwd P/E', stock: 38.4, peer: 22.0, max: 80 },
-      { lbl: 'PEG', stock: 1.2, peer: 1.8, max: 5 },
-      { lbl: 'P/B', stock: 48.6, peer: 8.1, max: 60 },
-      { lbl: 'P/S', stock: 21.8, peer: 4.6, max: 30 },
-      { lbl: 'EV/EBITDA', stock: 41.2, peer: 16.2, max: 60 },
-    ],
-    analyst: { buy: 56, hold: 4, sell: 1, ptLow: 90, ptMean: 162, ptHigh: 220, rating: 'STRONG BUY' },
-    own: { institutional: 67.4, insider: 4.2, retail: 28.4 },
-    peers: [
-      { tk:'AMD', name:'Adv Micro Dev', cap:'258B', pe:48.9, ytd:-12.4, marg:14.2 },
-      { tk:'INTC', name:'Intel', cap:'92B', pe:'—', ytd:-38.5, marg:-18.7 },
-      { tk:'TSM', name:'TSMC', cap:'820B', pe:28.4, ytd:34.2, marg:42.1 },
-      { tk:'AVGO', name:'Broadcom', cap:'690B', pe:48.6, ytd:42.8, marg:38.5 },
-      { tk:'QCOM', name:'Qualcomm', cap:'185B', pe:18.4, ytd:6.8, marg:24.2 },
-    ],
-    news: [
-      { src:'Reuters', time:'30m ago', sent:'pos', title:'NVIDIA B200 shipments exceed prior guidance, supply still tight', snip:'Hyperscaler orders extend into 2027 per supply chain sources.' },
-      { src:'Bloomberg', time:'3h ago', sent:'pos', title:'Saudi Arabia commits to $40B NVIDIA-powered AI factory', snip:'Sovereign AI deal latest in series of large GPU procurements.' },
-      { src:'CNBC', time:'1d ago', sent:'neg', title:'New US export restrictions to China weigh on data center outlook', snip:'Estimated $5-7B revenue impact for FY26 per management.' },
-      { src:'WSJ', time:'2d ago', sent:'pos', title:'GTC keynote unveils Rubin platform roadmap through 2027', snip:'Annual cadence for new architectures confirmed.' },
-      { src:'FT', time:'3d ago', sent:'neu', title:'Robotics platform Isaac gains Toyota and BMW as partners', snip:'Edge AI / humanoid robotics expansion continues.' },
-    ],
-    events: [
-      { lbl:'Earnings', val:'2026-05-21', sub:'Q1 FY27' },
-      { lbl:'GTC', val:'2026-03-17', sub:'Developer keynote' },
-      { lbl:'Ex-Dividend', val:'2026-06-05', sub:'$0.01/sh' },
-      { lbl:'Computex', val:'2026-06-02', sub:'Industry event' },
-    ],
-  },
-
-  TSLA: {
-    name: 'Tesla, Inc.', exch: 'NASDAQ', ccy: 'USD',
-    sector: 'Consumer Cyclical', industry: 'Auto Manufacturers', country: 'United States',
-    price: 184.55, change: -3.27, changePct: -1.74, mktCap: '588B',
-    pe: 58.7, fwdPE: 62.4, eps: 3.14, divYield: 0.0, beta: 2.31,
-    high52: 278.98, low52: 138.80, vol: '108.4M', avgVol: '92.3M',
-    desc: 'Tesla는 전기차, 에너지 저장 시스템, 태양광 패널, FSD 자율주행 소프트웨어, 휴머노이드 로봇 Optimus를 개발한다. 차량 판매가 매출의 대부분을 차지하지만 에너지·서비스 부문이 빠르게 성장하고 있다.',
-    meta: { CEO: 'Elon Musk', HQ: 'Austin, TX', Employees: '140,500', Founded: '2003', Website: 'tesla.com', IPO: '2010-06-29' },
-    fin: {
-      years: ['FY20','FY21','FY22','FY23','FY24'],
-      revenue: [31.5, 53.8, 81.5, 96.8, 97.7],
-      netIncome: [0.7, 5.5, 12.6, 15.0, 7.1],
-      grossMargin: [21.0, 25.3, 25.6, 18.2, 17.9],
-      opMargin: [6.3, 12.1, 16.8, 9.2, 7.2],
-      netMargin: [2.2, 10.2, 15.5, 15.5, 7.3],
-      revGrowth: [28.3, 70.7, 51.4, 18.8, 0.9],
-    },
-    valuation: [
-      { lbl: 'P/E', stock: 58.7, peer: 12.4, max: 80 },
-      { lbl: 'Fwd P/E', stock: 62.4, peer: 10.8, max: 80 },
-      { lbl: 'PEG', stock: 3.8, peer: 1.2, max: 5 },
-      { lbl: 'P/B', stock: 9.2, peer: 1.6, max: 15 },
-      { lbl: 'P/S', stock: 6.1, peer: 0.8, max: 10 },
-      { lbl: 'EV/EBITDA', stock: 38.5, peer: 8.4, max: 50 },
-    ],
-    analyst: { buy: 18, hold: 22, sell: 12, ptLow: 110, ptMean: 198, ptHigh: 320, rating: 'HOLD' },
-    own: { institutional: 46.1, insider: 13.0, retail: 40.9 },
-    peers: [
-      { tk:'TM', name:'Toyota', cap:'258B', pe:8.4, ytd:-4.2, marg:9.6 },
-      { tk:'GM', name:'General Motors', cap:'52B', pe:5.7, ytd:14.8, marg:5.2 },
-      { tk:'F', name:'Ford', cap:'46B', pe:11.2, ytd:-12.4, marg:3.1 },
-      { tk:'BYDDF', name:'BYD Co.', cap:'82B', pe:18.4, ytd:8.2, marg:8.4 },
-      { tk:'RIVN', name:'Rivian', cap:'12B', pe:'—', ytd:-22.1, marg:-58.3 },
-    ],
-    news: [
-      { src:'Reuters', time:'1h ago', sent:'neg', title:'Tesla deliveries miss in Q1; price cuts continue', snip:'Volume softness in Europe and China continues into spring.' },
-      { src:'Bloomberg', time:'4h ago', sent:'pos', title:'Robotaxi event scheduled for August 8 in Austin', snip:'Musk frames event as inflection point for autonomy thesis.' },
-      { src:'Electrek', time:'1d ago', sent:'pos', title:'FSD v13 wide-release rolls out to all eligible vehicles', snip:'Notable improvements in unprotected left turns.' },
-      { src:'WSJ', time:'2d ago', sent:'neg', title:'Cybertruck recall covers 46,000 vehicles for accelerator pedal', snip:'Latest in series of recalls for new model.' },
-      { src:'CNBC', time:'3d ago', sent:'neu', title:'Optimus Gen-3 demo planned for Q3 production line trial', snip:'Humanoid robot to begin internal manufacturing tasks.' },
-    ],
-    events: [
-      { lbl:'Earnings', val:'2026-04-22', sub:'Q1 FY26' },
-      { lbl:'Robotaxi Event', val:'2026-08-08', sub:'Product reveal' },
-      { lbl:'Annual Meeting', val:'2026-06-13', sub:'Shareholder vote' },
-      { lbl:'Delivery #', val:'2026-07-02', sub:'Q2 production' },
-    ],
-  },
-
   '005930': {
-    name: '삼성전자', exch: 'KOSPI', ccy: 'KRW',
-    sector: 'Technology', industry: '반도체 · 소비전자', country: 'South Korea',
+    name: '삼성전자', exch: 'KOSPI', ccy: '원',
+    sector: '반도체', industry: '메모리 / 시스템 LSI', country: '대한민국',
     price: 78400, change: 1200, changePct: 1.55, mktCap: '468조',
     pe: 14.2, fwdPE: 11.8, eps: 5520, divYield: 1.85, beta: 1.05,
     high52: 88800, low52: 49900, vol: '14.2M', avgVol: '18.4M',
-    desc: '삼성전자는 메모리 반도체(DRAM, NAND), 시스템 LSI/파운드리, 모바일/디스플레이, 소비자 가전을 영위하는 글로벌 종합 IT 기업이다. HBM3E 양산과 3nm 파운드리 수율 개선이 단기 모멘텀이다.',
-    meta: { 대표: '한종희 · 경계현', 본사: '수원, 경기', 임직원: '267,000', 설립: '1969', 홈페이지: 'samsung.com', 상장: '1975-06-11' },
+    desc: '메모리 반도체(DRAM·NAND)와 파운드리, 모바일·디스플레이, 소비자가전을 영위하는 종합 IT 기업. HBM3E 양산과 3나노 파운드리 수율 개선이 단기 모멘텀이며, 갤럭시 AI·폴더블 라인업이 모바일 부문을 견인한다.',
+    meta: { 대표: '한종희 · 경계현', 본사: '경기 수원', 임직원: '267,000', 설립: '1969', 홈페이지: 'samsung.com', 상장일: '1975-06-11' },
     fin: {
       years: ['2020','2021','2022','2023','2024'],
       revenue: [236.8, 279.6, 302.2, 258.9, 300.9],
@@ -699,34 +502,378 @@ const STOCKS = {
       revGrowth: [2.8, 18.1, 8.1, -14.3, 16.2],
     },
     valuation: [
-      { lbl: 'P/E', stock: 14.2, peer: 18.4, max: 30 },
-      { lbl: 'Fwd P/E', stock: 11.8, peer: 16.2, max: 30 },
+      { lbl: 'PER', stock: 14.2, peer: 18.4, max: 30 },
+      { lbl: '예상 PER', stock: 11.8, peer: 16.2, max: 30 },
       { lbl: 'PEG', stock: 0.9, peer: 1.4, max: 3 },
-      { lbl: 'P/B', stock: 1.4, peer: 2.8, max: 5 },
-      { lbl: 'P/S', stock: 1.6, peer: 3.2, max: 5 },
+      { lbl: 'PBR', stock: 1.4, peer: 2.8, max: 5 },
+      { lbl: 'PSR', stock: 1.6, peer: 3.2, max: 5 },
       { lbl: 'EV/EBITDA', stock: 6.8, peer: 11.4, max: 20 },
     ],
-    analyst: { buy: 38, hold: 6, sell: 1, ptLow: 65000, ptMean: 102000, ptHigh: 130000, rating: 'BUY' },
+    analyst: { buy: 38, hold: 6, sell: 1, ptLow: 65000, ptMean: 102000, ptHigh: 130000, rating: '매수' },
     own: { institutional: 54.2, insider: 21.2, retail: 24.6 },
     peers: [
       { tk:'000660', name:'SK하이닉스', cap:'182조', pe:9.4, ytd:18.4, marg:21.2 },
-      { tk:'TSM', name:'TSMC', cap:'820B', pe:28.4, ytd:34.2, marg:42.1 },
-      { tk:'MU', name:'Micron', cap:'118B', pe:16.4, ytd:14.2, marg:18.8 },
-      { tk:'INTC', name:'Intel', cap:'92B', pe:'—', ytd:-38.5, marg:-18.7 },
-      { tk:'NVDA', name:'NVIDIA', cap:'2.85T', pe:62.3, ytd:42.1, marg:55.9 },
+      { tk:'TSM', name:'TSMC', cap:'820B$', pe:28.4, ytd:34.2, marg:42.1 },
+      { tk:'MU', name:'Micron', cap:'118B$', pe:16.4, ytd:14.2, marg:18.8 },
+      { tk:'005380', name:'현대차', cap:'52조', pe:5.7, ytd:8.4, marg:9.1 },
+      { tk:'207940', name:'삼성바이오', cap:'69조', pe:72.1, ytd:14.8, marg:31.4 },
     ],
     news: [
       { src:'한국경제', time:'1시간 전', sent:'pos', title:'삼성전자, HBM3E 12단 엔비디아 퀄 통과 임박', snip:'2분기 양산 체제 진입 가능성, 반도체 영업이익 회복 전망.' },
-      { src:'Reuters', time:'4시간 전', sent:'neu', title:'Samsung 3nm yields improve, Qualcomm tape-out reported', snip:'Foundry market share recovery still gradual.' },
-      { src:'전자신문', time:'1일 전', sent:'pos', title:'갤럭시 S26 시리즈, AI 기능 대폭 강화', snip:'온디바이스 LLM 채택 확대.' },
+      { src:'전자신문', time:'4시간 전', sent:'pos', title:'갤럭시 S26 시리즈, 온디바이스 AI 기능 대폭 강화', snip:'경량 LLM 채택 확대, AI 카메라·통역 기능 고도화.' },
+      { src:'머니투데이', time:'1일 전', sent:'neu', title:'3나노 파운드리, 퀄컴 테이프아웃 보고… 점유율 회복 시동', snip:'TSMC 격차는 여전, 수율 개선이 관건.' },
       { src:'블룸버그', time:'2일 전', sent:'neg', title:'중국 메모리 가격 압박 지속', snip:'CXMT, YMTC 증설로 NAND 가격 약세.' },
-      { src:'매일경제', time:'3일 전', sent:'pos', title:'배당 확대, 자사주 소각 계획 발표', snip:'주주환원율 50% 목표 제시.' },
+      { src:'매일경제', time:'3일 전', sent:'pos', title:'배당 확대·자사주 소각 계획 발표', snip:'주주환원율 50% 목표 제시.' },
+      { src:'연합뉴스', time:'4일 전', sent:'neu', title:'평택 P5 라인 가동 일정 1분기 연기', snip:'시장 수요 관망에 따른 결정.' },
     ],
     events: [
-      { lbl:'실적발표', val:'2026-04-30', sub:'1분기' },
+      { lbl:'실적발표', val:'2026-04-30', sub:'1분기 잠정' },
       { lbl:'배당락', val:'2026-06-29', sub:'2분기 분기배당' },
       { lbl:'주주총회', val:'2026-03-20', sub:'정기 총회' },
-      { lbl:'갤럭시 언팩', val:'2026-07-09 (e.)', sub:'폴더블 신제품' },
+      { lbl:'갤럭시 언팩', val:'2026-07-09', sub:'폴더블 신제품(예상)' },
+    ],
+  },
+
+  '000660': {
+    name: 'SK하이닉스', exch: 'KOSPI', ccy: '원',
+    sector: '반도체', industry: 'DRAM · HBM', country: '대한민국',
+    price: 252000, change: 8500, changePct: 3.49, mktCap: '183조',
+    pe: 9.4, fwdPE: 7.2, eps: 26800, divYield: 0.48, beta: 1.42,
+    high52: 268000, low52: 132500, vol: '4.8M', avgVol: '5.6M',
+    desc: 'HBM·DRAM·NAND 메모리 반도체 전문기업. 엔비디아 H100/H200/B200용 HBM3·HBM3E 사실상 단독 공급으로 AI 반도체 사이클의 최대 수혜주. 솔리다임(SSD) 자회사를 통해 엔터프라이즈 NAND 사업도 확대 중.',
+    meta: { 대표: '곽노정', 본사: '경기 이천', 임직원: '32,000', 설립: '1983', 홈페이지: 'skhynix.com', 상장일: '1996-12-26' },
+    fin: {
+      years: ['2020','2021','2022','2023','2024'],
+      revenue: [31.9, 43.0, 44.6, 32.8, 66.2],
+      netIncome: [4.8, 9.6, 2.4, -9.1, 19.8],
+      grossMargin: [27.5, 38.2, 30.1, -8.5, 41.5],
+      opMargin: [16.0, 28.6, 14.9, -23.5, 35.2],
+      netMargin: [15.1, 22.3, 5.4, -27.7, 29.9],
+      revGrowth: [18.2, 34.8, 3.7, -26.5, 101.8],
+    },
+    valuation: [
+      { lbl: 'PER', stock: 9.4, peer: 18.4, max: 30 },
+      { lbl: '예상 PER', stock: 7.2, peer: 16.2, max: 30 },
+      { lbl: 'PEG', stock: 0.4, peer: 1.4, max: 3 },
+      { lbl: 'PBR', stock: 2.8, peer: 2.8, max: 5 },
+      { lbl: 'PSR', stock: 2.7, peer: 3.2, max: 5 },
+      { lbl: 'EV/EBITDA', stock: 5.2, peer: 11.4, max: 20 },
+    ],
+    analyst: { buy: 41, hold: 3, sell: 0, ptLow: 220000, ptMean: 320000, ptHigh: 410000, rating: '강력매수' },
+    own: { institutional: 58.4, insider: 20.1, retail: 21.5 },
+    peers: [
+      { tk:'005930', name:'삼성전자', cap:'468조', pe:14.2, ytd:8.2, marg:11.5 },
+      { tk:'MU', name:'Micron', cap:'118B$', pe:16.4, ytd:14.2, marg:18.8 },
+      { tk:'NVDA', name:'NVIDIA', cap:'2.85T$', pe:62.3, ytd:42.1, marg:55.9 },
+      { tk:'042700', name:'한미반도체', cap:'14조', pe:38.5, ytd:62.1, marg:32.4 },
+      { tk:'000990', name:'DB하이텍', cap:'2.4조', pe:7.2, ytd:-4.8, marg:18.6 },
+    ],
+    news: [
+      { src:'한국경제', time:'30분 전', sent:'pos', title:'SK하이닉스, HBM4 12단 샘플 엔비디아 공급', snip:'2027년 양산 일정 앞당겨질 가능성.' },
+      { src:'전자신문', time:'3시간 전', sent:'pos', title:'1c DRAM 양산 본격화, 마이크론 격차 확대', snip:'EUV 기반 차세대 공정 안정 단계 진입.' },
+      { src:'블룸버그', time:'1일 전', sent:'neu', title:'솔리다임, 엔터프라이즈 SSD 흑자전환 가시화', snip:'AI 데이터센터 수요 견인.' },
+      { src:'머니투데이', time:'2일 전', sent:'pos', title:'2025년 영업이익 30조 돌파 전망', snip:'증권가 컨센서스 상향 조정 잇따라.' },
+      { src:'연합뉴스', time:'3일 전', sent:'neg', title:'미국 반도체법, 신규 보조금 협상 지연', snip:'대구 패키징 라인 투자 일정 영향 가능.' },
+    ],
+    events: [
+      { lbl:'실적발표', val:'2026-04-24', sub:'1분기' },
+      { lbl:'배당락', val:'2026-06-30', sub:'분기배당' },
+      { lbl:'주주총회', val:'2026-03-27', sub:'정기 총회' },
+      { lbl:'CES', val:'2026-01-06', sub:'산업 전시' },
+    ],
+  },
+
+  '005380': {
+    name: '현대차', exch: 'KOSPI', ccy: '원',
+    sector: '자동차', industry: '완성차', country: '대한민국',
+    price: 245000, change: -2500, changePct: -1.01, mktCap: '52조',
+    pe: 5.7, fwdPE: 5.1, eps: 42800, divYield: 4.5, beta: 1.18,
+    high52: 298500, low52: 178000, vol: '0.8M', avgVol: '1.1M',
+    desc: '국내 최대 완성차 제조업체. 내연기관·하이브리드·전기차·수소차까지 전 라인업을 보유하며, 미국 IRA 대응을 위해 조지아 메타플랜트(HMGMA)를 가동 중. 인도 IPO를 통한 신흥시장 확장과 보스턴다이내믹스 로보틱스 사업이 신성장 동력.',
+    meta: { 대표: '정의선 · 장재훈', 본사: '서울 양재', 임직원: '74,000', 설립: '1967', 홈페이지: 'hyundai.com', 상장일: '1974-06-28' },
+    fin: {
+      years: ['2020','2021','2022','2023','2024'],
+      revenue: [103.9, 117.6, 142.5, 162.7, 175.2],
+      netIncome: [1.9, 5.7, 8.0, 12.3, 13.2],
+      grossMargin: [16.8, 18.4, 19.2, 20.1, 21.3],
+      opMargin: [2.3, 5.7, 6.9, 9.3, 10.2],
+      netMargin: [1.8, 4.8, 5.6, 7.6, 7.5],
+      revGrowth: [-1.7, 13.1, 21.2, 14.2, 7.7],
+    },
+    valuation: [
+      { lbl: 'PER', stock: 5.7, peer: 8.2, max: 20 },
+      { lbl: '예상 PER', stock: 5.1, peer: 7.8, max: 20 },
+      { lbl: 'PEG', stock: 0.6, peer: 1.1, max: 3 },
+      { lbl: 'PBR', stock: 0.6, peer: 1.2, max: 3 },
+      { lbl: 'PSR', stock: 0.3, peer: 0.7, max: 2 },
+      { lbl: 'EV/EBITDA', stock: 4.2, peer: 7.4, max: 15 },
+    ],
+    analyst: { buy: 28, hold: 9, sell: 2, ptLow: 220000, ptMean: 320000, ptHigh: 420000, rating: '매수' },
+    own: { institutional: 41.2, insider: 28.4, retail: 30.4 },
+    peers: [
+      { tk:'000270', name:'기아', cap:'42조', pe:4.8, ytd:5.2, marg:11.2 },
+      { tk:'012330', name:'현대모비스', cap:'21조', pe:5.4, ytd:-2.4, marg:6.4 },
+      { tk:'TM', name:'Toyota', cap:'258B$', pe:8.4, ytd:-4.2, marg:9.6 },
+      { tk:'GM', name:'General Motors', cap:'52B$', pe:5.7, ytd:14.8, marg:5.2 },
+      { tk:'TSLA', name:'Tesla', cap:'588B$', pe:58.7, ytd:-12.4, marg:7.2 },
+    ],
+    news: [
+      { src:'한국경제', time:'2시간 전', sent:'pos', title:'현대차, 인도 법인 IPO 공모가 상단 확정', snip:'시가총액 21조원 평가, 신흥시장 거점 확보.' },
+      { src:'중앙일보', time:'5시간 전', sent:'neg', title:'미국 IRA 보조금 축소 가능성에 EV 전략 재검토', snip:'행정부 변경에 따른 정책 리스크 부각.' },
+      { src:'전자신문', time:'1일 전', sent:'pos', title:'아이오닉 9 북미 출시, 사전예약 호조', snip:'대형 SUV EV 라인업 강화.' },
+      { src:'머니투데이', time:'2일 전', sent:'neu', title:'기아·현대모비스와 자율주행 통합 플랫폼 발표', snip:'레벨3 기능 2026년 양산차 탑재 목표.' },
+      { src:'블룸버그', time:'3일 전', sent:'pos', title:'배당 확대 기조 지속, 자사주 매입 검토', snip:'주주환원 강화 메시지 반복.' },
+    ],
+    events: [
+      { lbl:'실적발표', val:'2026-04-25', sub:'1분기' },
+      { lbl:'배당락', val:'2026-06-27', sub:'분기배당' },
+      { lbl:'CEO 인베스터데이', val:'2026-06-12', sub:'중장기 전략' },
+      { lbl:'아이오닉 9 출시', val:'2026-05-15', sub:'국내 시판' },
+    ],
+  },
+
+  '035420': {
+    name: 'NAVER', exch: 'KOSPI', ccy: '원',
+    sector: '인터넷', industry: '플랫폼 / 검색', country: '대한민국',
+    price: 198500, change: 3500, changePct: 1.79, mktCap: '32조',
+    pe: 24.8, fwdPE: 18.2, eps: 8002, divYield: 0.62, beta: 1.08,
+    high52: 245000, low52: 155000, vol: '0.4M', avgVol: '0.6M',
+    desc: '국내 최대 검색 포털 운영사. 광고·커머스·핀테크·콘텐츠·클라우드의 5대 사업으로 구성되며, 일본 LINE Yahoo 지분과 웹툰엔터테인먼트(미국 상장)를 보유. HyperCLOVA X 기반 자체 LLM과 사우디 디지털 트윈 프로젝트가 신성장 영역.',
+    meta: { 대표: '최수연', 본사: '경기 성남', 임직원: '4,400', 설립: '1999', 홈페이지: 'navercorp.com', 상장일: '2002-10-29' },
+    fin: {
+      years: ['2020','2021','2022','2023','2024'],
+      revenue: [5.3, 6.8, 8.2, 9.7, 10.8],
+      netIncome: [0.85, 16.5, 0.65, 0.97, 1.42],
+      grossMargin: [58.2, 60.4, 56.8, 57.2, 58.4],
+      opMargin: [22.8, 19.4, 16.2, 15.8, 17.5],
+      netMargin: [16.0, 242.6, 7.9, 10.0, 13.1],
+      revGrowth: [21.8, 28.5, 20.6, 17.6, 11.3],
+    },
+    valuation: [
+      { lbl: 'PER', stock: 24.8, peer: 28.5, max: 50 },
+      { lbl: '예상 PER', stock: 18.2, peer: 22.8, max: 40 },
+      { lbl: 'PEG', stock: 1.5, peer: 1.8, max: 3 },
+      { lbl: 'PBR', stock: 1.2, peer: 4.2, max: 8 },
+      { lbl: 'PSR', stock: 3.0, peer: 5.4, max: 10 },
+      { lbl: 'EV/EBITDA', stock: 9.8, peer: 18.4, max: 30 },
+    ],
+    analyst: { buy: 32, hold: 6, sell: 2, ptLow: 180000, ptMean: 270000, ptHigh: 360000, rating: '매수' },
+    own: { institutional: 64.2, insider: 4.8, retail: 31.0 },
+    peers: [
+      { tk:'035720', name:'카카오', cap:'18조', pe:42.1, ytd:-8.4, marg:5.2 },
+      { tk:'GOOGL', name:'Alphabet', cap:'2.18T$', pe:25.4, ytd:11.6, marg:28.4 },
+      { tk:'BIDU', name:'Baidu', cap:'32B$', pe:14.2, ytd:-12.4, marg:18.4 },
+      { tk:'251270', name:'넷마블', cap:'4.8조', pe:32.4, ytd:14.2, marg:8.5 },
+      { tk:'259960', name:'크래프톤', cap:'18조', pe:28.4, ytd:42.5, marg:35.4 },
+    ],
+    news: [
+      { src:'한국경제', time:'1시간 전', sent:'pos', title:'네이버, 사우디 디지털트윈 본계약 체결', snip:'5년간 1조원 규모, 중동 진출 본격화.' },
+      { src:'전자신문', time:'4시간 전', sent:'pos', title:'HyperCLOVA X Vision 출시, 멀티모달 강화', snip:'B2B API 가격 경쟁력 확보.' },
+      { src:'머니투데이', time:'1일 전', sent:'neu', title:'라인야후, 일본 정부 행정지도 후속 대응 발표', snip:'지분 정리 협상 장기화 전망.' },
+      { src:'블룸버그', time:'2일 전', sent:'pos', title:'커머스 거래액 분기 8조원 돌파', snip:'멤버십 가입자 1천만 안착.' },
+      { src:'더벨', time:'3일 전', sent:'neg', title:'카카오와 검색 점유율 격차 축소', snip:'유튜브·구글 영향력 확대 지속.' },
+    ],
+    events: [
+      { lbl:'실적발표', val:'2026-05-08', sub:'1분기' },
+      { lbl:'배당락', val:'2026-12-28', sub:'결산배당' },
+      { lbl:'주주총회', val:'2026-03-26', sub:'정기 총회' },
+      { lbl:'DAN 컨퍼런스', val:'2026-11-11', sub:'기술 컨퍼런스' },
+    ],
+  },
+
+  '207940': {
+    name: '삼성바이오로직스', exch: 'KOSPI', ccy: '원',
+    sector: '바이오', industry: 'CDMO', country: '대한민국',
+    price: 968000, change: 12000, changePct: 1.26, mktCap: '69조',
+    pe: 72.1, fwdPE: 48.4, eps: 13420, divYield: 0.0, beta: 0.62,
+    high52: 1050000, low52: 685000, vol: '0.08M', avgVol: '0.12M',
+    desc: '세계 최대 바이오의약품 위탁생산(CDMO) 기업. 인천 송도에 4공장 풀가동, 5공장 2025년 가동 예정. 글로벌 빅파마 20곳 이상과 장기 계약을 보유하며, 자회사 삼성바이오에피스를 통해 바이오시밀러 사업도 영위.',
+    meta: { 대표: '존림', 본사: '인천 송도', 임직원: '5,800', 설립: '2011', 홈페이지: 'samsungbiologics.com', 상장일: '2016-11-10' },
+    fin: {
+      years: ['2020','2021','2022','2023','2024'],
+      revenue: [1.16, 1.57, 3.00, 3.69, 4.62],
+      netIncome: [0.24, 0.39, 0.80, 0.85, 1.02],
+      grossMargin: [42.5, 45.8, 38.2, 39.5, 41.2],
+      opMargin: [25.1, 33.4, 32.8, 28.4, 31.6],
+      netMargin: [20.7, 24.8, 26.7, 23.0, 22.1],
+      revGrowth: [66.2, 35.3, 91.4, 23.1, 25.2],
+    },
+    valuation: [
+      { lbl: 'PER', stock: 72.1, peer: 28.4, max: 100 },
+      { lbl: '예상 PER', stock: 48.4, peer: 22.5, max: 80 },
+      { lbl: 'PEG', stock: 1.8, peer: 1.5, max: 5 },
+      { lbl: 'PBR', stock: 6.2, peer: 3.4, max: 10 },
+      { lbl: 'PSR', stock: 14.9, peer: 5.8, max: 25 },
+      { lbl: 'EV/EBITDA', stock: 38.4, peer: 18.4, max: 60 },
+    ],
+    analyst: { buy: 24, hold: 8, sell: 1, ptLow: 800000, ptMean: 1180000, ptHigh: 1450000, rating: '매수' },
+    own: { institutional: 48.5, insider: 43.4, retail: 8.1 },
+    peers: [
+      { tk:'068270', name:'셀트리온', cap:'42조', pe:48.5, ytd:8.2, marg:24.8 },
+      { tk:'196170', name:'알테오젠', cap:'18조', pe:'—', ytd:142.1, marg:-8.2 },
+      { tk:'128940', name:'한미약품', cap:'4.2조', pe:18.4, ytd:14.5, marg:18.2 },
+      { tk:'LLY', name:'Eli Lilly', cap:'820B$', pe:62.4, ytd:32.1, marg:24.5 },
+      { tk:'WUXI', name:'WuXi Biologics', cap:'12B$', pe:18.4, ytd:-22.4, marg:24.1 },
+    ],
+    news: [
+      { src:'한국경제', time:'2시간 전', sent:'pos', title:'삼성바이오, 글로벌 빅파마와 1.4조 CDMO 계약', snip:'역대 단일 계약 최대 규모, 5공장 가동 효과 가시화.' },
+      { src:'머니투데이', time:'1일 전', sent:'pos', title:'5공장 4월 GMP 인증 통과', snip:'생산능력 78.4만 리터로 글로벌 1위 굳히기.' },
+      { src:'전자신문', time:'2일 전', sent:'neu', title:'ADC CDMO 신규 진출 본격화', snip:'송도 7공장 부지에 ADC 전용 라인 검토.' },
+      { src:'블룸버그', time:'3일 전', sent:'pos', title:'미·중 바이오 패권 경쟁 반사이익 기대', snip:'미국 BIOSECURE 법안 반사이익 분석.' },
+      { src:'중앙일보', time:'4일 전', sent:'neg', title:'환율 하락에 단기 마진 압박', snip:'2분기 환율 가정 1300원대.' },
+    ],
+    events: [
+      { lbl:'실적발표', val:'2026-04-28', sub:'1분기' },
+      { lbl:'주주총회', val:'2026-03-19', sub:'정기 총회' },
+      { lbl:'JPM 헬스케어', val:'2026-01-13', sub:'글로벌 컨퍼런스' },
+      { lbl:'5공장 가동', val:'2026-04-01', sub:'18만L 추가' },
+    ],
+  },
+
+  '373220': {
+    name: 'LG에너지솔루션', exch: 'KOSPI', ccy: '원',
+    sector: '2차전지', industry: '리튬이온 배터리', country: '대한민국',
+    price: 378000, change: -4500, changePct: -1.18, mktCap: '88조',
+    pe: 78.4, fwdPE: 32.4, eps: 4820, divYield: 0.0, beta: 1.62,
+    high52: 502000, low52: 312000, vol: '0.3M', avgVol: '0.4M',
+    desc: '글로벌 2위 전기차 배터리 제조사. 폴란드, 미시간, 애리조나 등 글로벌 생산기지를 운영하며 GM·스텔란티스·현대차·혼다와 합작법인 다수 보유. ESS 사업과 LFP 라인 도입으로 포트폴리오 다각화 진행 중.',
+    meta: { 대표: '김동명', 본사: '서울 여의도', 임직원: '13,000', 설립: '2020', 홈페이지: 'lgensol.com', 상장일: '2022-01-27' },
+    fin: {
+      years: ['2020','2021','2022','2023','2024'],
+      revenue: [12.4, 17.9, 25.6, 33.7, 25.6],
+      netIncome: [-0.41, 0.93, 0.78, 1.61, 0.42],
+      grossMargin: [16.8, 17.2, 14.8, 16.4, 12.2],
+      opMargin: [-3.6, 4.3, 4.8, 6.4, 2.1],
+      netMargin: [-3.3, 5.2, 3.0, 4.8, 1.6],
+      revGrowth: [38.2, 44.4, 43.0, 31.6, -24.0],
+    },
+    valuation: [
+      { lbl: 'PER', stock: 78.4, peer: 24.2, max: 100 },
+      { lbl: '예상 PER', stock: 32.4, peer: 18.5, max: 80 },
+      { lbl: 'PEG', stock: 2.4, peer: 1.6, max: 5 },
+      { lbl: 'PBR', stock: 4.1, peer: 2.4, max: 8 },
+      { lbl: 'PSR', stock: 3.4, peer: 1.8, max: 8 },
+      { lbl: 'EV/EBITDA', stock: 18.4, peer: 12.4, max: 30 },
+    ],
+    analyst: { buy: 22, hold: 14, sell: 4, ptLow: 280000, ptMean: 460000, ptHigh: 620000, rating: '보유' },
+    own: { institutional: 48.2, insider: 81.8, retail: 8.0 },
+    peers: [
+      { tk:'006400', name:'삼성SDI', cap:'18조', pe:24.5, ytd:-18.4, marg:5.2 },
+      { tk:'096770', name:'SK이노베이션', cap:'12조', pe:'—', ytd:-22.5, marg:-2.1 },
+      { tk:'247540', name:'에코프로비엠', cap:'17조', pe:88.4, ytd:-12.4, marg:4.5 },
+      { tk:'CATL', name:'CATL', cap:'164B$', pe:18.5, ytd:24.1, marg:18.2 },
+      { tk:'TSLA', name:'Tesla Energy', cap:'588B$', pe:58.7, ytd:-12.4, marg:7.2 },
+    ],
+    news: [
+      { src:'한국경제', time:'1시간 전', sent:'neg', title:'전기차 캐즘 장기화에 LFP 라인 투자 가속', snip:'중저가 시장 대응을 위한 라인 전환 계획.' },
+      { src:'전자신문', time:'4시간 전', sent:'pos', title:'토요타와 미국 합작법인 본격 가동', snip:'2026년 100GWh 규모 양산.' },
+      { src:'머니투데이', time:'1일 전', sent:'neu', title:'46파이 원통형 셀, BMW Neue Klasse 양산 적용', snip:'고에너지밀도 셀 글로벌 표준화 가속.' },
+      { src:'블룸버그', time:'2일 전', sent:'pos', title:'IRA AMPC 보조금 1.2조 인식 전망', snip:'미국 생산 확대 효과.' },
+      { src:'더벨', time:'3일 전', sent:'neg', title:'2분기 가이던스 하향, 연간 매출 25조 목표', snip:'유럽 EV 수요 둔화 영향.' },
+    ],
+    events: [
+      { lbl:'실적발표', val:'2026-04-29', sub:'1분기' },
+      { lbl:'주주총회', val:'2026-03-26', sub:'정기 총회' },
+      { lbl:'IR Day', val:'2026-09-17', sub:'중장기 전략' },
+      { lbl:'미국 공장 증설', val:'2026-Q4', sub:'GM 합작' },
+    ],
+  },
+
+  '247540': {
+    name: '에코프로비엠', exch: 'KOSDAQ', ccy: '원',
+    sector: '2차전지 소재', industry: '양극재', country: '대한민국',
+    price: 178000, change: 2500, changePct: 1.42, mktCap: '17조',
+    pe: 88.4, fwdPE: 32.5, eps: 2014, divYield: 0.28, beta: 2.18,
+    high52: 312000, low52: 142000, vol: '0.5M', avgVol: '0.7M',
+    desc: '국내 1위 NCM/NCA 양극재 제조사. SK온·삼성SDI에 주로 공급하며 포드·테슬라 직접 공급도 진행. 헝가리·캐나다 공장 증설로 IRA 대응 체계 구축 중. 모회사 에코프로 그룹의 핵심 자회사.',
+    meta: { 대표: '주재환 · 최문호', 본사: '충북 청주', 임직원: '2,800', 설립: '2016', 홈페이지: 'ecoprobm.co.kr', 상장일: '2019-03-05' },
+    fin: {
+      years: ['2020','2021','2022','2023','2024'],
+      revenue: [0.85, 1.45, 5.36, 6.91, 4.21],
+      netIncome: [0.04, 0.10, 0.28, 0.16, 0.04],
+      grossMargin: [12.4, 14.2, 11.8, 8.5, 6.2],
+      opMargin: [6.5, 8.4, 7.8, 4.2, 1.8],
+      netMargin: [4.7, 6.9, 5.2, 2.3, 0.9],
+      revGrowth: [42.1, 70.6, 269.7, 28.9, -39.0],
+    },
+    valuation: [
+      { lbl: 'PER', stock: 88.4, peer: 32.4, max: 150 },
+      { lbl: '예상 PER', stock: 32.5, peer: 22.4, max: 80 },
+      { lbl: 'PEG', stock: 3.2, peer: 1.8, max: 5 },
+      { lbl: 'PBR', stock: 5.8, peer: 3.2, max: 10 },
+      { lbl: 'PSR', stock: 4.0, peer: 2.4, max: 10 },
+      { lbl: 'EV/EBITDA', stock: 28.4, peer: 14.5, max: 50 },
+    ],
+    analyst: { buy: 14, hold: 18, sell: 6, ptLow: 130000, ptMean: 220000, ptHigh: 350000, rating: '보유' },
+    own: { institutional: 32.4, insider: 47.2, retail: 20.4 },
+    peers: [
+      { tk:'003670', name:'포스코퓨처엠', cap:'18조', pe:78.5, ytd:-22.4, marg:3.2 },
+      { tk:'066970', name:'엘앤에프', cap:'4.2조', pe:'—', ytd:-32.1, marg:-12.4 },
+      { tk:'086520', name:'에코프로', cap:'18조', pe:62.4, ytd:-18.5, marg:4.8 },
+      { tk:'006400', name:'삼성SDI', cap:'18조', pe:24.5, ytd:-18.4, marg:5.2 },
+      { tk:'373220', name:'LG에너지솔루션', cap:'88조', pe:78.4, ytd:-14.2, marg:2.1 },
+    ],
+    news: [
+      { src:'전자신문', time:'2시간 전', sent:'neg', title:'양극재 가격 약세 지속, 1분기 실적 둔화', snip:'리튬 가격 하락이 판가에 반영.' },
+      { src:'한국경제', time:'5시간 전', sent:'pos', title:'헝가리 공장 1단계 가동 본격화', snip:'유럽향 양극재 공급 확대.' },
+      { src:'머니투데이', time:'1일 전', sent:'pos', title:'단결정 양극재 상용화 임박', snip:'주요 셀 메이커 양산 라인 투입 임박.' },
+      { src:'블룸버그', time:'2일 전', sent:'neu', title:'캐나다 공장 IRA 보조금 협상 진행', snip:'2027년 가동 목표.' },
+      { src:'더벨', time:'3일 전', sent:'neg', title:'주가 변동성 확대, 공매도 재개 영향', snip:'KOSDAQ 거래대금 1위 등극.' },
+    ],
+    events: [
+      { lbl:'실적발표', val:'2026-04-26', sub:'1분기' },
+      { lbl:'주주총회', val:'2026-03-22', sub:'정기 총회' },
+      { lbl:'헝가리 가동식', val:'2026-06-10', sub:'1단계 가동' },
+      { lbl:'IR Day', val:'2026-10-22', sub:'전략 발표' },
+    ],
+  },
+
+  '035720': {
+    name: '카카오', exch: 'KOSPI', ccy: '원',
+    sector: '인터넷', industry: '플랫폼 / 메신저', country: '대한민국',
+    price: 42500, change: -800, changePct: -1.85, mktCap: '18조',
+    pe: 42.1, fwdPE: 24.8, eps: 1009, divYield: 0.14, beta: 1.32,
+    high52: 58200, low52: 35100, vol: '2.4M', avgVol: '3.1M',
+    desc: '국민 메신저 카카오톡을 기반으로 한 종합 플랫폼 기업. 광고·커머스·핀테크(카카오페이/뱅크)·콘텐츠(픽코마/엔터)·모빌리티 사업을 영위. SM엔터 인수, 사법 리스크 정리, AI(코GPT 2.0) 출시가 단기 이슈.',
+    meta: { 대표: '정신아', 본사: '제주 제주시', 임직원: '4,800', 설립: '1995', 홈페이지: 'kakaocorp.com', 상장일: '2017-07-10' },
+    fin: {
+      years: ['2020','2021','2022','2023','2024'],
+      revenue: [4.2, 6.1, 7.1, 7.6, 7.9],
+      netIncome: [0.17, 1.65, 1.10, -1.86, 0.42],
+      grossMargin: [42.1, 44.5, 38.2, 32.4, 35.8],
+      opMargin: [11.5, 9.8, 8.2, 6.8, 7.5],
+      netMargin: [4.0, 27.0, 15.5, -24.5, 5.3],
+      revGrowth: [35.2, 45.2, 16.4, 7.0, 3.9],
+    },
+    valuation: [
+      { lbl: 'PER', stock: 42.1, peer: 28.5, max: 80 },
+      { lbl: '예상 PER', stock: 24.8, peer: 22.8, max: 50 },
+      { lbl: 'PEG', stock: 2.8, peer: 1.8, max: 5 },
+      { lbl: 'PBR', stock: 1.4, peer: 4.2, max: 8 },
+      { lbl: 'PSR', stock: 2.3, peer: 5.4, max: 10 },
+      { lbl: 'EV/EBITDA', stock: 14.5, peer: 18.4, max: 30 },
+    ],
+    analyst: { buy: 18, hold: 14, sell: 6, ptLow: 38000, ptMean: 58000, ptHigh: 78000, rating: '보유' },
+    own: { institutional: 38.4, insider: 24.2, retail: 37.4 },
+    peers: [
+      { tk:'035420', name:'NAVER', cap:'32조', pe:24.8, ytd:-2.4, marg:17.5 },
+      { tk:'377300', name:'카카오페이', cap:'4.2조', pe:'—', ytd:-18.4, marg:-12.5 },
+      { tk:'323410', name:'카카오뱅크', cap:'14조', pe:18.5, ytd:8.4, marg:24.2 },
+      { tk:'251270', name:'넷마블', cap:'4.8조', pe:32.4, ytd:14.2, marg:8.5 },
+      { tk:'041510', name:'에스엠', cap:'2.4조', pe:24.5, ytd:-8.4, marg:14.2 },
+    ],
+    news: [
+      { src:'한국경제', time:'1시간 전', sent:'neg', title:'카카오, 시세조종 의혹 1심 선고 임박', snip:'사법 리스크 일단락 여부에 시장 주목.' },
+      { src:'전자신문', time:'4시간 전', sent:'pos', title:'코GPT 2.0 기반 카카오톡 AI 메신저 출시', snip:'AI 비서·번역·요약 기능 무료 제공.' },
+      { src:'머니투데이', time:'1일 전', sent:'neu', title:'SM엔터 시너지 가시화, 글로벌 IP 확장', snip:'NCT WISH·라이즈 일본·미국 진출.' },
+      { src:'블룸버그', time:'2일 전', sent:'neg', title:'커머스 거래액 정체, 네이버와 격차 확대', snip:'쿠팡 점유율 압박 지속.' },
+      { src:'더벨', time:'3일 전', sent:'pos', title:'카카오페이, 미국 자회사 시버트 인수 마무리', snip:'리테일 증권 글로벌 확장 시동.' },
+    ],
+    events: [
+      { lbl:'실적발표', val:'2026-05-09', sub:'1분기' },
+      { lbl:'주주총회', val:'2026-03-28', sub:'정기 총회' },
+      { lbl:'if(kakao) AI', val:'2026-10-15', sub:'개발자 컨퍼런스' },
+      { lbl:'배당락', val:'2026-12-28', sub:'결산배당' },
     ],
   },
 };
@@ -752,13 +899,13 @@ function hashString(str) {
 
 function buildPriceSeries(ticker, range, currentPrice) {
   const cfg = {
-    '1D': { points: 78, stepMin: 5, vol: 0.0008, label: 'Today · 5min' },
-    '1W': { points: 35, stepMin: 60*2, vol: 0.0025, label: 'Past Week · 2hr' },
-    '1M': { points: 22, stepMin: 60*24, vol: 0.012, label: 'Past Month · Daily' },
-    '3M': { points: 64, stepMin: 60*24, vol: 0.014, label: 'Past 3 Months · Daily' },
-    '6M': { points: 130, stepMin: 60*24, vol: 0.016, label: 'Past 6 Months · Daily' },
-    '1Y': { points: 252, stepMin: 60*24, vol: 0.018, label: 'Past Year · Daily' },
-    '5Y': { points: 260, stepMin: 60*24*7, vol: 0.035, label: 'Past 5 Years · Weekly' },
+    '1D': { points: 78, stepMin: 5, vol: 0.0008, label: '오늘 · 5분 봉' },
+    '1W': { points: 35, stepMin: 60*2, vol: 0.0025, label: '최근 1주 · 2시간 봉' },
+    '1M': { points: 22, stepMin: 60*24, vol: 0.012, label: '최근 1개월 · 일봉' },
+    '3M': { points: 64, stepMin: 60*24, vol: 0.014, label: '최근 3개월 · 일봉' },
+    '6M': { points: 130, stepMin: 60*24, vol: 0.016, label: '최근 6개월 · 일봉' },
+    '1Y': { points: 252, stepMin: 60*24, vol: 0.018, label: '최근 1년 · 일봉' },
+    '5Y': { points: 260, stepMin: 60*24*7, vol: 0.035, label: '최근 5년 · 주봉' },
   }[range];
   const rand = seededRandom(hashString(ticker + range));
   const labels = [];
@@ -900,8 +1047,8 @@ function buildRevChart(fin) {
     data: {
       labels: fin.years,
       datasets: [
-        { label: 'Revenue', data: fin.revenue, backgroundColor: COLORS.blueBg, borderColor: COLORS.blue, borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
-        { label: 'Net Income', data: fin.netIncome, backgroundColor: COLORS.accentBg, borderColor: COLORS.accent, borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
+        { label: '매출', data: fin.revenue, backgroundColor: COLORS.blueBg, borderColor: COLORS.blue, borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
+        { label: '순이익', data: fin.netIncome, backgroundColor: COLORS.accentBg, borderColor: COLORS.accent, borderWidth: 1, borderRadius: 3, yAxisID: 'y' },
       ],
     },
     options: {
@@ -911,12 +1058,12 @@ function buildRevChart(fin) {
         tooltip: {
           backgroundColor: '#1a1a1a', titleColor: '#fafaf7', bodyColor: '#fafaf7',
           borderColor: COLORS.accent, borderWidth: 1, padding: 8,
-          callbacks: { label: c => '  ' + c.dataset.label + ': $' + c.parsed.y.toFixed(1) + 'B' }
+          callbacks: { label: c => '  ' + c.dataset.label + ': ' + c.parsed.y.toFixed(1) + '조원' }
         },
       },
       scales: {
         x: { grid: { display: false } },
-        y: { grid: { color: COLORS.line }, ticks: { callback: v => '$' + v + 'B' } },
+        y: { grid: { color: COLORS.line }, ticks: { callback: v => v + '조' } },
       },
     },
   });
@@ -930,9 +1077,9 @@ function buildMarginChart(fin) {
     data: {
       labels: fin.years,
       datasets: [
-        { label: 'Gross %', data: fin.grossMargin, borderColor: COLORS.green, backgroundColor: 'transparent', borderWidth: 2, tension: 0.3, pointRadius: 3, pointBackgroundColor: COLORS.green },
-        { label: 'Operating %', data: fin.opMargin, borderColor: COLORS.gold, backgroundColor: 'transparent', borderWidth: 2, tension: 0.3, pointRadius: 3, pointBackgroundColor: COLORS.gold },
-        { label: 'Net %', data: fin.netMargin, borderColor: COLORS.accent, backgroundColor: 'transparent', borderWidth: 2, tension: 0.3, pointRadius: 3, pointBackgroundColor: COLORS.accent },
+        { label: '매출총이익률', data: fin.grossMargin, borderColor: COLORS.green, backgroundColor: 'transparent', borderWidth: 2, tension: 0.3, pointRadius: 3, pointBackgroundColor: COLORS.green },
+        { label: '영업이익률', data: fin.opMargin, borderColor: COLORS.gold, backgroundColor: 'transparent', borderWidth: 2, tension: 0.3, pointRadius: 3, pointBackgroundColor: COLORS.gold },
+        { label: '순이익률', data: fin.netMargin, borderColor: COLORS.accent, backgroundColor: 'transparent', borderWidth: 2, tension: 0.3, pointRadius: 3, pointBackgroundColor: COLORS.accent },
       ],
     },
     options: {
@@ -959,7 +1106,7 @@ function buildDonut(a) {
   donutChart = new Chart(ctx, {
     type: 'doughnut',
     data: {
-      labels: ['Buy','Hold','Sell'],
+      labels: ['매수','중립','매도'],
       datasets: [{
         data: [a.buy, a.hold, a.sell],
         backgroundColor: [COLORS.green, COLORS.gold, COLORS.red],
@@ -979,7 +1126,7 @@ function buildOwn(o) {
   ownChart = new Chart(ctx, {
     type: 'doughnut',
     data: {
-      labels: ['Institutional','Insider','Retail / Other'],
+      labels: ['기관','내부자','개인 / 기타'],
       datasets: [{
         data: [o.institutional, o.insider, o.retail],
         backgroundColor: [COLORS.blue, COLORS.accent, COLORS.gold],
@@ -1029,14 +1176,14 @@ function renderHeader(s) {
 
 function renderKPIs(s) {
   const items = [
-    { lbl: 'Market Cap', val: s.mktCap, sub: 'Shares × Price' },
-    { lbl: 'P/E (TTM)', val: s.pe.toString(), sub: `Fwd ${s.fwdPE}` },
-    { lbl: 'EPS (TTM)', val: typeof s.eps === 'number' ? s.eps.toLocaleString() : s.eps, sub: 'Diluted' },
-    { lbl: 'Div Yield', val: s.divYield.toFixed(2) + '%', sub: 'Annualized' },
-    { lbl: '52W High', val: s.high52.toLocaleString(), sub: ((s.price/s.high52-1)*100).toFixed(1) + '%', subClass: s.price >= s.high52 ? 'up' : 'down' },
-    { lbl: '52W Low', val: s.low52.toLocaleString(), sub: '+' + ((s.price/s.low52-1)*100).toFixed(1) + '%', subClass: 'up' },
-    { lbl: 'Volume', val: s.vol, sub: 'Avg ' + s.avgVol },
-    { lbl: 'Beta (5Y)', val: s.beta.toFixed(2), sub: s.beta > 1 ? 'High vol' : 'Low vol' },
+    { lbl: '시가총액', val: s.mktCap, sub: '발행주식 × 주가' },
+    { lbl: 'PER (TTM)', val: s.pe.toString(), sub: `예상 ${s.fwdPE}` },
+    { lbl: 'EPS (TTM)', val: typeof s.eps === 'number' ? s.eps.toLocaleString() : s.eps, sub: '희석 EPS' },
+    { lbl: '배당수익률', val: s.divYield.toFixed(2) + '%', sub: '연환산' },
+    { lbl: '52주 최고', val: s.high52.toLocaleString(), sub: ((s.price/s.high52-1)*100).toFixed(1) + '%', subClass: s.price >= s.high52 ? 'up' : 'down' },
+    { lbl: '52주 최저', val: s.low52.toLocaleString(), sub: '+' + ((s.price/s.low52-1)*100).toFixed(1) + '%', subClass: 'up' },
+    { lbl: '거래량', val: s.vol, sub: '평균 ' + s.avgVol },
+    { lbl: '베타 (5Y)', val: s.beta.toFixed(2), sub: s.beta > 1 ? '고변동' : '저변동' },
   ];
   $('kpi-strip').innerHTML = items.map(k => `
     <div class="kpi">
@@ -1063,7 +1210,7 @@ function renderValuation(s) {
       <div class="bar-row">
         <div class="lbl">${v.lbl}</div>
         <div>
-          <div class="bar-track" title="Stock: ${v.stock} · Peer: ${v.peer}">
+          <div class="bar-track" title="종목: ${v.stock} · 업종: ${v.peer}">
             <div class="bar-fill ${richer ? '' : 'green'}" style="width:${w}%;"></div>
             <div style="position:absolute; top:-2px; left:${wp}%; width:2px; height:10px; background:var(--ink); transform:translateX(-1px);"></div>
           </div>
@@ -1073,8 +1220,8 @@ function renderValuation(s) {
     `;
   }).join('') + `
     <div style="display:flex; gap:14px; margin-top:14px; padding-top:12px; border-top:1px dashed var(--line); font-family:var(--mono); font-size:9px; color:var(--ink-soft); letter-spacing:0.1em; text-transform:uppercase;">
-      <div style="display:flex; align-items:center; gap:5px;"><span style="width:18px; height:6px; background:linear-gradient(90deg,var(--accent),var(--gold)); border-radius:2px;"></span>Stock</div>
-      <div style="display:flex; align-items:center; gap:5px;"><span style="width:2px; height:10px; background:var(--ink); display:inline-block;"></span>Peer Median</div>
+      <div style="display:flex; align-items:center; gap:5px;"><span style="width:18px; height:6px; background:linear-gradient(90deg,var(--accent),var(--gold)); border-radius:2px;"></span>종목</div>
+      <div style="display:flex; align-items:center; gap:5px;"><span style="width:2px; height:10px; background:var(--ink); display:inline-block;"></span>업종 중간값</div>
     </div>
   `;
 }
@@ -1082,13 +1229,13 @@ function renderValuation(s) {
 function renderAnalyst(s) {
   const a = s.analyst;
   const total = a.buy + a.hold + a.sell;
-  $('analyst-count').textContent = total + ' analysts';
+  $('analyst-count').textContent = total + '명 애널리스트';
   $('analyst-rating').textContent = a.rating;
   buildDonut(a);
   $('rating-bars').innerHTML = [
-    { lbl: 'Buy', cls: 'buy', n: a.buy },
-    { lbl: 'Hold', cls: 'hold', n: a.hold },
-    { lbl: 'Sell', cls: 'sell', n: a.sell },
+    { lbl: '매수', cls: 'buy', n: a.buy },
+    { lbl: '중립', cls: 'hold', n: a.hold },
+    { lbl: '매도', cls: 'sell', n: a.sell },
   ].map(r => `
     <div class="rb-row">
       <div class="lbl">${r.lbl}</div>
@@ -1098,7 +1245,7 @@ function renderAnalyst(s) {
   `).join('');
   // PT block
   const upside = ((a.ptMean / s.price - 1) * 100);
-  $('pt-mean').textContent = a.ptMean.toLocaleString() + ' ' + s.ccy;
+  $('pt-mean').textContent = a.ptMean.toLocaleString() + (s.ccy === '원' ? '원' : ' ' + s.ccy);
   $('pt-low').textContent = a.ptLow.toLocaleString();
   $('pt-high').textContent = a.ptHigh.toLocaleString();
   const upEl = $('pt-upside');
@@ -1110,18 +1257,18 @@ function renderAnalyst(s) {
   const meanPos = Math.max(0, Math.min(100, (a.ptMean - a.ptLow) / range * 100));
   $('pt-bar').innerHTML = `
     <div class="pt-range" style="width:100%;"></div>
-    <div class="pt-marker" style="left:${curPos}%;"><span class="lbl">Now ${s.price.toLocaleString()}</span></div>
-    <div class="pt-marker target" style="left:${meanPos}%; top:auto; bottom:-3px; height:14px;"><span class="lbl" style="top:auto; bottom:-16px;">PT ${a.ptMean.toLocaleString()}</span></div>
+    <div class="pt-marker" style="left:${curPos}%;"><span class="lbl">현재 ${s.price.toLocaleString()}</span></div>
+    <div class="pt-marker target" style="left:${meanPos}%; top:auto; bottom:-3px; height:14px;"><span class="lbl" style="top:auto; bottom:-16px;">목표 ${a.ptMean.toLocaleString()}</span></div>
   `;
 }
 
 function renderOwn(s) {
   buildOwn(s.own);
   $('own-rows').innerHTML = [
-    { lbl: 'Institutional Holders', val: s.own.institutional.toFixed(1) + '%' },
-    { lbl: 'Insider Holdings', val: s.own.insider.toFixed(2) + '%' },
-    { lbl: 'Retail / Other', val: s.own.retail.toFixed(1) + '%' },
-    { lbl: 'Float', val: ((100 - s.own.insider).toFixed(1)) + '%' },
+    { lbl: '기관 보유', val: s.own.institutional.toFixed(1) + '%' },
+    { lbl: '내부자 지분', val: s.own.insider.toFixed(2) + '%' },
+    { lbl: '개인 / 기타', val: s.own.retail.toFixed(1) + '%' },
+    { lbl: '유통 주식', val: ((100 - s.own.insider).toFixed(1)) + '%' },
   ].map(r => `<div class="metric-row"><span class="lbl">${r.lbl}</span><span class="val">${r.val}</span></div>`).join('');
 }
 
@@ -1146,24 +1293,24 @@ function renderIncome(s) {
   const gross = f.revenue.map((r, i) => +(r * f.grossMargin[i]/100).toFixed(1));
   const op = f.revenue.map((r, i) => +(r * f.opMargin[i]/100).toFixed(1));
   const rows = [
-    { lbl: 'Revenue', vals: f.revenue, cls: 'label' },
-    { lbl: 'Cost of Revenue', vals: cogs },
-    { lbl: 'Gross Profit', vals: gross, cls: 'label' },
-    { lbl: 'Operating Income', vals: op, cls: 'label' },
-    { lbl: 'Net Income', vals: f.netIncome, cls: 'label' },
-    { lbl: 'Revenue Growth', vals: f.revGrowth, suffix: '%' },
-    { lbl: 'Net Margin', vals: f.netMargin, suffix: '%' },
+    { lbl: '매출액', vals: f.revenue, cls: 'label' },
+    { lbl: '매출원가', vals: cogs },
+    { lbl: '매출총이익', vals: gross, cls: 'label' },
+    { lbl: '영업이익', vals: op, cls: 'label' },
+    { lbl: '당기순이익', vals: f.netIncome, cls: 'label' },
+    { lbl: '매출성장률', vals: f.revGrowth, suffix: '%' },
+    { lbl: '순이익률', vals: f.netMargin, suffix: '%' },
   ];
   tbl.querySelector('tbody').innerHTML = rows.map(r => `
     <tr>
       <td class="${r.cls||''}">${r.lbl}</td>
-      ${r.vals.map(v => `<td class="num">${typeof v === 'number' ? (r.suffix ? v.toFixed(1) + r.suffix : '$' + v.toFixed(1) + 'B') : v}</td>`).join('')}
+      ${r.vals.map(v => `<td class="num">${typeof v === 'number' ? (r.suffix ? v.toFixed(1) + r.suffix : v.toFixed(1) + '조') : v}</td>`).join('')}
     </tr>
   `).join('');
 }
 
 function renderNews(s) {
-  $('news-count').textContent = s.news.length + ' headlines';
+  $('news-count').textContent = s.news.length + '개 헤드라인';
   $('news-list').innerHTML = s.news.map(n => `
     <div class="news-item">
       <div class="news-meta">
@@ -1261,7 +1408,7 @@ tick(); setInterval(tick, 30000);
 
 // Boot — pull ticker from hash if present
 const hash = location.hash.replace('#','').toUpperCase();
-loadStock(STOCKS[hash] ? hash : 'AAPL');
+loadStock(STOCKS[hash] ? hash : '005930');
 </script>
 </body>
 </html>
