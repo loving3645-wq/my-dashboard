@@ -163,6 +163,62 @@
   .flow-cell.sell { color: var(--red); background: var(--red-bg); }
   .flow-cell.flat { color: var(--ink-faint); }
 
+  /* ========== Watchlist star ========== */
+  .star { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; cursor: pointer; color: var(--ink-faint); font-size: 14px; transition: color 0.12s, transform 0.1s; flex-shrink: 0; }
+  .star:hover { color: var(--gold); transform: scale(1.15); }
+  .star.on { color: var(--gold); }
+
+  /* ========== Preset chips ========== */
+  .preset-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; padding: 10px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+  .preset-row .tlabel { margin-right: 4px; }
+  .preset-chip { padding: 5px 11px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 14px; font-size: 11px; font-family: var(--mono); color: var(--ink-mid); transition: all 0.12s; letter-spacing: 0.04em; cursor: pointer; }
+  .preset-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .preset-chip.active { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .preset-chip .ico { margin-right: 4px; font-size: 10px; }
+  .preset-clear { font-size: 10px; color: var(--ink-soft); margin-left: 8px; cursor: pointer; padding: 4px 8px; border-radius: 3px; }
+  .preset-clear:hover { background: var(--bg-warm); color: var(--ink); }
+
+  /* ========== Hot list panel ========== */
+  .hot-panel { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .hot-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+  .hot-card .hot-title { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .hot-card .hot-title .pill { background: var(--bg-warm); padding: 1px 6px; border-radius: 3px; font-size: 9px; color: var(--ink-mid); }
+  .hot-list { display: flex; flex-direction: column; gap: 4px; }
+  .hot-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; padding: 4px 6px; border-radius: 4px; cursor: pointer; transition: background 0.12s; }
+  .hot-item:hover { background: var(--bg-warm); }
+  .hot-item .nm { color: var(--ink); font-weight: 500; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hot-item .cd { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); }
+  .hot-item .v { font-family: var(--mono); font-size: 11px; font-weight: 500; flex-shrink: 0; }
+  .hot-item .v.up { color: var(--green); }
+  .hot-item .v.down { color: var(--red); }
+  .hot-empty { font-size: 11px; color: var(--ink-faint); padding: 4px 6px; }
+
+  /* ========== Sector rotation panel ========== */
+  .sector-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 14px; overflow: hidden; }
+  .sector-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; cursor: pointer; -webkit-user-select: none; user-select: none; transition: background 0.12s; }
+  .sector-head:hover { background: var(--bg-warm); }
+  .sector-head .title { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.12em; text-transform: uppercase; }
+  .sector-head .caret { font-size: 11px; color: var(--ink-soft); transition: transform 0.2s; }
+  .sector-panel.open .sector-head .caret { transform: rotate(180deg); }
+  .sector-body { display: none; max-height: 320px; overflow-y: auto; border-top: 1px solid var(--line); }
+  .sector-panel.open .sector-body { display: block; }
+  table.sector-tbl { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+  .sector-tbl th { text-align: right; padding: 6px 10px; font-family: var(--mono); font-weight: 500; font-size: 9px; color: var(--ink-soft); letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--surface-2); cursor: pointer; }
+  .sector-tbl th:hover { color: var(--ink); }
+  .sector-tbl th.left { text-align: left; }
+  .sector-tbl td { padding: 5px 10px; text-align: right; font-family: var(--mono); font-size: 11px; border-bottom: 1px solid var(--line); }
+  .sector-tbl td.left { text-align: left; color: var(--ink); font-family: var(--sans); cursor: pointer; }
+  .sector-tbl tbody tr:hover { background: var(--bg-warm); }
+  .sector-tbl tbody tr.active td.left { color: var(--accent); font-weight: 600; }
+  .breadth-bar { display: inline-block; width: 50px; height: 6px; background: var(--red-bg); border-radius: 3px; overflow: hidden; vertical-align: middle; margin-right: 6px; }
+  .breadth-bar .fill { height: 100%; background: var(--green); }
+
+  /* RS column */
+  .rs-cell { font-family: var(--mono); font-weight: 500; padding: 2px 6px; border-radius: 3px; display: inline-block; min-width: 56px; text-align: right; font-size: 11px; }
+  .rs-cell.up { color: var(--green); background: var(--green-bg); }
+  .rs-cell.down { color: var(--red); background: var(--red-bg); }
+  .rs-cell.flat { color: var(--ink-soft); }
+
   /* spark column */
   .spark-cell { padding: 4px 6px; }
   .spark-cell svg { display: block; }
@@ -219,6 +275,7 @@
       <button class="tab active" data-mkt="ALL">전체</button>
       <button class="tab" data-mkt="KOSPI">KOSPI</button>
       <button class="tab" data-mkt="KOSDAQ">KOSDAQ</button>
+      <button class="tab" data-mkt="WATCH" title="별표 찍은 종목만">★ 관심</button>
     </div>
     <div class="toolbar-divider"></div>
     <span class="tlabel">섹터</span>
@@ -238,6 +295,7 @@
     </select>
     <div class="toolbar-divider"></div>
     <button class="btn" id="toggle-flow" title="외국인/기관/개인 순매수 데이터를 추가로 가져옵니다">+ 수급 데이터</button>
+    <button class="btn" id="toggle-rs" title="섹터·시장 평균 대비 1M 상대강도 컬럼 추가">+ 상대강도</button>
     <button class="btn primary" id="scan-btn">스캔 시작</button>
     <button class="btn warn" id="stop-btn" style="display:none;">중지</button>
     <button class="btn" id="clear-cache" title="저장된 캐시를 지우고 다시 가져옵니다">캐시 삭제</button>
@@ -251,6 +309,35 @@
     <div class="seg"><span class="lbl">캐시</span><span class="val" id="cache-info">—</span></div>
     <div class="seg"><span class="lbl">스냅샷</span><span class="val" id="snapshot-info">불러오는 중…</span></div>
     <div class="seg"><span class="lbl">소스</span><span class="val">Naver Finance</span></div>
+  </div>
+
+  <!-- ============ PRESET FILTERS ============ -->
+  <div class="preset-row">
+    <span class="tlabel">프리셋</span>
+    <button class="preset-chip" data-preset="momentum" title="모든 타임프레임에서 상승 중인 추세 종목">📈 추세 종목</button>
+    <button class="preset-chip" data-preset="rebound" title="1Y 큰 폭 하락 후 1M 반등 시작 — 턴어라운드 후보">🔄 반등 후보</button>
+    <button class="preset-chip" data-preset="volume" title="오늘 거래량이 20일 평균 대비 2배 이상 — 이벤트 발생 의심">🔥 거래량 폭발</button>
+    <button class="preset-chip" data-preset="smartmoney" title="외국인 + 기관 모두 5D 누적 순매수">🐋 스마트머니</button>
+    <button class="preset-chip" data-preset="laggard" title="섹터 평균 대비 1M 수익률이 5%↓ 낮은 종목 — 따라잡기 후보">🐢 섹터 낙오자</button>
+    <button class="preset-chip" data-preset="distrib" title="외국인 매도 + 개인 매수 — '개미 잡힌' 종목, 약세 신호">⚠️ 분배(약세)</button>
+    <span class="preset-clear" id="preset-clear" style="display:none;">× 프리셋 해제</span>
+  </div>
+
+  <!-- ============ HOT LIST PANEL ============ -->
+  <div class="hot-panel" id="hot-panel">
+    <div class="hot-card"><div class="hot-title">🔥 거래량 폭발 <span class="pill">vs 20D 평균</span></div><div class="hot-list" id="hot-volume"></div></div>
+    <div class="hot-card"><div class="hot-title">🐋 외국인 5D 매수 Top <span class="pill">금일 기준</span></div><div class="hot-list" id="hot-foreign"></div></div>
+    <div class="hot-card"><div class="hot-title">📈 1D 상승 Top <span class="pill">필터 적용</span></div><div class="hot-list" id="hot-gain"></div></div>
+    <div class="hot-card"><div class="hot-title">📉 1D 하락 Top <span class="pill">필터 적용</span></div><div class="hot-list" id="hot-loss"></div></div>
+  </div>
+
+  <!-- ============ SECTOR ROTATION PANEL ============ -->
+  <div class="sector-panel" id="sector-panel">
+    <div class="sector-head" id="sector-toggle">
+      <span class="title">🌐 섹터 로테이션 <span style="margin-left:8px;color:var(--ink-mid);text-transform:none;letter-spacing:0;font-family:var(--sans);font-size:11px;" id="sector-summary">—</span></span>
+      <span class="caret">▾</span>
+    </div>
+    <div class="sector-body" id="sector-body"></div>
   </div>
 
   <!-- ============ MARKET SUMMARY ============ -->
@@ -309,16 +396,42 @@ const STATE = {
   query: '',
   showLimit: 100,
   withFlow: false,
+  withRS: false,
+  preset: '',
   sortKey: 'r1d',
   sortDir: 'desc',
+  sectorOpen: false,
   scanning: false,
   abortFlag: false,
   data: {}, // code -> row
+  watch: new Set(),
 };
 
 const CACHE_TTL_MS = 6 * 3600 * 1000; // 6h
 const CACHE_PREFIX = 'mscan2:';
 const CACHE_FLOW_PREFIX = 'mflow2:';
+const WATCH_KEY = 'mscan:watchlist';
+
+/* =====================================================================
+ * Watchlist persistence
+ * ===================================================================== */
+function loadWatchlist() {
+  try {
+    const raw = localStorage.getItem(WATCH_KEY);
+    if (!raw) return;
+    const arr = JSON.parse(raw);
+    if (Array.isArray(arr)) STATE.watch = new Set(arr);
+  } catch (_) {}
+}
+function saveWatchlist() {
+  try { localStorage.setItem(WATCH_KEY, JSON.stringify(Array.from(STATE.watch))); }
+  catch (_) {}
+}
+function toggleWatch(code) {
+  if (STATE.watch.has(code)) STATE.watch.delete(code);
+  else STATE.watch.add(code);
+  saveWatchlist();
+}
 
 /* =====================================================================
  * Data fetch — Naver primary, Stooq fallback (mirrors stock-deep-dive)
@@ -782,13 +895,99 @@ function sparkSVG(series, w = 80, h = 24) {
   return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><polyline fill="none" stroke="${color}" stroke-width="1.3" points="${pts}"/></svg>`;
 }
 
+/* =====================================================================
+ * Analytics: sector aggregates, market average, hot lists, presets
+ * ===================================================================== */
+function getMarketAvg1M() {
+  const vals = ALL_CODES.map(c => STATE.data[c]?.r1m).filter(v => isFinite(v));
+  return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : NaN;
+}
+
+function computeSectorStats() {
+  // Group loaded entries by sector and compute aggregates
+  const groups = {};
+  for (const code of ALL_CODES) {
+    const d = STATE.data[code];
+    const sec = REGISTRY[code]?.sector;
+    if (!d || !sec) continue;
+    if (!groups[sec]) groups[sec] = { name: sec, entries: [] };
+    groups[sec].entries.push(d);
+  }
+  const stats = [];
+  for (const sec in groups) {
+    const e = groups[sec].entries;
+    const avg = key => {
+      const vs = e.map(x => x[key]).filter(v => isFinite(v));
+      return vs.length ? vs.reduce((a, b) => a + b, 0) / vs.length : NaN;
+    };
+    const upCount = e.filter(x => isFinite(x.r1d) && x.r1d > 0).length;
+    stats.push({
+      sector: sec,
+      count: e.length,
+      r1d: avg('r1d'),
+      r1w: avg('r1w'),
+      r1m: avg('r1m'),
+      r3m: avg('r3m'),
+      r6m: avg('r6m'),
+      r1y: avg('r1y'),
+      breadth: e.length ? upCount / e.length : 0,
+    });
+  }
+  return stats;
+}
+
+// Memoized per-render: rebuilt at top of render(), used by RS column and presets.
+let _sectorAvgCache = null;
+function sectorAvg1M(sector) {
+  if (!_sectorAvgCache) {
+    _sectorAvgCache = {};
+    for (const s of computeSectorStats()) _sectorAvgCache[s.sector] = s.r1m;
+  }
+  return _sectorAvgCache[sector];
+}
+
+function passesPreset(d, code) {
+  if (!STATE.preset) return true;
+  if (!d) return false;
+  const p = STATE.preset;
+  if (p === 'momentum') {
+    return [d.r1y, d.r6m, d.r3m, d.r1m, d.r1w].every(v => isFinite(v) && v > 0);
+  }
+  if (p === 'rebound') {
+    return isFinite(d.r1y) && d.r1y < -10 && isFinite(d.r1m) && d.r1m > 5 && isFinite(d.r1w) && d.r1w > 0;
+  }
+  if (p === 'volume') {
+    return isFinite(d.volume) && isFinite(d.avgVol20) && d.avgVol20 > 0 && (d.volume / d.avgVol20) >= 2;
+  }
+  if (p === 'smartmoney') {
+    return d.flow && d.flow.foreign5d > 0 && d.flow.organ5d > 0;
+  }
+  if (p === 'distrib') {
+    return d.flow && d.flow.foreign5d < 0 && d.flow.individual5d > 0;
+  }
+  if (p === 'laggard') {
+    if (!isFinite(d.r1m)) return false;
+    const sec = REGISTRY[code]?.sector;
+    const sa = sec && sectorAvg1M(sec);
+    return isFinite(sa) && (sa - d.r1m) >= 5; // 5%p below sector
+  }
+  return true;
+}
+
 function getFilteredSorted() {
   let codes = ALL_CODES;
-  if (STATE.market !== 'ALL') codes = codes.filter(c => REGISTRY[c].mkt === STATE.market);
+  if (STATE.market === 'WATCH') {
+    codes = codes.filter(c => STATE.watch.has(c));
+  } else if (STATE.market !== 'ALL') {
+    codes = codes.filter(c => REGISTRY[c].mkt === STATE.market);
+  }
   if (STATE.sector) codes = codes.filter(c => REGISTRY[c].sector === STATE.sector);
   if (STATE.query) {
     const q = STATE.query.toLowerCase();
     codes = codes.filter(c => c.includes(q) || REGISTRY[c].name.toLowerCase().includes(q));
+  }
+  if (STATE.preset) {
+    codes = codes.filter(c => passesPreset(STATE.data[c], c));
   }
   // Sort
   const dirMul = STATE.sortDir === 'asc' ? 1 : -1;
@@ -799,6 +998,14 @@ function getFilteredSorted() {
     if (k === 'name') { va = REGISTRY[a].name; vb = REGISTRY[b].name; return va.localeCompare(vb, 'ko') * dirMul; }
     if (k === 'sector') { va = REGISTRY[a].sector || ''; vb = REGISTRY[b].sector || ''; return va.localeCompare(vb, 'ko') * dirMul; }
     if (k === 'trend') { va = da?.r3m; vb = db?.r3m; }
+    else if (k === 'rs') {
+      va = da && isFinite(da.r1m) ? da.r1m - (sectorAvg1M(REGISTRY[a].sector) || 0) : undefined;
+      vb = db && isFinite(db.r1m) ? db.r1m - (sectorAvg1M(REGISTRY[b].sector) || 0) : undefined;
+    }
+    else if (k === 'volratio') {
+      va = da && da.avgVol20 > 0 ? da.volume / da.avgVol20 : undefined;
+      vb = db && db.avgVol20 > 0 ? db.volume / db.avgVol20 : undefined;
+    }
     else { va = da?.[k]; vb = db?.[k]; }
     const aN = isFinite(va) ? va : (dirMul > 0 ? Infinity : -Infinity);
     const bN = isFinite(vb) ? vb : (dirMul > 0 ? Infinity : -Infinity);
@@ -808,6 +1015,9 @@ function getFilteredSorted() {
 }
 
 function buildHeader() {
+  const rsCol = STATE.withRS
+    ? '<th data-sort="rs" title="RS = 종목 1M − 섹터 평균 1M">RS(섹터) <span class="arrow">↕</span></th>'
+    : '';
   const flowCols = STATE.withFlow ? `
     <th data-sort="foreign5d">외국인 5D <span class="arrow">↕</span></th>
     <th data-sort="organ5d">기관 5D <span class="arrow">↕</span></th>
@@ -823,6 +1033,7 @@ function buildHeader() {
     <th data-sort="r3m">3M <span class="arrow">↕</span></th>
     <th data-sort="r6m">6M <span class="arrow">↕</span></th>
     <th data-sort="r1y">1Y <span class="arrow">↕</span></th>
+    ${rsCol}
     <th class="center" data-sort="trend">90일 추이</th>
     <th data-sort="volume">거래량 <span class="arrow">↕</span></th>
     ${flowCols}
@@ -838,16 +1049,26 @@ function buildHeader() {
 }
 
 function render() {
+  // Reset memoized sector averages so RS / preset reflect latest data
+  _sectorAvgCache = null;
   buildHeader();
   const codes = getFilteredSorted();
   const tbody = $('scan-body');
-  const cellSpan = STATE.withFlow ? 14 : 11;
+  const baseCols = 11; // name, sector, price, r1d/w/m/3/6/y, trend, volume
+  const cellSpan = baseCols + (STATE.withRS ? 1 : 0) + (STATE.withFlow ? 3 : 0);
 
   if (!codes.length) {
     tbody.innerHTML = `<tr><td class="muted center" colspan="${cellSpan}" style="padding:40px;">조건에 맞는 종목이 없습니다.</td></tr>`;
     updateSummary([]);
+    renderHotPanel();
+    renderSectorPanel();
     return;
   }
+
+  const starCell = code => {
+    const on = STATE.watch.has(code) ? 'on' : '';
+    return `<span class="star ${on}" data-watch="${code}" title="관심 종목 토글">★</span>`;
+  };
 
   // Build rows
   const rows = codes.map(code => {
@@ -858,7 +1079,7 @@ function render() {
 
     if (!d) {
       return `<tr class="empty" data-code="${code}">
-        <td class="left"><div class="name-cell"><span class="code">${code}</span><span class="nm">${reg.name}</span><span class="mkt-pill ${mktPill}">${reg.mkt}</span></div></td>
+        <td class="left"><div class="name-cell">${starCell(code)}<span class="code">${code}</span><span class="nm">${reg.name}</span><span class="mkt-pill ${mktPill}">${reg.mkt}</span></div></td>
         <td class="left sector-col sector-cell">${sectorTrim}</td>
         <td class="muted">—</td>
         <td><span class="pct empty">—</span></td>
@@ -867,6 +1088,7 @@ function render() {
         <td><span class="pct empty">—</span></td>
         <td><span class="pct empty">—</span></td>
         <td><span class="pct empty">—</span></td>
+        ${STATE.withRS ? '<td class="muted">—</td>' : ''}
         <td class="center muted">—</td>
         <td class="muted">—</td>
         ${STATE.withFlow ? '<td class="muted">—</td><td class="muted">—</td><td class="muted">—</td>' : ''}
@@ -875,6 +1097,16 @@ function render() {
 
     const r1d = fmtPct(d.r1d), r1w = fmtPct(d.r1w), r1m = fmtPct(d.r1m);
     const r3m = fmtPct(d.r3m), r6m = fmtPct(d.r6m), r1y = fmtPct(d.r1y);
+
+    const rsCell = STATE.withRS ? (() => {
+      const sa = sectorAvg1M(reg.sector);
+      if (!isFinite(d.r1m) || !isFinite(sa)) return '<td class="muted">—</td>';
+      const rs = d.r1m - sa;
+      const cls = rs > 0.5 ? 'up' : rs < -0.5 ? 'down' : 'flat';
+      const sign = rs > 0 ? '+' : '';
+      return `<td><span class="rs-cell ${cls}" title="섹터 평균 1M ${sa.toFixed(2)}% 대비">${sign}${rs.toFixed(2)}%p</span></td>`;
+    })() : '';
+
     const flowCells = STATE.withFlow ? (() => {
       if (!d.flow) return '<td class="muted">—</td><td class="muted">—</td><td class="muted">—</td>';
       const f = fmtFlow(d.flow.foreign5d);
@@ -886,7 +1118,7 @@ function render() {
     })() : '';
 
     return `<tr data-code="${code}">
-      <td class="left"><div class="name-cell"><span class="code">${code}</span><span class="nm">${reg.name}</span><span class="mkt-pill ${mktPill}">${reg.mkt}</span></div></td>
+      <td class="left"><div class="name-cell">${starCell(code)}<span class="code">${code}</span><span class="nm">${reg.name}</span><span class="mkt-pill ${mktPill}">${reg.mkt}</span></div></td>
       <td class="left sector-col sector-cell" title="${reg.sector || ''}">${sectorTrim}</td>
       <td class="price">${fmtNum(d.price)}</td>
       <td><span class="pct ${r1d.cls}">${r1d.txt}</span></td>
@@ -895,6 +1127,7 @@ function render() {
       <td><span class="pct ${r3m.cls}">${r3m.txt}</span></td>
       <td><span class="pct ${r6m.cls}">${r6m.txt}</span></td>
       <td><span class="pct ${r1y.cls}">${r1y.txt}</span></td>
+      ${rsCell}
       <td class="center spark-cell">${sparkSVG(d.spark)}</td>
       <td><div class="vol-cell"><span class="today">${fmtVol(d.volume)}</span><span class="avg">평균 ${fmtVol(d.avgVol20)}</span></div></td>
       ${flowCells}
@@ -902,15 +1135,23 @@ function render() {
   });
 
   tbody.innerHTML = rows.join('');
-  // Bind row click → deep-dive
+  // Bind row click → deep-dive (but skip when star clicked)
   tbody.querySelectorAll('tr[data-code]').forEach(tr => {
-    tr.addEventListener('click', () => {
+    tr.addEventListener('click', e => {
+      if (e.target.closest('.star')) {
+        const code = e.target.closest('.star').dataset.watch;
+        toggleWatch(code);
+        e.target.closest('.star').classList.toggle('on');
+        return;
+      }
       const code = tr.dataset.code;
-      window.location.href = `stock-deep-dive.html?code=${code}`;
+      window.location.href = `stock-deep-dive.html#${code}`;
     });
   });
 
   updateSummary(codes.map(c => STATE.data[c]).filter(Boolean));
+  renderHotPanel();
+  renderSectorPanel();
 }
 
 function updateSummary(loaded) {
@@ -942,6 +1183,132 @@ function updateSummary(loaded) {
   const avg1mEl = $('sum-avg-1m');
   avg1mEl.textContent = isFinite(avg1m) ? (avg1m > 0 ? '+' : '') + avg1m.toFixed(2) + '%' : '—';
   avg1mEl.className = 'val ' + (isFinite(avg1m) ? (avg1m > 0 ? 'up' : avg1m < 0 ? 'down' : '') : '');
+}
+
+/* =====================================================================
+ * Hot lists: 거래량 폭발 / 외국인 매수 / 1D 상승 / 1D 하락 (Top 5)
+ * ===================================================================== */
+function renderHotPanel() {
+  const all = ALL_CODES.map(c => ({ code: c, d: STATE.data[c], reg: REGISTRY[c] })).filter(x => x.d && x.reg);
+
+  // Volume spike: today / avg20 ratio (require both finite, avg20 > 0, today > 0)
+  const volSpike = all
+    .filter(x => x.d.volume > 0 && x.d.avgVol20 > 0)
+    .map(x => ({ ...x, ratio: x.d.volume / x.d.avgVol20 }))
+    .sort((a, b) => b.ratio - a.ratio)
+    .slice(0, 5);
+
+  // Foreign 5D net buy (positive only)
+  const foreignBuy = all
+    .filter(x => x.d.flow && isFinite(x.d.flow.foreign5d))
+    .sort((a, b) => b.d.flow.foreign5d - a.d.flow.foreign5d)
+    .slice(0, 5);
+
+  // 1D top gainers / losers among loaded
+  const sortedR1d = all.filter(x => isFinite(x.d.r1d)).slice();
+  sortedR1d.sort((a, b) => b.d.r1d - a.d.r1d);
+  const topGain = sortedR1d.slice(0, 5);
+  const topLoss = sortedR1d.slice(-5).reverse();
+
+  const renderList = (items, fmtVal) => {
+    if (!items.length) return '<div class="hot-empty">데이터 없음</div>';
+    return items.map(x => {
+      const v = fmtVal(x);
+      return `<div class="hot-item" data-code="${x.code}">
+        <span class="cd">${x.code}</span>
+        <span class="nm">${x.reg.name}</span>
+        <span class="v ${v.cls}">${v.txt}</span>
+      </div>`;
+    }).join('');
+  };
+
+  $('hot-volume').innerHTML = renderList(volSpike, x => ({
+    txt: '×' + x.ratio.toFixed(1),
+    cls: x.ratio >= 3 ? 'up' : '',
+  }));
+  $('hot-foreign').innerHTML = foreignBuy.length && foreignBuy[0].d.flow.foreign5d > 0
+    ? renderList(foreignBuy, x => {
+        const f = fmtFlow(x.d.flow.foreign5d);
+        return { txt: f.txt, cls: f.cls === 'buy' ? 'up' : f.cls === 'sell' ? 'down' : '' };
+      })
+    : '<div class="hot-empty">수급 데이터 미수집 — \'+ 수급 데이터\' 토글 후 스캔하세요</div>';
+  $('hot-gain').innerHTML = renderList(topGain, x => {
+    const p = fmtPct(x.d.r1d);
+    return { txt: p.txt, cls: p.cls === 'up' ? 'up' : p.cls === 'down' ? 'down' : '' };
+  });
+  $('hot-loss').innerHTML = renderList(topLoss, x => {
+    const p = fmtPct(x.d.r1d);
+    return { txt: p.txt, cls: p.cls === 'up' ? 'up' : p.cls === 'down' ? 'down' : '' };
+  });
+
+  // Click → deep-dive
+  document.querySelectorAll('.hot-item').forEach(el => {
+    el.addEventListener('click', () => {
+      window.location.href = `stock-deep-dive.html#${el.dataset.code}`;
+    });
+  });
+}
+
+/* =====================================================================
+ * Sector rotation panel
+ * ===================================================================== */
+function renderSectorPanel() {
+  const stats = computeSectorStats();
+  if (!stats.length) {
+    $('sector-summary').textContent = '데이터 없음';
+    $('sector-body').innerHTML = '';
+    return;
+  }
+  // Sort by 1M return desc by default
+  stats.sort((a, b) => (isFinite(b.r1m) ? b.r1m : -Infinity) - (isFinite(a.r1m) ? a.r1m : -Infinity));
+
+  const top = stats[0], bot = stats[stats.length - 1];
+  const fmtPctTiny = v => isFinite(v) ? (v > 0 ? '+' : '') + v.toFixed(1) + '%' : '—';
+  $('sector-summary').innerHTML = `
+    1M 강한 섹터 <strong style="color:var(--green);">${top.sector} ${fmtPctTiny(top.r1m)}</strong>
+    · 약한 섹터 <strong style="color:var(--red);">${bot.sector} ${fmtPctTiny(bot.r1m)}</strong>
+    · ${stats.length}개 섹터
+  `;
+
+  if (!STATE.sectorOpen) { $('sector-body').innerHTML = ''; return; }
+
+  const cls = v => isFinite(v) ? (v > 0 ? 'up' : v < -0.05 ? 'down' : 'flat') : 'empty';
+  const cell = v => `<td><span class="pct ${cls(v)}">${fmtPctTiny(v)}</span></td>`;
+
+  const rows = stats.map(s => {
+    const breadthPct = (s.breadth * 100).toFixed(0);
+    const active = STATE.sector === s.sector ? 'active' : '';
+    return `<tr class="${active}" data-sector="${s.sector}">
+      <td class="left" title="클릭하여 섹터 필터 적용">${s.sector}</td>
+      <td>${s.count}</td>
+      <td><span class="breadth-bar"><span class="fill" style="width:${breadthPct}%"></span></span>${breadthPct}%</td>
+      ${cell(s.r1d)}
+      ${cell(s.r1w)}
+      ${cell(s.r1m)}
+      ${cell(s.r3m)}
+      ${cell(s.r6m)}
+      ${cell(s.r1y)}
+    </tr>`;
+  }).join('');
+
+  $('sector-body').innerHTML = `<table class="sector-tbl">
+    <thead><tr>
+      <th class="left">섹터</th>
+      <th>종목수</th>
+      <th>상승비율 (breadth)</th>
+      <th>1D</th><th>1W</th><th>1M</th><th>3M</th><th>6M</th><th>1Y</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+  // Click row → set sector filter
+  document.querySelectorAll('.sector-tbl tbody tr').forEach(tr => {
+    tr.addEventListener('click', () => {
+      const sec = tr.dataset.sector;
+      STATE.sector = STATE.sector === sec ? '' : sec;
+      $('sector-filter').value = STATE.sector;
+      render();
+    });
+  });
 }
 
 /* =====================================================================
@@ -1047,6 +1414,7 @@ function tickClock() {
 function init() {
   $('ticker-total').textContent = ALL_CODES.length.toLocaleString();
   buildSectorOptions();
+  loadWatchlist();
 
   // Tabs
   $('market-tabs').addEventListener('click', e => {
@@ -1085,6 +1453,37 @@ function init() {
     $('toggle-flow').classList.toggle('primary', STATE.withFlow);
     $('toggle-flow').textContent = STATE.withFlow ? '✓ 수급 데이터' : '+ 수급 데이터';
     render();
+  });
+
+  $('toggle-rs').addEventListener('click', () => {
+    STATE.withRS = !STATE.withRS;
+    $('toggle-rs').classList.toggle('primary', STATE.withRS);
+    $('toggle-rs').textContent = STATE.withRS ? '✓ 상대강도' : '+ 상대강도';
+    render();
+  });
+
+  // Preset chips
+  document.querySelectorAll('.preset-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const p = chip.dataset.preset;
+      STATE.preset = STATE.preset === p ? '' : p;
+      document.querySelectorAll('.preset-chip').forEach(c => c.classList.toggle('active', c.dataset.preset === STATE.preset));
+      $('preset-clear').style.display = STATE.preset ? 'inline-block' : 'none';
+      render();
+    });
+  });
+  $('preset-clear').addEventListener('click', () => {
+    STATE.preset = '';
+    document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+    $('preset-clear').style.display = 'none';
+    render();
+  });
+
+  // Sector panel toggle
+  $('sector-toggle').addEventListener('click', () => {
+    STATE.sectorOpen = !STATE.sectorOpen;
+    $('sector-panel').classList.toggle('open', STATE.sectorOpen);
+    renderSectorPanel();
   });
 
   $('scan-btn').addEventListener('click', scanAll);
