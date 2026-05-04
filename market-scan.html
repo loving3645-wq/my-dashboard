@@ -316,7 +316,7 @@
     <span class="tlabel">프리셋</span>
     <button class="preset-chip" data-preset="momentum" title="모든 타임프레임에서 상승 중인 추세 종목">📈 추세 종목</button>
     <button class="preset-chip" data-preset="rebound" title="1Y ≤ -20% AND 1M ≥ +8% AND 1W ≥ +2% AND 거래량 ≥ 20D 평균 × 1.5 — 매집형 턴어라운드">🔄 반등 후보</button>
-    <button class="preset-chip" data-preset="pullback" title="6M ≥ +20% AND 1M ≤ -5% (단, ≥ -20%) AND 1Y &gt; 0 — 강한 상승 추세에서의 건강한 조정">📊 조정 매수</button>
+    <button class="preset-chip" data-preset="pullback" title="6M 시장 평균 대비 +15%p 이상 outperform AND 1M -5~-20% 조정 AND 1Y ≥ 시장 평균 — 시장보다 잘 갔던 종목의 건강한 조정">📊 조정 매수</button>
     <button class="preset-chip" data-preset="volume" title="오늘 거래량이 20일 평균 대비 2배 이상 — 이벤트 발생 의심">🔥 거래량 폭발</button>
     <button class="preset-chip" data-preset="smartmoney" title="외국인 + 기관 모두 5D 누적 순매수">🐋 스마트머니</button>
     <button class="preset-chip" data-preset="laggard" title="섹터 평균 대비 1M 수익률이 5%↓ 낮은 종목 — 따라잡기 후보">🐢 섹터 낙오자</button>
@@ -899,9 +899,13 @@ function sparkSVG(series, w = 80, h = 24) {
 /* =====================================================================
  * Analytics: sector aggregates, market average, hot lists, presets
  * ===================================================================== */
-function getMarketAvg1M() {
-  const vals = ALL_CODES.map(c => STATE.data[c]?.r1m).filter(v => isFinite(v));
-  return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : NaN;
+// Memoized per-render market average for any return key (r1d/r1w/r1m/...).
+let _marketAvgCache = {};
+function getMarketAvg(key) {
+  if (_marketAvgCache[key] !== undefined) return _marketAvgCache[key];
+  const vals = ALL_CODES.map(c => STATE.data[c]?.[key]).filter(v => isFinite(v));
+  _marketAvgCache[key] = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : NaN;
+  return _marketAvgCache[key];
 }
 
 function computeSectorStats() {
@@ -967,14 +971,18 @@ function passesPreset(d, code) {
         && (d.volume / d.avgVol20) >= 1.5;
   }
   if (p === 'pullback') {
-    // 조정 매수 후보: 강한 상승 후 건강한 조정
-    //   · 6M ≥ +20% (확실한 상승 추세 형성)
-    //   · 1M ≤ -5%  (최근 의미있는 조정)
-    //   · 1M ≥ -20% (조정이지 폭락이 아님)
-    //   · 1Y > 0    (연중 수익 유지 — 추세 살아있음)
-    return isFinite(d.r6m) && d.r6m >= 20
-        && isFinite(d.r1m) && d.r1m <= -5 && d.r1m >= -20
-        && isFinite(d.r1y) && d.r1y > 0;
+    // 조정 매수 후보 (시장-상대): 시장보다 잘 갔던 종목이 최근 조정 받음
+    //   · 6M 시장 평균 대비 +15%p 이상 outperform — "잘 간 종목" 판정 (절대 +20%는
+    //     시장 자체가 강한 시기엔 너무 헐거움; 진짜 outperformer만 잡기 위해 상대 기준)
+    //   · 1M 절대 -5% ~ -20%  — 의미있는 조정 (폭락 제외)
+    //   · 1Y 시장 평균 이상  — 장기 추세는 살아있음
+    if (!isFinite(d.r6m) || !isFinite(d.r1m) || !isFinite(d.r1y)) return false;
+    const m6 = getMarketAvg('r6m');
+    const m1y = getMarketAvg('r1y');
+    if (!isFinite(m6) || !isFinite(m1y)) return false;
+    return (d.r6m - m6) >= 15
+        && d.r1m <= -5 && d.r1m >= -20
+        && d.r1y >= m1y;
   }
   if (p === 'volume') {
     return isFinite(d.volume) && isFinite(d.avgVol20) && d.avgVol20 > 0 && (d.volume / d.avgVol20) >= 2;
@@ -1071,6 +1079,7 @@ function buildHeader() {
 function render() {
   // Reset memoized sector averages so RS / preset reflect latest data
   _sectorAvgCache = null;
+  _marketAvgCache = {};
   buildHeader();
   const codes = getFilteredSorted();
   const tbody = $('scan-body');
