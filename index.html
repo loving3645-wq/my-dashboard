@@ -112,7 +112,7 @@
   .col-tab.stocks-tab .icon { background: var(--indigo); }
   .col-tab.active.cal-tab .icon, .col-tab.active.todo-tab .icon, .col-tab.active.deals-tab .icon, .col-tab.active.done-tab .icon, .col-tab.active.contacts-tab .icon, .col-tab.active.projects-tab .icon, .col-tab.active.stocks-tab .icon { background: var(--bg); }
   .col-tab .badge { font-family: var(--mono); font-size: 9px; opacity: 0.7; }
-  .board { display: grid; grid-template-columns: 1fr 1fr 1.05fr 0.9fr 1fr 1.05fr 1fr; gap: 9px; }
+  .board { display: grid; grid-template-columns: 1fr 1fr 1.05fr 1fr 1fr 1.05fr 0.9fr; gap: 9px; }
   @media (max-width: 1600px) { .board { grid-template-columns: 1fr 1fr 1fr; } }
   @media (max-width: 1000px) { .board { grid-template-columns: 1fr 1fr; } }
   @media (max-width: 700px) {
@@ -322,10 +322,10 @@
       <div class="stat" data-stat-jump="cal" title="캘린더로 이동"><div class="num" id="stat-total">0</div><div class="lbl">전체</div></div>
       <div class="stat" data-stat-jump="todo" title="할 일로 이동"><div class="num" id="stat-todo">0</div><div class="lbl">할일</div></div>
       <div class="stat" data-stat-jump="deals" title="검토 딜로 이동"><div class="num" id="stat-deals">0</div><div class="lbl">검토딜</div></div>
-      <div class="stat" data-stat-jump="done" title="완료로 이동"><div class="num" id="stat-done">0</div><div class="lbl">완료</div></div>
+      <div class="stat" data-stat-jump="stocks" title="종목으로 이동"><div class="num" id="stat-stocks">0</div><div class="lbl">종목</div></div>
       <div class="stat" data-stat-jump="contacts" title="연락처로 이동"><div class="num" id="stat-contacts">0</div><div class="lbl">연락처</div></div>
       <div class="stat" data-stat-jump="projects" title="프로젝트로 이동"><div class="num" id="stat-projects">0</div><div class="lbl">프로젝트</div></div>
-      <div class="stat" data-stat-jump="stocks" title="종목으로 이동"><div class="num" id="stat-stocks">0</div><div class="lbl">종목</div></div>
+      <div class="stat" data-stat-jump="done" title="완료로 이동"><div class="num" id="stat-done">0</div><div class="lbl">완료</div></div>
       <div class="clock" id="clock">--:--</div>
     </div>
   </header>
@@ -348,10 +348,10 @@
     <button class="col-tab cal-tab active" data-col="cal"><span class="icon"></span>캘린더<span class="badge" id="ct-cal">0</span></button>
     <button class="col-tab todo-tab" data-col="todo"><span class="icon"></span>할 일<span class="badge" id="ct-todo">0</span></button>
     <button class="col-tab deals-tab" data-col="deals"><span class="icon"></span>검토딜<span class="badge" id="ct-deals">0</span></button>
-    <button class="col-tab done-tab" data-col="done"><span class="icon"></span>완료<span class="badge" id="ct-done">0</span></button>
+    <button class="col-tab stocks-tab" data-col="stocks"><span class="icon"></span>종목<span class="badge" id="ct-stocks">0</span></button>
     <button class="col-tab contacts-tab" data-col="contacts"><span class="icon"></span>연락처<span class="badge" id="ct-contacts">0</span></button>
     <button class="col-tab projects-tab" data-col="projects"><span class="icon"></span>프로젝트<span class="badge" id="ct-projects">0</span></button>
-    <button class="col-tab stocks-tab" data-col="stocks"><span class="icon"></span>종목<span class="badge" id="ct-stocks">0</span></button>
+    <button class="col-tab done-tab" data-col="done"><span class="icon"></span>완료<span class="badge" id="ct-done">0</span></button>
   </div>
   <div class="board">
     <div class="col cal col-active" data-col="cal">
@@ -377,12 +377,13 @@
       <div class="col-body" id="col-deals" data-drop="deals"></div>
       <div class="col-add"><button class="col-add-btn" data-add="deals">+ 검토 딜 추가</button></div>
     </div>
-    <div class="col done" data-col="done" data-status="done">
+    <div class="col stocks" data-col="stocks">
       <div class="col-header">
-        <div class="col-title"><span class="icon"></span>완료</div>
-        <div class="col-count" id="cnt-done">0</div>
+        <div class="col-title"><span class="icon"></span>종목</div>
+        <div class="col-count" id="cnt-stocks">0</div>
       </div>
-      <div class="col-body" id="col-done" data-drop="done"></div>
+      <div class="col-body" id="col-stocks"></div>
+      <div class="col-add"><button class="col-add-btn" data-add-stock>+ 종목 추가</button></div>
     </div>
     <div class="col contacts" data-col="contacts">
       <div class="col-header">
@@ -400,13 +401,12 @@
       <div class="col-body" id="col-projects"></div>
       <div class="col-add"><button class="col-add-btn" data-add-project>+ 프로젝트 추가</button></div>
     </div>
-    <div class="col stocks" data-col="stocks">
+    <div class="col done" data-col="done" data-status="done">
       <div class="col-header">
-        <div class="col-title"><span class="icon"></span>종목</div>
-        <div class="col-count" id="cnt-stocks">0</div>
+        <div class="col-title"><span class="icon"></span>완료</div>
+        <div class="col-count" id="cnt-done">0</div>
       </div>
-      <div class="col-body" id="col-stocks"></div>
-      <div class="col-add"><button class="col-add-btn" data-add-stock>+ 종목 추가</button></div>
+      <div class="col-body" id="col-done" data-drop="done"></div>
     </div>
   </div>
   <footer class="footer">
