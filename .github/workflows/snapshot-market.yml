@@ -30,6 +30,10 @@ jobs:
       - name: Install deps
         run: pip install --quiet requests
 
+      - name: Refresh ETF master
+        run: python scripts/fetch_etf_list.py
+        continue-on-error: true
+
       - name: Generate snapshot
         run: python scripts/snapshot_market.py
 
@@ -37,9 +41,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/market-snapshot.json
+          git add data/market-snapshot.json tickers-etf.js
           if git diff --cached --quiet; then
-            echo "No changes to snapshot — nothing to commit"
+            echo "No changes — nothing to commit"
           else
             STAMP=$(date -u +"%Y-%m-%d")
             COUNT=$(python -c "import json; d=json.load(open('data/market-snapshot.json')); print(d['tickerCount'])")
