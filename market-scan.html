@@ -315,7 +315,8 @@
   <div class="preset-row">
     <span class="tlabel">프리셋</span>
     <button class="preset-chip" data-preset="momentum" title="모든 타임프레임에서 상승 중인 추세 종목">📈 추세 종목</button>
-    <button class="preset-chip" data-preset="rebound" title="1Y 큰 폭 하락 후 1M 반등 시작 — 턴어라운드 후보">🔄 반등 후보</button>
+    <button class="preset-chip" data-preset="rebound" title="1Y ≤ -20% AND 1M ≥ +8% AND 1W ≥ +2% AND 거래량 ≥ 20D 평균 × 1.5 — 매집형 턴어라운드">🔄 반등 후보</button>
+    <button class="preset-chip" data-preset="pullback" title="6M ≥ +20% AND 1M ≤ -5% (단, ≥ -20%) AND 1Y &gt; 0 — 강한 상승 추세에서의 건강한 조정">📊 조정 매수</button>
     <button class="preset-chip" data-preset="volume" title="오늘 거래량이 20일 평균 대비 2배 이상 — 이벤트 발생 의심">🔥 거래량 폭발</button>
     <button class="preset-chip" data-preset="smartmoney" title="외국인 + 기관 모두 5D 누적 순매수">🐋 스마트머니</button>
     <button class="preset-chip" data-preset="laggard" title="섹터 평균 대비 1M 수익률이 5%↓ 낮은 종목 — 따라잡기 후보">🐢 섹터 낙오자</button>
@@ -954,7 +955,26 @@ function passesPreset(d, code) {
     return [d.r1y, d.r6m, d.r3m, d.r1m, d.r1w].every(v => isFinite(v) && v > 0);
   }
   if (p === 'rebound') {
-    return isFinite(d.r1y) && d.r1y < -10 && isFinite(d.r1m) && d.r1m > 5 && isFinite(d.r1w) && d.r1w > 0;
+    // 보수적 반등 후보: 충분히 빠진 + 의미있는 반등 + 지속성 + 거래량 확인
+    //   · 1Y ≤ -20% (확실히 약세)
+    //   · 1M ≥ +8%  (의미있는 반등)
+    //   · 1W ≥ +2%  (반등 지속)
+    //   · 오늘 거래량 ≥ 20D 평균 × 1.5 (매집/관심 유입 확인)
+    return isFinite(d.r1y) && d.r1y <= -20
+        && isFinite(d.r1m) && d.r1m >= 8
+        && isFinite(d.r1w) && d.r1w >= 2
+        && isFinite(d.volume) && isFinite(d.avgVol20) && d.avgVol20 > 0
+        && (d.volume / d.avgVol20) >= 1.5;
+  }
+  if (p === 'pullback') {
+    // 조정 매수 후보: 강한 상승 후 건강한 조정
+    //   · 6M ≥ +20% (확실한 상승 추세 형성)
+    //   · 1M ≤ -5%  (최근 의미있는 조정)
+    //   · 1M ≥ -20% (조정이지 폭락이 아님)
+    //   · 1Y > 0    (연중 수익 유지 — 추세 살아있음)
+    return isFinite(d.r6m) && d.r6m >= 20
+        && isFinite(d.r1m) && d.r1m <= -5 && d.r1m >= -20
+        && isFinite(d.r1y) && d.r1y > 0;
   }
   if (p === 'volume') {
     return isFinite(d.volume) && isFinite(d.avgVol20) && d.avgVol20 > 0 && (d.volume / d.avgVol20) >= 2;
