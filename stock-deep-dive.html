@@ -234,6 +234,18 @@
   .pt-marker.target .lbl { color: var(--accent); }
 
   /* ========== News list ========== */
+  .reports-list { display: flex; flex-direction: column; gap: 0; max-height: 360px; overflow-y: auto; }
+  .report-item { padding: 12px 0; border-bottom: 1px dashed var(--line); display: flex; flex-direction: column; gap: 4px; }
+  .report-item:last-child { border-bottom: none; }
+  .report-meta { display: flex; gap: 8px; align-items: center; font-family: var(--mono); font-size: 9px; color: var(--ink-soft); letter-spacing: 0.1em; text-transform: uppercase; }
+  .report-house { color: var(--accent); font-weight: 500; }
+  .report-target { font-family: var(--mono); font-size: 11px; color: var(--ink); }
+  .report-change { font-family: var(--mono); font-size: 10px; padding: 1px 5px; border-radius: 3px; }
+  .report-change.up { background: var(--green-bg); color: var(--green); }
+  .report-change.down { background: var(--red-bg); color: var(--red); }
+  .report-title { font-size: 13px; color: var(--ink); line-height: 1.45; }
+  .report-title a { color: inherit; text-decoration: none; }
+  .report-title a:hover { color: var(--accent); }
   .news-list { display: flex; flex-direction: column; gap: 0; max-height: 360px; overflow-y: auto; }
   .news-item { padding: 12px 0; border-bottom: 1px dashed var(--line); display: flex; flex-direction: column; gap: 4px; }
   .news-item:last-child { border-bottom: none; }
@@ -477,6 +489,18 @@
   </section>
 
   <!-- ============ ROW 5: NEWS ============ -->
+  <section class="grid stagger" style="animation-delay:0.32s;">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><span class="icon"></span>증권사 <em>리서치</em></div>
+        <div class="card-meta" id="reports-count">불러오는 중…</div>
+      </div>
+      <div class="reports-list" id="reports-list">
+        <div style="padding:20px 0; color:var(--ink-faint); font-family:var(--mono); font-size:11px;">리포트 데이터 로드 중…</div>
+      </div>
+    </div>
+  </section>
+
   <section class="grid stagger" style="animation-delay:0.35s;">
     <div class="card">
       <div class="card-head">
@@ -1953,6 +1977,56 @@ function enterLoadingState(ticker, reg, curated) {
   try { window.history.replaceState(null, '', '#' + ticker); } catch(e) {}
 }
 
+/* ---- Recent research reports for current ticker (cached page-wide) ---- */
+let _researchReportsCache = null;
+async function loadResearchReportsForTicker(ticker) {
+  const list = $('reports-list');
+  const meta = $('reports-count');
+  try {
+    if (!_researchReportsCache) {
+      const r = await fetch('data/research-reports.json', { cache: 'force-cache' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      _researchReportsCache = await r.json();
+    }
+    const all = _researchReportsCache.reports || [];
+    const matches = all.filter(rep => rep.ticker === ticker).slice(0, 10);
+    if (!matches.length) {
+      meta.textContent = '0건';
+      list.innerHTML = `<div style="padding:20px 0; color:var(--ink-faint); font-family:var(--mono); font-size:11px;">최근 14일 내 이 종목 리포트가 없어요.</div>`;
+      return;
+    }
+    meta.textContent = `${matches.length}건 · 최근 14일`;
+    const escapeHtml = s => String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    list.innerHTML = matches.map(r => {
+      const target = Number.isFinite(r.targetPrice) ? `<span class="report-target">${r.targetPrice.toLocaleString()}원</span>` : '';
+      let change = '';
+      if (r.targetChange === 'up' && Number.isFinite(r.prevTargetPrice)) {
+        const pct = ((r.targetPrice / r.prevTargetPrice - 1) * 100).toFixed(1);
+        change = `<span class="report-change up">▲ +${pct}%</span>`;
+      } else if (r.targetChange === 'down' && Number.isFinite(r.prevTargetPrice)) {
+        const pct = ((r.targetPrice / r.prevTargetPrice - 1) * 100).toFixed(1);
+        change = `<span class="report-change down">▼ ${pct}%</span>`;
+      }
+      const link = r.pdfUrl || r.detailUrl;
+      return `<div class="report-item">
+        <div class="report-meta">
+          <span class="report-house">${escapeHtml(r.house)}</span>
+          <span class="news-time">${r.date}</span>
+          ${target}
+          ${change}
+          ${r.opinion ? `<span style="color:var(--ink-mid);">${escapeHtml(r.opinion)}</span>` : ''}
+        </div>
+        <div class="report-title">
+          ${link ? `<a href="${escapeHtml(link)}" target="_blank" rel="noopener">${escapeHtml(r.title)}</a>` : escapeHtml(r.title)}
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    meta.textContent = '로드 실패';
+    list.innerHTML = `<div style="padding:20px 0; color:var(--ink-faint); font-family:var(--mono); font-size:11px;">리서치 데이터 로드 실패 — 다음 cron(평일 21:00 KST) 후 재시도하세요.</div>`;
+  }
+}
+
 async function loadStock(ticker) {
   ticker = String(ticker).toUpperCase().padStart(6, '0').slice(-6);
   if (!/^\d{6}$/.test(ticker)) {
@@ -1960,6 +2034,8 @@ async function loadStock(ticker) {
     return;
   }
   currentTicker = ticker;
+  // Kick off research reports load in parallel — non-blocking
+  loadResearchReportsForTicker(ticker);
   const reg = (window.TICKER_REGISTRY || {})[ticker];
   const curated = STOCKS[ticker];
 

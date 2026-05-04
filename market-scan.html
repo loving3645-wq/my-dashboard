@@ -144,6 +144,8 @@
   .name-cell { display: flex; align-items: center; gap: 10px; min-width: 200px; }
   .name-cell .code { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); width: 50px; flex-shrink: 0; }
   .name-cell .nm { font-family: var(--sans); font-size: 13px; color: var(--ink); font-weight: 500; }
+  .report-badge { display: inline-flex; align-items: center; gap: 2px; font-family: var(--mono); font-size: 9px; padding: 1px 5px; border-radius: 2px; letter-spacing: 0.04em; background: var(--gold-bg); color: var(--gold); cursor: pointer; transition: all 0.12s; }
+  .report-badge:hover { background: var(--gold); color: var(--bg); }
   .mkt-pill { font-family: var(--mono); font-size: 9px; padding: 2px 5px; border-radius: 2px; letter-spacing: 0.08em; }
   .mkt-pill.kospi { background: var(--blue-bg); color: var(--blue); }
   .mkt-pill.kosdaq { background: var(--gold-bg); color: var(--gold); }
@@ -453,6 +455,8 @@ const STATE = {
   abortFlag: false,
   data: {}, // code -> row
   watch: new Set(),
+  reportCounts: {}, // ticker -> N (today's research report count)
+  reportDate: null,
 };
 
 const CACHE_TTL_MS = 6 * 3600 * 1000; // 6h
@@ -1182,6 +1186,11 @@ function render() {
     const on = STATE.watch.has(code) ? 'on' : '';
     return `<span class="star ${on}" data-watch="${code}" title="관심 종목 토글">★</span>`;
   };
+  const reportBadge = code => {
+    const n = STATE.reportCounts[code];
+    if (!n) return '';
+    return `<span class="report-badge" data-report="${code}" title="${STATE.reportDate} 리포트 ${n}건 — 클릭 시 리서치 페이지로">📑 ${n}</span>`;
+  };
 
   // Build rows
   const rows = codes.map(code => {
@@ -1193,7 +1202,7 @@ function render() {
 
     if (!d) {
       return `<tr class="empty" data-code="${code}">
-        <td class="left"><div class="name-cell">${starCell(code)}<span class="code">${code}</span><span class="nm">${reg.name}</span><span class="mkt-pill ${mktPill}">${mktLabel}</span></div></td>
+        <td class="left"><div class="name-cell">${starCell(code)}<span class="code">${code}</span><span class="nm">${reg.name}</span><span class="mkt-pill ${mktPill}">${mktLabel}</span>${reportBadge(code)}</div></td>
         <td class="left sector-col sector-cell">${sectorTrim}</td>
         <td class="muted">—</td>
         <td><span class="pct empty">—</span></td>
@@ -1233,7 +1242,7 @@ function render() {
     })() : '';
 
     return `<tr data-code="${code}">
-      <td class="left"><div class="name-cell">${starCell(code)}<span class="code">${code}</span><span class="nm">${reg.name}</span><span class="mkt-pill ${mktPill}">${mktLabel}</span></div></td>
+      <td class="left"><div class="name-cell">${starCell(code)}<span class="code">${code}</span><span class="nm">${reg.name}</span><span class="mkt-pill ${mktPill}">${mktLabel}</span>${reportBadge(code)}</div></td>
       <td class="left sector-col sector-cell" title="${reg.sector || ''}">${sectorTrim}</td>
       <td class="price">${fmtNum(d.price)}</td>
       <td><span class="pct ${r1d.cls}">${r1d.txt}</span></td>
@@ -1250,13 +1259,18 @@ function render() {
   });
 
   tbody.innerHTML = rows.join('');
-  // Bind row click → deep-dive (but skip when star clicked)
+  // Bind row click → deep-dive (but skip when star/report-badge clicked)
   tbody.querySelectorAll('tr[data-code]').forEach(tr => {
     tr.addEventListener('click', e => {
       if (e.target.closest('.star')) {
         const code = e.target.closest('.star').dataset.watch;
         toggleWatch(code);
         e.target.closest('.star').classList.toggle('on');
+        return;
+      }
+      if (e.target.closest('.report-badge')) {
+        const code = e.target.closest('.report-badge').dataset.report;
+        window.location.href = `research.html?ticker=${code}`;
         return;
       }
       const code = tr.dataset.code;
@@ -1493,6 +1507,31 @@ function loadCachedData() {
  * 18:00 KST each weekday). Hydrates STATE.data with the pre-computed
  * returns/volume/flow for all 2,613 tickers. Falls back silently if the
  * file isn't there yet (first-run before any cron has fired). */
+
+// Per-ticker research-report counts (most recent date in JSON). Populated
+// async on init; stored in STATE.reportCounts so render() can show a
+// 📑 N badge on rows that had reports today.
+async function loadResearchCounts() {
+  try {
+    const r = await fetch('data/research-reports.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) return;
+    const j = await r.json();
+    const reports = j.reports || [];
+    if (!reports.length) return;
+    // "Today" = the latest date present in the data
+    const today = reports[0].date;
+    const counts = {};
+    for (const rep of reports) {
+      if (rep.date === today && rep.ticker) {
+        counts[rep.ticker] = (counts[rep.ticker] || 0) + 1;
+      }
+    }
+    STATE.reportCounts = counts;
+    STATE.reportDate = today;
+    render();
+  } catch (e) { /* silent */ }
+}
+
 async function loadDailySnapshot() {
   try {
     const r = await fetch('data/market-snapshot.json?t=' + Date.now(), { cache: 'no-store' });
@@ -1663,6 +1702,9 @@ function init() {
     setStatus('', `캐시 ${cachedCount}개 복원됨`);
   }
   render();
+
+  // Load research counts in parallel — adds 📑 N badge per row
+  loadResearchCounts();
 
   // Then hydrate from daily snapshot (overrides browser cache when fresher)
   loadDailySnapshot().then(snap => {

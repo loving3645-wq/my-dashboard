@@ -139,6 +139,73 @@
 
   .empty-state { padding: 48px 20px; text-align: center; color: var(--ink-faint); font-family: var(--mono); font-size: 12px; }
 
+  /* ========== 오늘의 핵심 패널 ========== */
+  .hot-panel { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .hot-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+  .hot-card .hot-title { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .hot-card .hot-title .pill { background: var(--bg-warm); padding: 1px 6px; border-radius: 3px; font-size: 9px; color: var(--ink-mid); }
+  .hot-list { display: flex; flex-direction: column; gap: 4px; }
+  .hot-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; padding: 4px 6px; border-radius: 4px; cursor: pointer; transition: background 0.12s; }
+  .hot-item:hover { background: var(--bg-warm); }
+  .hot-item .nm { color: var(--ink); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hot-item .nm strong { font-weight: 600; margin-right: 4px; }
+  .hot-item .v { font-family: var(--mono); font-size: 11px; flex-shrink: 0; }
+  .hot-item .v.up { color: var(--green); }
+  .hot-item .v.down { color: var(--red); }
+  .hot-item .v.muted { color: var(--ink-soft); }
+  .hot-empty { font-size: 11px; color: var(--ink-faint); padding: 4px 6px; }
+
+  /* ========== 그룹 뷰 ========== */
+  .group-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 8px 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; flex-wrap: wrap; }
+  .group-toggle { padding: 4px 10px; border: 1px solid var(--line); background: var(--surface); border-radius: 14px; font-size: 11px; font-family: var(--mono); color: var(--ink-mid); cursor: pointer; transition: all 0.12s; }
+  .group-toggle:hover { border-color: var(--accent); color: var(--accent); }
+  .group-toggle.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  tr.group-header { background: var(--bg-warm) !important; cursor: pointer; }
+  tr.group-header:hover { background: var(--surface-2) !important; }
+  tr.group-header td { padding: 8px 12px; font-weight: 500; }
+  tr.group-header .gh-name { font-size: 13px; }
+  tr.group-header .gh-name .ticker { font-family: var(--mono); font-size: 11px; color: var(--accent); margin-right: 8px; }
+  tr.group-header .gh-count { background: var(--ink); color: var(--bg); padding: 1px 7px; border-radius: 10px; font-family: var(--mono); font-size: 10px; margin-right: 10px; }
+  tr.group-header .gh-tags { display: inline-flex; gap: 4px; vertical-align: middle; }
+  tr.group-header .gh-toggle { float: right; font-family: var(--mono); font-size: 10px; color: var(--ink-soft); }
+  tr.group-row { display: none; background: var(--surface) !important; }
+  tr.group-row.expanded { display: table-row; }
+  tr.group-row td { padding-left: 32px !important; }
+
+  /* ========== 요약 / 설정 모달 ========== */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(26,26,26,0.5); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; max-width: 720px; width: 100%; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+  .modal-head { padding: 18px 22px 14px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .modal-title { font-family: var(--serif); font-size: 18px; line-height: 1.3; }
+  .modal-title .sub { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); margin-top: 4px; letter-spacing: 0.08em; }
+  .modal-close { font-size: 22px; color: var(--ink-soft); padding: 0 4px; line-height: 1; flex-shrink: 0; }
+  .modal-close:hover { color: var(--ink); }
+  .modal-body { padding: 18px 22px; overflow-y: auto; flex: 1; }
+  .modal-body p { margin-bottom: 10px; font-size: 13px; line-height: 1.55; }
+  .modal-body label { display: block; font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+  .modal-body input { width: 100%; padding: 8px 12px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 5px; font-size: 13px; font-family: var(--mono); }
+  .modal-body input:focus { outline: none; border-color: var(--accent); background: var(--surface); }
+  .modal-foot { padding: 14px 22px 18px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 8px; }
+  .modal-btn { padding: 8px 16px; border: 1px solid var(--line); background: var(--surface); border-radius: 5px; font-size: 12px; font-family: var(--mono); color: var(--ink); cursor: pointer; transition: all 0.12s; }
+  .modal-btn:hover { background: var(--bg-warm); }
+  .modal-btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .modal-btn.primary:hover { background: var(--ink-mid); }
+  .modal-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .summary-content { font-size: 13px; line-height: 1.7; white-space: pre-wrap; word-break: keep-all; }
+  .summary-content strong { color: var(--accent); }
+  .summary-loading { display: flex; align-items: center; gap: 10px; color: var(--ink-soft); font-family: var(--mono); font-size: 12px; padding: 20px 0; }
+  .summary-loading::before { content: ''; width: 14px; height: 14px; border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .summary-error { color: var(--red); background: var(--red-bg); padding: 10px 14px; border-radius: 5px; font-size: 12px; line-height: 1.5; }
+
+  /* 요약 버튼 + 설정 버튼 */
+  .summarize-btn { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--line-strong); border-radius: 4px; font-family: var(--mono); font-size: 11px; color: var(--ink-mid); cursor: pointer; transition: all 0.15s; }
+  .summarize-btn:hover { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+  .settings-btn { padding: 6px 12px; border: 1px solid var(--line); background: var(--surface); border-radius: 5px; font-size: 11px; font-family: var(--mono); color: var(--ink-mid); cursor: pointer; }
+  .settings-btn:hover { color: var(--accent); border-color: var(--accent); }
+
   .footer-info { margin-top: 14px; font-family: var(--mono); font-size: 10px; color: var(--ink-soft); display: flex; gap: 14px; flex-wrap: wrap; align-items: center; letter-spacing: 0.05em; }
 
   @media (max-width: 900px) {
@@ -191,6 +258,7 @@
     </select>
     <div class="toolbar-divider"></div>
     <input type="text" class="search" id="search" placeholder="제목 / 종목명 / 증권사 검색" />
+    <button class="settings-btn" id="settings-btn" title="Anthropic API 키 설정 (PDF 요약 기능)">⚙ 설정</button>
   </div>
 
   <div class="preset-row">
@@ -211,12 +279,39 @@
     <div class="seg"><span class="lbl">소스</span><span class="val">Naver Finance Research</span></div>
   </div>
 
+  <!-- 오늘의 핵심 — 자동 큐레이션 -->
+  <div class="hot-panel" id="hot-panel">
+    <div class="hot-card">
+      <div class="hot-title">🐝 오늘 동시 다뤄진 종목 <span class="pill">2+ 증권사</span></div>
+      <div class="hot-list" id="hot-multi"></div>
+    </div>
+    <div class="hot-card">
+      <div class="hot-title">▲ 목표가 상향 <span class="pill">최근 7일</span></div>
+      <div class="hot-list" id="hot-up"></div>
+    </div>
+    <div class="hot-card">
+      <div class="hot-title">▼ 목표가 하향 <span class="pill">최근 7일</span></div>
+      <div class="hot-list" id="hot-down"></div>
+    </div>
+    <div class="hot-card">
+      <div class="hot-title">★ 내 관심종목 <span class="pill" id="hot-watch-count">—</span></div>
+      <div class="hot-list" id="hot-watch"></div>
+    </div>
+  </div>
+
   <div class="summary-row" id="summary">
     <div class="summary-card"><div class="lbl">개별 종목</div><div class="val" id="cnt-company">—</div><div class="sub">전체 기간</div></div>
     <div class="summary-card"><div class="lbl">▲ 목표가 상향</div><div class="val" id="cnt-up" style="color:var(--green);">—</div><div class="sub">동일 증권사 기준</div></div>
     <div class="summary-card"><div class="lbl">▼ 목표가 하향</div><div class="val" id="cnt-down" style="color:var(--red);">—</div><div class="sub">동일 증권사 기준</div></div>
     <div class="summary-card"><div class="lbl">⬢ 신규 커버리지</div><div class="val" id="cnt-new" style="color:var(--blue);">—</div><div class="sub">제목에 명시된 종목</div></div>
     <div class="summary-card"><div class="lbl">증권사</div><div class="val" id="cnt-houses">—</div><div class="sub">고유 작성기관</div></div>
+  </div>
+
+  <div class="group-toolbar">
+    <span class="tlabel">뷰</span>
+    <button class="group-toggle active" data-view="flat">평면</button>
+    <button class="group-toggle" data-view="grouped">종목별 그룹</button>
+    <span style="margin-left:8px; font-family:var(--mono); font-size:10px; color:var(--ink-soft);" id="group-hint">같은 종목에 N건 리포트가 있으면 자동으로 묶어 표시</span>
   </div>
 
   <div class="table-wrap">
@@ -240,8 +335,53 @@
   <div class="footer-info">
     <span>데이터: Naver Finance Research · 매일 21:00 KST 자동 갱신</span>
     <span>리포트 PDF는 각 증권사 원본 링크로 연결</span>
+    <span>📝 요약: Claude API (Haiku) — 사용자 본인 API 키 사용</span>
   </div>
 
+</div>
+
+<!-- 설정 모달 (Anthropic API 키) -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title">PDF 요약 설정</div>
+        <div class="sub">Anthropic API key</div>
+      </div>
+      <button class="modal-close" id="settings-close">×</button>
+    </div>
+    <div class="modal-body">
+      <p>리포트 PDF 요약은 <strong>Claude API</strong>를 직접 호출합니다. 본인 API 키만 사용되고, 브라우저 localStorage에만 저장돼요 (서버 전송 X).</p>
+      <p style="font-size:12px; color:var(--ink-soft);">키 발급: <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--accent);">console.anthropic.com</a> · Claude Haiku 4.5 기준 요약 1건 약 $0.008</p>
+      <label>API Key</label>
+      <input type="password" id="api-key-input" placeholder="sk-ant-api03-..." autocomplete="off" />
+      <div id="settings-msg" style="margin-top:8px; font-size:11px; color:var(--ink-soft); font-family:var(--mono);"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="modal-btn" id="settings-clear">키 삭제</button>
+      <button class="modal-btn primary" id="settings-save">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 요약 모달 -->
+<div class="modal-overlay" id="summary-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="summary-title">리포트 요약</div>
+        <div class="sub" id="summary-meta">—</div>
+      </div>
+      <button class="modal-close" id="summary-close">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="summary-content"></div>
+    </div>
+    <div class="modal-foot">
+      <a class="modal-btn" id="summary-pdf-link" href="#" target="_blank" rel="noopener">📄 원본 PDF</a>
+      <button class="modal-btn primary" id="summary-done">닫기</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -255,11 +395,23 @@ const STATE = {
   query: '',
   changeFilter: '',  // '' | 'up' | 'down' | 'new' | 'flat'
   opinionFilter: '', // '' | 'buy' | 'hold' | 'sell'
+  view: 'flat',      // 'flat' | 'grouped'
+  expanded: new Set(), // group tickers currently expanded
   sortKey: 'date',
   sortDir: 'desc',
   reports: [],
   generatedAt: null,
 };
+
+const API_KEY_STORAGE = 'claude:apiKey';
+const WATCHLIST_KEY = 'mscan:watchlist';
+
+function loadWatchlist() {
+  try {
+    const raw = localStorage.getItem(WATCHLIST_KEY);
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch (_) { return new Set(); }
+}
 
 async function loadReports() {
   try {
@@ -375,11 +527,16 @@ function buildHeader() {
 
 function render() {
   buildHeader();
+  renderHotPanel();
   const list = getFiltered();
   $('filtered-count').textContent = list.length.toLocaleString();
   const tbody = $('report-body');
   if (!list.length) {
     tbody.innerHTML = `<tr><td colspan="8" class="empty-state">조건에 맞는 리포트가 없습니다.</td></tr>`;
+    return;
+  }
+  if (STATE.view === 'grouped') {
+    renderGrouped(list);
     return;
   }
   const escapeHtml = s => String(s || '').replace(/[&<>"']/g, c => ({
@@ -424,6 +581,9 @@ function render() {
     const pdfBtn = r.pdfUrl
       ? `<a class="pdf-btn" href="${escapeHtml(r.pdfUrl)}" target="_blank" rel="noopener" style="background:var(--accent-bg);color:var(--accent);border-color:var(--accent-bg);">📄 PDF</a>`
       : '';
+    const summarizeBtn = r.pdfUrl
+      ? `<button class="summarize-btn" data-summary-id="${escapeHtml(r.detailUrl || r.pdfUrl)}" title="Claude API로 5불릿 요약">📝 요약</button>`
+      : '';
     const opinionCell = r.opinion
       ? `<span class="opinion-pill ${opinionClass(r.opinion)}">${escapeHtml(r.opinion)}</span>`
       : '<span class="prev-target">—</span>';
@@ -435,9 +595,279 @@ function render() {
       <td>${opinionCell}</td>
       <td>${fmtTarget(r)}</td>
       <td>${fmtChange(r)}</td>
-      <td class="actions">${detailBtn} ${pdfBtn}</td>
+      <td class="actions">${summarizeBtn} ${detailBtn} ${pdfBtn}</td>
     </tr>`;
   }).join('');
+
+  // Bind summarize buttons
+  tbody.querySelectorAll('.summarize-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = btn.dataset.summaryId;
+      const report = list.find(r => (r.detailUrl || r.pdfUrl) === id);
+      if (report) openSummaryModal(report);
+    });
+  });
+}
+
+/* =====================================================================
+ * Hot panel — 오늘의 핵심 자동 큐레이션 (4 cards)
+ * ===================================================================== */
+function renderHotPanel() {
+  const escapeHtml = s => String(s || '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+  const stk = (ticker, name) => `<a href="stock-deep-dive.html#${ticker}" style="color:inherit; text-decoration:none;"><strong>${escapeHtml(name || ticker)}</strong></a>`;
+
+  // Most recent date in data → "today" baseline
+  const today = STATE.reports[0]?.date;
+  const recent = today ? STATE.reports.filter(r => r.date === today) : [];
+
+  // 1) 같은 날 N개 증권사가 동시에 다룬 종목 (2+)
+  const counts = {};
+  recent.forEach(r => { if (r.ticker) counts[r.ticker] = (counts[r.ticker] || 0) + 1; });
+  const multi = Object.entries(counts)
+    .filter(([_, n]) => n >= 2)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6);
+  $('hot-multi').innerHTML = multi.length
+    ? multi.map(([code, n]) => {
+        const sample = recent.find(r => r.ticker === code);
+        return `<div class="hot-item" onclick="location.href='stock-deep-dive.html#${code}'">
+          <span class="nm"><strong>${code}</strong> ${escapeHtml(sample?.stockName || '')}</span>
+          <span class="v">${n}건</span>
+        </div>`;
+      }).join('')
+    : `<div class="hot-empty">${today ? today + ' 동시 발간 종목 없음' : '데이터 없음'}</div>`;
+
+  // 2) ▲ 상향 (전체 윈도우)
+  const ups = STATE.reports.filter(r => r.targetChange === 'up' && Number.isFinite(r.prevTargetPrice) && Number.isFinite(r.targetPrice))
+    .sort((a, b) => (b.targetPrice / b.prevTargetPrice) - (a.targetPrice / a.prevTargetPrice))
+    .slice(0, 6);
+  $('hot-up').innerHTML = ups.length
+    ? ups.map(r => {
+        const pct = ((r.targetPrice / r.prevTargetPrice - 1) * 100).toFixed(1);
+        return `<div class="hot-item" onclick="location.href='stock-deep-dive.html#${r.ticker}'">
+          <span class="nm">${stk(r.ticker, r.stockName)} <span style="color:var(--ink-soft); font-size:11px;">${escapeHtml(r.house)}</span></span>
+          <span class="v up">+${pct}%</span>
+        </div>`;
+      }).join('')
+    : `<div class="hot-empty">최근 7일 상향 케이스 없음 — cron 누적 후 채워짐</div>`;
+
+  // 3) ▼ 하향
+  const downs = STATE.reports.filter(r => r.targetChange === 'down' && Number.isFinite(r.prevTargetPrice) && Number.isFinite(r.targetPrice))
+    .sort((a, b) => (a.targetPrice / a.prevTargetPrice) - (b.targetPrice / b.prevTargetPrice))
+    .slice(0, 6);
+  $('hot-down').innerHTML = downs.length
+    ? downs.map(r => {
+        const pct = ((r.targetPrice / r.prevTargetPrice - 1) * 100).toFixed(1);
+        return `<div class="hot-item" onclick="location.href='stock-deep-dive.html#${r.ticker}'">
+          <span class="nm">${stk(r.ticker, r.stockName)} <span style="color:var(--ink-soft); font-size:11px;">${escapeHtml(r.house)}</span></span>
+          <span class="v down">${pct}%</span>
+        </div>`;
+      }).join('')
+    : `<div class="hot-empty">최근 7일 하향 케이스 없음</div>`;
+
+  // 4) ★ 내 관심종목의 최근 리포트
+  const watchlist = loadWatchlist();
+  $('hot-watch-count').textContent = watchlist.size + '종목';
+  const watch = STATE.reports.filter(r => r.ticker && watchlist.has(r.ticker)).slice(0, 8);
+  $('hot-watch').innerHTML = watch.length
+    ? watch.map(r => `<div class="hot-item" onclick="location.href='stock-deep-dive.html#${r.ticker}'">
+        <span class="nm">${stk(r.ticker, r.stockName)} <span style="color:var(--ink-soft); font-size:11px;">${escapeHtml(r.house)}</span></span>
+        <span class="v muted">${r.date}</span>
+      </div>`).join('')
+    : `<div class="hot-empty">${watchlist.size === 0 ? '시장 스캐너에서 ★ 표시한 종목이 여기 모입니다' : '관심종목 리포트 없음'}</div>`;
+}
+
+/* =====================================================================
+ * Group view — 같은 종목으로 묶어서 N건 카드처럼 표시
+ * ===================================================================== */
+function renderGrouped(list) {
+  const escapeHtml = s => String(s || '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+  // Group by ticker (industry reports get their own pseudo-group by stockName)
+  const groups = {};
+  for (const r of list) {
+    const key = r.ticker || ('industry:' + (r.stockName || 'misc'));
+    if (!groups[key]) groups[key] = { ticker: r.ticker, stockName: r.stockName, type: r.type, reports: [] };
+    groups[key].reports.push(r);
+  }
+  // Sort groups by report count desc, then ticker
+  const sorted = Object.values(groups).sort((a, b) => b.reports.length - a.reports.length || (a.ticker || '').localeCompare(b.ticker || ''));
+
+  const fmtTarget = r => Number.isFinite(r.targetPrice) ? r.targetPrice.toLocaleString() : '—';
+  const fmtChange = r => {
+    if (r.targetChange === 'up' && Number.isFinite(r.prevTargetPrice) && Number.isFinite(r.targetPrice)) {
+      const pct = ((r.targetPrice / r.prevTargetPrice - 1) * 100).toFixed(1);
+      return `<span class="change-pill up">▲ +${pct}%</span>`;
+    }
+    if (r.targetChange === 'down' && Number.isFinite(r.prevTargetPrice) && Number.isFinite(r.targetPrice)) {
+      const pct = ((r.targetPrice / r.prevTargetPrice - 1) * 100).toFixed(1);
+      return `<span class="change-pill down">▼ ${pct}%</span>`;
+    }
+    if (r.targetChange === 'flat') return '<span class="change-pill flat">= 유지</span>';
+    if (r.targetChange === 'new') return '<span class="change-pill new">⬢ 신규</span>';
+    return '<span class="prev-target">—</span>';
+  };
+
+  const tbody = $('report-body');
+  tbody.innerHTML = sorted.map(g => {
+    const key = g.ticker || ('industry:' + (g.stockName || 'misc'));
+    const expanded = STATE.expanded.has(key);
+    const tagSummary = (() => {
+      const ups = g.reports.filter(r => r.targetChange === 'up').length;
+      const downs = g.reports.filter(r => r.targetChange === 'down').length;
+      const news = g.reports.filter(r => r.targetChange === 'new').length;
+      const parts = [];
+      if (ups) parts.push(`<span class="change-pill up">▲ ${ups}</span>`);
+      if (downs) parts.push(`<span class="change-pill down">▼ ${downs}</span>`);
+      if (news) parts.push(`<span class="change-pill new">⬢ ${news}</span>`);
+      return parts.join(' ');
+    })();
+    const titleCell = g.ticker
+      ? `<a class="stk" href="stock-deep-dive.html#${g.ticker}">${g.ticker}</a> ${escapeHtml(g.stockName || '')}`
+      : `<span class="stk" style="color:var(--purple);">${escapeHtml(g.stockName || '')}</span>`;
+    const headerRow = `<tr class="group-header" data-group-key="${escapeHtml(key)}">
+      <td colspan="8">
+        <span class="gh-count">${g.reports.length}</span>
+        <span class="gh-name">${titleCell}</span>
+        <span class="gh-tags">${tagSummary}</span>
+        <span class="gh-toggle">${expanded ? '▾ 접기' : '▸ 펼치기'}</span>
+      </td>
+    </tr>`;
+    const detailRows = g.reports.map(r => {
+      const summarizeBtn = r.pdfUrl ? `<button class="summarize-btn" data-summary-id="${escapeHtml(r.detailUrl || r.pdfUrl)}">📝 요약</button>` : '';
+      const detailBtn = r.detailUrl ? `<a class="pdf-btn" href="${escapeHtml(r.detailUrl)}" target="_blank">상세</a>` : '';
+      const pdfBtn = r.pdfUrl ? `<a class="pdf-btn" href="${escapeHtml(r.pdfUrl)}" target="_blank" style="background:var(--accent-bg);color:var(--accent);border-color:var(--accent-bg);">📄</a>` : '';
+      const opinionCell = r.opinion
+        ? `<span class="opinion-pill ${opinionClass(r.opinion)}">${escapeHtml(r.opinion)}</span>`
+        : '<span class="prev-target">—</span>';
+      return `<tr class="group-row ${expanded ? 'expanded' : ''}" data-group-key="${escapeHtml(key)}">
+        <td class="date">${r.date || ''}</td>
+        <td class="type"><span class="type-pill ${r.type}">${r.type === 'company' ? '종목' : '업종'}</span></td>
+        <td class="title"><span class="ttl">${escapeHtml(r.title || '')}</span></td>
+        <td class="house">${escapeHtml(r.house || '')}</td>
+        <td>${opinionCell}</td>
+        <td>${fmtTarget(r) === '—' ? '<span class="prev-target">—</span>' : '<span class="target-cell">' + fmtTarget(r) + '</span>'}</td>
+        <td>${fmtChange(r)}</td>
+        <td class="actions">${summarizeBtn} ${detailBtn} ${pdfBtn}</td>
+      </tr>`;
+    }).join('');
+    return headerRow + detailRows;
+  }).join('');
+
+  // Bind group-header click → toggle expanded
+  tbody.querySelectorAll('.group-header').forEach(tr => {
+    tr.addEventListener('click', () => {
+      const key = tr.dataset.groupKey;
+      if (STATE.expanded.has(key)) STATE.expanded.delete(key);
+      else STATE.expanded.add(key);
+      render();
+    });
+  });
+
+  // Bind summarize buttons
+  tbody.querySelectorAll('.summarize-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = btn.dataset.summaryId;
+      const report = list.find(r => (r.detailUrl || r.pdfUrl) === id);
+      if (report) openSummaryModal(report);
+    });
+  });
+}
+
+/* =====================================================================
+ * Settings modal — Anthropic API key
+ * ===================================================================== */
+function getApiKey() { return localStorage.getItem(API_KEY_STORAGE) || ''; }
+function setApiKey(k) {
+  if (k) localStorage.setItem(API_KEY_STORAGE, k);
+  else localStorage.removeItem(API_KEY_STORAGE);
+}
+
+function openSettingsModal() {
+  $('api-key-input').value = getApiKey();
+  $('settings-msg').textContent = getApiKey() ? '저장된 키가 있습니다.' : '키 입력 후 저장하면 요약 기능이 활성화돼요.';
+  $('settings-modal').classList.add('show');
+}
+function closeSettingsModal() { $('settings-modal').classList.remove('show'); }
+
+/* =====================================================================
+ * Summary modal — Claude API call (Haiku, PDF URL → 5 bullets)
+ * ===================================================================== */
+const SUMMARY_PROMPT = `다음은 한국 증권사가 발간한 리서치 리포트야. 한국어로 정확히 5개 불릿으로 요약해줘. 각 불릿은 한 줄(최대 두 줄). 사실 우선, 분석가의 의견과 사실을 명확히 구분.
+
+1. 📌 핵심 투자 포인트 — 이 리포트가 말하고자 하는 가장 중요한 메시지 한 줄
+2. 🎯 목표가 / 의견 — 목표주가 + 투자의견. 이전 대비 상향/하향이면 명시
+3. ✅ 강한 긍정 요인 — 분석가가 가장 자신있게 제시한 catalyst 또는 강점
+4. ⚠️ 주요 리스크 — 분석가가 인지한 downside / 우려사항
+5. 💡 한 줄 결론 — 이 리포트를 한 문장으로 정리하면
+
+리포트에 해당 정보가 없으면 "리포트에 명시 없음"으로 표시. 추측 금지. 마크다운 굵은 글씨(**)는 사용하지 마.`;
+
+async function openSummaryModal(report) {
+  $('summary-title').textContent = (report.stockName || '') + ' — ' + (report.title || '리포트');
+  $('summary-meta').textContent = `${report.house || ''} · ${report.date || ''}${report.opinion ? ' · ' + report.opinion : ''}${Number.isFinite(report.targetPrice) ? ' · 목표가 ' + report.targetPrice.toLocaleString() : ''}`;
+  $('summary-pdf-link').href = report.pdfUrl || '#';
+  $('summary-content').innerHTML = '<div class="summary-loading">요약 생성 중… (Claude API 호출)</div>';
+  $('summary-modal').classList.add('show');
+
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    $('summary-content').innerHTML = `<div class="summary-error">
+      Anthropic API 키가 설정되지 않았어요.<br>
+      <button class="modal-btn primary" style="margin-top:10px;" onclick="document.getElementById('summary-modal').classList.remove('show'); openSettingsModal();">⚙ 설정 열기</button>
+    </div>`;
+    return;
+  }
+  if (!report.pdfUrl) {
+    $('summary-content').innerHTML = '<div class="summary-error">PDF URL이 없어 요약할 수 없어요.</div>';
+    return;
+  }
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5',
+        max_tokens: 1024,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'document', source: { type: 'url', url: report.pdfUrl } },
+            { type: 'text', text: SUMMARY_PROMPT },
+          ],
+        }],
+      }),
+    });
+    if (!resp.ok) {
+      const errText = await resp.text();
+      let msg = `HTTP ${resp.status}`;
+      try { const j = JSON.parse(errText); if (j.error?.message) msg = j.error.message; } catch (_) {}
+      throw new Error(msg);
+    }
+    const j = await resp.json();
+    const text = (j.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n\n');
+    $('summary-content').innerHTML = `<div class="summary-content">${text.replace(/[<>]/g, c => ({ '<': '&lt;', '>': '&gt;' }[c])).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</div>
+      <div style="margin-top:14px; font-family:var(--mono); font-size:10px; color:var(--ink-faint);">
+        Claude Haiku 4.5 · 입력 ${j.usage?.input_tokens || '?'}토큰 · 출력 ${j.usage?.output_tokens || '?'}토큰
+      </div>`;
+  } catch (e) {
+    $('summary-content').innerHTML = `<div class="summary-error">
+      <strong>요약 생성 실패</strong><br>
+      ${e.message}<br>
+      <small style="color:var(--ink-soft);">키가 유효한지, PDF URL에 접근 가능한지 확인하세요. (HTTP 401 = 키 오류, 429 = rate limit, 400 = PDF 접근 실패 가능)</small>
+    </div>`;
+  }
 }
 
 // Preset chip toggle (target-change / opinion)
@@ -485,6 +915,64 @@ $('head-row').addEventListener('click', e => {
   }
   render();
 });
+
+// Group view toggle
+document.querySelectorAll('.group-toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.group-toggle').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    STATE.view = btn.dataset.view;
+    STATE.expanded = new Set(); // reset
+    render();
+  });
+});
+
+// Settings modal — Anthropic API key
+$('settings-btn').addEventListener('click', openSettingsModal);
+$('settings-close').addEventListener('click', closeSettingsModal);
+$('settings-save').addEventListener('click', () => {
+  const key = $('api-key-input').value.trim();
+  if (key && !key.startsWith('sk-ant-')) {
+    $('settings-msg').textContent = '⚠ 키 형식이 sk-ant-... 로 시작해야 해요.';
+    $('settings-msg').style.color = 'var(--red)';
+    return;
+  }
+  setApiKey(key);
+  $('settings-msg').textContent = key ? '✓ 저장됨' : '✓ 삭제됨';
+  $('settings-msg').style.color = 'var(--green)';
+  setTimeout(closeSettingsModal, 600);
+});
+$('settings-clear').addEventListener('click', () => {
+  setApiKey('');
+  $('api-key-input').value = '';
+  $('settings-msg').textContent = '✓ 삭제됨';
+  $('settings-msg').style.color = 'var(--ink-soft);';
+});
+
+// Summary modal
+$('summary-close').addEventListener('click', () => $('summary-modal').classList.remove('show'));
+$('summary-done').addEventListener('click', () => $('summary-modal').classList.remove('show'));
+
+// Click outside modal closes
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); });
+});
+// Escape closes
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.show').forEach(o => o.classList.remove('show'));
+  }
+});
+
+// Pre-fill search from ?ticker= query (so 📑 badge in market-scan deep-links here)
+(() => {
+  const params = new URLSearchParams(location.search);
+  const t = params.get('ticker');
+  if (t && /^\d{6}$/.test(t)) {
+    STATE.query = t;
+    $('search').value = t;
+  }
+})();
 
 loadReports();
 </script>
