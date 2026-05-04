@@ -12,6 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..600,0..100&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
 <script src="tickers-full.js"></script>
+<script src="themes.js"></script>
 
 <style>
   :root {
@@ -278,9 +279,9 @@
       <button class="tab" data-mkt="WATCH" title="별표 찍은 종목만">★ 관심</button>
     </div>
     <div class="toolbar-divider"></div>
-    <span class="tlabel">섹터</span>
-    <select class="select" id="sector-filter">
-      <option value="">전체 섹터</option>
+    <span class="tlabel">테마</span>
+    <select class="select" id="sector-filter" title="투자 테마별 필터링 (반도체 / 2차전지 / 바이오 등)">
+      <option value="">전체 테마</option>
     </select>
     <div class="toolbar-divider"></div>
     <input type="text" class="search" id="search" placeholder="종목명 또는 코드 검색 (예: 삼성전자, 005930)" />
@@ -319,7 +320,7 @@
     <button class="preset-chip" data-preset="pullback" title="6M 시장 평균 대비 +15%p 이상 outperform AND 1M -5~-20% 조정 AND 1Y ≥ 시장 평균 — 시장보다 잘 갔던 종목의 건강한 조정">📊 조정 매수</button>
     <button class="preset-chip" data-preset="volume" title="오늘 거래량이 20일 평균 대비 2배 이상 — 이벤트 발생 의심">🔥 거래량 폭발</button>
     <button class="preset-chip" data-preset="smartmoney" title="외국인 + 기관 모두 5D 누적 순매수">🐋 스마트머니</button>
-    <button class="preset-chip" data-preset="laggard" title="섹터 평균 대비 1M 수익률이 5%↓ 낮은 종목 — 따라잡기 후보">🐢 섹터 낙오자</button>
+    <button class="preset-chip" data-preset="laggard" title="해당 테마 평균 대비 1M 수익률이 5%↓ 낮은 종목 — 따라잡기 후보">🐢 테마 낙오자</button>
     <button class="preset-chip" data-preset="distrib" title="외국인 매도 + 개인 매수 — '개미 잡힌' 종목, 약세 신호">⚠️ 분배(약세)</button>
     <span class="preset-clear" id="preset-clear" style="display:none;">× 프리셋 해제</span>
   </div>
@@ -335,7 +336,7 @@
   <!-- ============ SECTOR ROTATION PANEL ============ -->
   <div class="sector-panel" id="sector-panel">
     <div class="sector-head" id="sector-toggle">
-      <span class="title">🌐 섹터 로테이션 <span style="margin-left:8px;color:var(--ink-mid);text-transform:none;letter-spacing:0;font-family:var(--sans);font-size:11px;" id="sector-summary">—</span></span>
+      <span class="title">🌐 테마 로테이션 <span style="margin-left:8px;color:var(--ink-mid);text-transform:none;letter-spacing:0;font-family:var(--sans);font-size:11px;" id="sector-summary">—</span></span>
       <span class="caret">▾</span>
     </div>
     <div class="sector-body" id="sector-body"></div>
@@ -389,6 +390,20 @@
 const $ = id => document.getElementById(id);
 const REGISTRY = window.TICKER_REGISTRY || {};
 const ALL_CODES = Object.keys(REGISTRY).sort();
+const THEMES = window.THEMES || {};
+
+// Reverse index: code → [theme names]. Built once on load.
+const THEMES_OF = {};
+for (const [name, def] of Object.entries(THEMES)) {
+  for (const code of def.tickers || []) {
+    if (!THEMES_OF[code]) THEMES_OF[code] = [];
+    THEMES_OF[code].push(name);
+  }
+}
+function themesOf(code) { return THEMES_OF[code] || []; }
+function inTheme(code, theme) { return THEMES_OF[code]?.includes(theme); }
+// Primary theme = first one assigned (used for RS / laggard comparison)
+function primaryTheme(code) { return THEMES_OF[code]?.[0]; }
 
 /* ---- State ---- */
 const STATE = {
@@ -708,7 +723,7 @@ function getScanCodes() {
     codes = codes.filter(c => REGISTRY[c].mkt === STATE.market);
   }
   if (STATE.sector) {
-    codes = codes.filter(c => REGISTRY[c].sector === STATE.sector);
+    codes = codes.filter(c => inTheme(c, STATE.sector));
   }
   if (STATE.query) {
     const q = STATE.query.toLowerCase();
@@ -920,25 +935,31 @@ function getMarketAvg(key) {
 }
 
 function computeSectorStats() {
-  // Group loaded entries by sector and compute aggregates
+  // Group loaded entries by THEME and compute aggregates. A ticker can
+  // appear in multiple themes (e.g. LG화학 ∈ 화학 ∩ 2차전지), so it
+  // contributes to each theme's average.
   const groups = {};
+  for (const themeName of Object.keys(THEMES)) {
+    groups[themeName] = { name: themeName, entries: [] };
+  }
   for (const code of ALL_CODES) {
     const d = STATE.data[code];
-    const sec = REGISTRY[code]?.sector;
-    if (!d || !sec) continue;
-    if (!groups[sec]) groups[sec] = { name: sec, entries: [] };
-    groups[sec].entries.push(d);
+    if (!d) continue;
+    for (const t of themesOf(code)) {
+      groups[t].entries.push(d);
+    }
   }
   const stats = [];
   for (const sec in groups) {
     const e = groups[sec].entries;
+    if (!e.length) continue;
     const avg = key => {
       const vs = e.map(x => x[key]).filter(v => isFinite(v));
       return vs.length ? vs.reduce((a, b) => a + b, 0) / vs.length : NaN;
     };
     const upCount = e.filter(x => isFinite(x.r1d) && x.r1d > 0).length;
     stats.push({
-      sector: sec,
+      sector: sec, // kept as 'sector' key for back-compat with renderSectorPanel
       count: e.length,
       r1d: avg('r1d'),
       r1w: avg('r1w'),
@@ -1006,9 +1027,10 @@ function passesPreset(d, code) {
   }
   if (p === 'laggard') {
     if (!isFinite(d.r1m)) return false;
-    const sec = REGISTRY[code]?.sector;
-    const sa = sec && sectorAvg1M(sec);
-    return isFinite(sa) && (sa - d.r1m) >= 5; // 5%p below sector
+    const t = primaryTheme(code);
+    if (!t) return false; // tickers without theme: skip
+    const sa = sectorAvg1M(t);
+    return isFinite(sa) && (sa - d.r1m) >= 5; // 5%p below theme average
   }
   return true;
 }
@@ -1020,7 +1042,7 @@ function getFilteredSorted() {
   } else if (STATE.market !== 'ALL') {
     codes = codes.filter(c => REGISTRY[c].mkt === STATE.market);
   }
-  if (STATE.sector) codes = codes.filter(c => REGISTRY[c].sector === STATE.sector);
+  if (STATE.sector) codes = codes.filter(c => inTheme(c, STATE.sector));
   if (STATE.query) {
     const q = STATE.query.toLowerCase();
     codes = codes.filter(c => c.includes(q) || REGISTRY[c].name.toLowerCase().includes(q));
@@ -1038,8 +1060,10 @@ function getFilteredSorted() {
     if (k === 'sector') { va = REGISTRY[a].sector || ''; vb = REGISTRY[b].sector || ''; return va.localeCompare(vb, 'ko') * dirMul; }
     if (k === 'trend') { va = da?.r3m; vb = db?.r3m; }
     else if (k === 'rs') {
-      va = da && isFinite(da.r1m) ? da.r1m - (sectorAvg1M(REGISTRY[a].sector) || 0) : undefined;
-      vb = db && isFinite(db.r1m) ? db.r1m - (sectorAvg1M(REGISTRY[b].sector) || 0) : undefined;
+      // RS = stock 1M − primary theme avg 1M (themes are investor-relevant)
+      const ta = primaryTheme(a), tb = primaryTheme(b);
+      va = da && isFinite(da.r1m) && ta ? da.r1m - (sectorAvg1M(ta) || 0) : undefined;
+      vb = db && isFinite(db.r1m) && tb ? db.r1m - (sectorAvg1M(tb) || 0) : undefined;
     }
     else if (k === 'volratio') {
       va = da && da.avgVol20 > 0 ? da.volume / da.avgVol20 : undefined;
@@ -1055,7 +1079,7 @@ function getFilteredSorted() {
 
 function buildHeader() {
   const rsCol = STATE.withRS
-    ? '<th data-sort="rs" title="RS = 종목 1M − 섹터 평균 1M">RS(섹터) <span class="arrow">↕</span></th>'
+    ? '<th data-sort="rs" title="RS = 종목 1M − 주 테마 평균 1M">RS(테마) <span class="arrow">↕</span></th>'
     : '';
   const flowCols = STATE.withFlow ? `
     <th data-sort="foreign5d">외국인 5D <span class="arrow">↕</span></th>
@@ -1139,12 +1163,13 @@ function render() {
     const r3m = fmtPct(d.r3m), r6m = fmtPct(d.r6m), r1y = fmtPct(d.r1y);
 
     const rsCell = STATE.withRS ? (() => {
-      const sa = sectorAvg1M(reg.sector);
-      if (!isFinite(d.r1m) || !isFinite(sa)) return '<td class="muted">—</td>';
+      const t = primaryTheme(code);
+      const sa = t ? sectorAvg1M(t) : NaN;
+      if (!isFinite(d.r1m) || !isFinite(sa)) return '<td class="muted" title="테마 미분류">—</td>';
       const rs = d.r1m - sa;
       const cls = rs > 0.5 ? 'up' : rs < -0.5 ? 'down' : 'flat';
       const sign = rs > 0 ? '+' : '';
-      return `<td><span class="rs-cell ${cls}" title="섹터 평균 1M ${sa.toFixed(2)}% 대비">${sign}${rs.toFixed(2)}%p</span></td>`;
+      return `<td><span class="rs-cell ${cls}" title="${t} 평균 1M ${sa.toFixed(2)}% 대비">${sign}${rs.toFixed(2)}%p</span></td>`;
     })() : '';
 
     const flowCells = STATE.withFlow ? (() => {
@@ -1335,9 +1360,9 @@ function renderSectorPanel() {
   const top = stats[0], bot = stats[stats.length - 1];
   const fmtPctTiny = v => isFinite(v) ? (v > 0 ? '+' : '') + v.toFixed(1) + '%' : '—';
   $('sector-summary').innerHTML = `
-    1M 강한 섹터 <strong style="color:var(--green);">${top.sector} ${fmtPctTiny(top.r1m)}</strong>
-    · 약한 섹터 <strong style="color:var(--red);">${bot.sector} ${fmtPctTiny(bot.r1m)}</strong>
-    · ${stats.length}개 섹터
+    1M 강한 테마 <strong style="color:var(--green);">${top.sector} ${fmtPctTiny(top.r1m)}</strong>
+    · 약한 테마 <strong style="color:var(--red);">${bot.sector} ${fmtPctTiny(bot.r1m)}</strong>
+    · ${stats.length}개 테마
   `;
 
   if (!STATE.sectorOpen) { $('sector-body').innerHTML = ''; return; }
@@ -1363,7 +1388,7 @@ function renderSectorPanel() {
 
   $('sector-body').innerHTML = `<table class="sector-tbl">
     <thead><tr>
-      <th class="left">섹터</th>
+      <th class="left">테마</th>
       <th>종목수</th>
       <th>상승비율 (breadth)</th>
       <th>1D</th><th>1W</th><th>1M</th><th>3M</th><th>6M</th><th>1Y</th>
@@ -1385,12 +1410,15 @@ function renderSectorPanel() {
  * Sector dropdown
  * ===================================================================== */
 function buildSectorOptions() {
-  const sectors = new Set();
-  ALL_CODES.forEach(c => { if (REGISTRY[c].sector) sectors.add(REGISTRY[c].sector); });
-  const sorted = Array.from(sectors).sort((a, b) => a.localeCompare(b, 'ko'));
+  // Theme list (curated investment themes — 반도체, 2차전지, etc.)
+  // STATE.sector is repurposed to hold the selected theme name.
+  const themeNames = Object.keys(THEMES);
   const sel = $('sector-filter');
-  sel.innerHTML = '<option value="">전체 섹터 (' + sorted.length + ')</option>' +
-    sorted.map(s => `<option value="${s}">${s}</option>`).join('');
+  sel.innerHTML = '<option value="">전체 테마 (' + themeNames.length + ')</option>' +
+    themeNames.map(s => {
+      const n = (THEMES[s].tickers || []).length;
+      return `<option value="${s}">${s} (${n})</option>`;
+    }).join('');
 }
 
 /* =====================================================================
