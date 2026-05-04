@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#fafaf7" />
+<title>국내 시장 스캐너 · 지니의 리서치</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..600,0..100&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<script src="tickers-full.js"></script>
+
+<style>
+  :root {
+    --bg: #fafaf7;
+    --bg-warm: #f4f1ea;
+    --surface: #ffffff;
+    --surface-2: #f7f5f0;
+    --ink: #1a1a1a;
+    --ink-mid: #555;
+    --ink-soft: #8a8580;
+    --ink-faint: #b8b3ad;
+    --line: #e8e4dc;
+    --line-strong: #d4cfc4;
+    --accent: #b8421f;
+    --accent-bg: #fbeae3;
+    --gold: #b8923f;
+    --gold-bg: #f7eecf;
+    --green: #4a7c4e;
+    --green-bg: #e0ebd9;
+    --red: #c43e3e;
+    --red-bg: #fbe4e4;
+    --blue: #3a5e7e;
+    --blue-bg: #dde6ee;
+    --serif: 'Fraunces', 'Nanum Myeongjo', serif;
+    --sans: 'Pretendard', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse 70% 40% at 100% 0%, rgba(184,66,31,0.04), transparent),
+      radial-gradient(ellipse 60% 50% at 0% 100%, rgba(184,146,63,0.03), transparent),
+      var(--bg);
+    background-attachment: fixed;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; background: none; border: none; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  .app { max-width: 1900px; margin: 0 auto; padding: 24px 28px 80px; }
+
+  /* ========== Top nav ========== */
+  .topnav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; gap: 12px; }
+  .topnav-left { display: flex; align-items: baseline; gap: 18px; }
+  .brand { font-family: var(--serif); font-weight: 400; font-size: 22px; letter-spacing: -0.02em; }
+  .brand em { font-style: italic; color: var(--accent); font-weight: 500; }
+  .crumbs { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.18em; text-transform: uppercase; }
+  .crumbs a { color: var(--ink-soft); text-decoration: none; transition: color 0.15s; }
+  .crumbs a:hover { color: var(--accent); }
+  .crumbs .sep { margin: 0 8px; color: var(--ink-faint); }
+  .topnav-right { display: flex; gap: 10px; align-items: center; }
+  .clock { font-family: var(--mono); font-size: 11px; color: var(--ink-mid); padding: 6px 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
+
+  /* ========== Heading ========== */
+  .page-head { margin-bottom: 16px; }
+  .page-head h1 { font-family: var(--serif); font-weight: 400; font-size: 28px; letter-spacing: -0.02em; }
+  .page-head h1 em { font-style: italic; color: var(--accent); font-weight: 500; }
+  .page-head .sub { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); letter-spacing: 0.1em; margin-top: 6px; text-transform: uppercase; }
+
+  /* ========== Toolbar ========== */
+  .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+  .tabs { display: flex; gap: 2px; background: var(--surface-2); padding: 3px; border-radius: 6px; border: 1px solid var(--line); }
+  .tab { padding: 6px 14px; font-size: 12px; color: var(--ink-soft); border-radius: 4px; transition: all 0.15s; font-weight: 500; font-family: var(--mono); letter-spacing: 0.05em; }
+  .tab:hover { color: var(--ink); }
+  .tab.active { background: var(--ink); color: var(--bg); }
+  .tlabel { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.12em; text-transform: uppercase; }
+  .search { flex: 1; min-width: 220px; padding: 7px 12px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 5px; font-size: 13px; }
+  .search:focus { outline: none; border-color: var(--accent); background: var(--surface); }
+  .select { padding: 6px 10px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 5px; font-size: 12px; font-family: var(--mono); color: var(--ink-mid); cursor: pointer; }
+  .select:focus { outline: none; border-color: var(--accent); }
+  .btn { padding: 7px 14px; border: 1px solid var(--line-strong); background: var(--surface); border-radius: 5px; font-size: 12px; font-family: var(--mono); letter-spacing: 0.05em; color: var(--ink); transition: all 0.15s; font-weight: 500; }
+  .btn:hover { background: var(--bg-warm); border-color: var(--ink-faint); }
+  .btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .btn.primary:hover { background: var(--ink-mid); }
+  .btn.warn { color: var(--accent); border-color: var(--accent); }
+  .btn.warn:hover { background: var(--accent-bg); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .toolbar-divider { width: 1px; height: 22px; background: var(--line); }
+
+  /* ========== Status bar ========== */
+  .status-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; padding: 10px 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; font-family: var(--mono); font-size: 11px; color: var(--ink-mid); flex-wrap: wrap; }
+  .status-bar .seg { display: flex; align-items: center; gap: 6px; }
+  .status-bar .seg .lbl { color: var(--ink-soft); letter-spacing: 0.08em; text-transform: uppercase; font-size: 10px; }
+  .status-bar .seg .val { color: var(--ink); font-weight: 500; }
+  .status-bar .seg .val.up { color: var(--green); }
+  .status-bar .seg .val.down { color: var(--red); }
+  .progress-track { flex: 1; min-width: 180px; height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; position: relative; }
+  .progress-bar { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, var(--accent), var(--gold)); transition: width 0.2s; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-faint); }
+  .dot.live { background: var(--green); box-shadow: 0 0 6px rgba(74,124,78,0.5); animation: pulse 1.6s infinite; }
+  .dot.error { background: var(--red); }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  /* ========== Market summary cards ========== */
+  .summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .summary-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+  .summary-card .lbl { font-family: var(--mono); font-size: 9px; color: var(--ink-soft); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+  .summary-card .val { font-family: var(--serif); font-size: 22px; font-weight: 500; line-height: 1; }
+  .summary-card .val.up { color: var(--green); }
+  .summary-card .val.down { color: var(--red); }
+  .summary-card .sub { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); margin-top: 4px; letter-spacing: 0.05em; }
+
+  /* ========== Table ========== */
+  .table-wrap { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: auto; max-height: calc(100vh - 280px); position: relative; }
+  table.scan { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .scan thead { position: sticky; top: 0; background: var(--surface-2); z-index: 5; }
+  .scan th { text-align: right; padding: 10px 10px; font-family: var(--mono); font-weight: 500; font-size: 10px; color: var(--ink-soft); letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 1px solid var(--line); cursor: pointer; -webkit-user-select: none; user-select: none; white-space: nowrap; transition: color 0.12s, background 0.12s; }
+  .scan th:hover { color: var(--ink); background: var(--bg-warm); }
+  .scan th.left { text-align: left; }
+  .scan th.center { text-align: center; }
+  .scan th.sorted { color: var(--accent); }
+  .scan th .arrow { display: inline-block; margin-left: 4px; font-size: 9px; opacity: 0.6; }
+  .scan th.sorted .arrow { opacity: 1; }
+  .scan tbody tr { border-bottom: 1px solid var(--line); transition: background 0.1s; cursor: pointer; }
+  .scan tbody tr:hover { background: var(--bg-warm); }
+  .scan tbody tr.empty { color: var(--ink-faint); }
+  .scan td { padding: 8px 10px; text-align: right; font-family: var(--mono); font-size: 12px; color: var(--ink); white-space: nowrap; }
+  .scan td.left { text-align: left; }
+  .scan td.center { text-align: center; }
+  .scan td.muted { color: var(--ink-faint); }
+
+  .name-cell { display: flex; align-items: center; gap: 10px; min-width: 200px; }
+  .name-cell .code { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); width: 50px; flex-shrink: 0; }
+  .name-cell .nm { font-family: var(--sans); font-size: 13px; color: var(--ink); font-weight: 500; }
+  .mkt-pill { font-family: var(--mono); font-size: 9px; padding: 2px 5px; border-radius: 2px; letter-spacing: 0.08em; }
+  .mkt-pill.kospi { background: var(--blue-bg); color: var(--blue); }
+  .mkt-pill.kosdaq { background: var(--gold-bg); color: var(--gold); }
+  .sector-cell { font-size: 11px; color: var(--ink-mid); max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
+
+  .pct { font-family: var(--mono); font-weight: 500; padding: 2px 6px; border-radius: 3px; display: inline-block; min-width: 56px; text-align: right; }
+  .pct.up { color: var(--green); background: var(--green-bg); }
+  .pct.down { color: var(--red); background: var(--red-bg); }
+  .pct.flat { color: var(--ink-soft); }
+  .pct.empty { color: var(--ink-faint); background: transparent; font-weight: 400; }
+
+  .price { font-weight: 600; font-family: var(--mono); }
+  .vol-cell { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
+  .vol-cell .today { font-weight: 500; }
+  .vol-cell .avg { font-size: 10px; color: var(--ink-soft); }
+
+  .flow-cell { font-family: var(--mono); font-size: 11px; padding: 2px 4px; border-radius: 3px; }
+  .flow-cell.buy { color: var(--green); background: var(--green-bg); }
+  .flow-cell.sell { color: var(--red); background: var(--red-bg); }
+  .flow-cell.flat { color: var(--ink-faint); }
+
+  /* spark column */
+  .spark-cell { padding: 4px 6px; }
+  .spark-cell svg { display: block; }
+
+  /* skeleton */
+  .skel { display: inline-block; height: 10px; width: 50px; background: linear-gradient(90deg, var(--surface-2) 0%, var(--bg-warm) 50%, var(--surface-2) 100%); background-size: 200% 100%; border-radius: 3px; animation: shimmer 1.4s infinite; }
+  @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+
+  /* footer info */
+  .footer-info { margin-top: 14px; font-family: var(--mono); font-size: 10px; color: var(--ink-soft); display: flex; gap: 14px; flex-wrap: wrap; align-items: center; letter-spacing: 0.05em; }
+  .footer-info .src { padding: 2px 6px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 3px; }
+
+  /* responsive */
+  @media (max-width: 900px) {
+    .app { padding: 18px 14px 60px; }
+    .scan th, .scan td { padding: 6px 6px; font-size: 11px; }
+    .name-cell .code { width: 44px; font-size: 10px; }
+    .name-cell .nm { font-size: 12px; }
+    .sector-cell { display: none; }
+    .scan th.sector-col, .scan td.sector-col { display: none; }
+    .table-wrap { max-height: calc(100vh - 320px); }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ TOP NAV ============ -->
+  <nav class="topnav">
+    <div class="topnav-left">
+      <div class="brand">지니<em>.</em></div>
+      <div class="crumbs">
+        <a href="index.html">대시보드</a>
+        <span class="sep">/</span>
+        <a href="stock-deep-dive.html">종목 딥다이브</a>
+        <span class="sep">/</span>
+        <span style="color:var(--ink);">시장 스캐너</span>
+      </div>
+    </div>
+    <div class="topnav-right">
+      <div class="clock" id="clock">--:--:--</div>
+    </div>
+  </nav>
+
+  <!-- ============ PAGE HEAD ============ -->
+  <div class="page-head">
+    <h1>국내 시장 <em>스캐너</em></h1>
+    <div class="sub">KOSPI · KOSDAQ <span id="ticker-total">2,613</span>종목 · 1D / 1W / 1M / 3M / 6M / 1Y 등락 + 거래량 + 주체별 수급</div>
+  </div>
+
+  <!-- ============ TOOLBAR ============ -->
+  <div class="toolbar">
+    <div class="tabs" id="market-tabs">
+      <button class="tab active" data-mkt="ALL">전체</button>
+      <button class="tab" data-mkt="KOSPI">KOSPI</button>
+      <button class="tab" data-mkt="KOSDAQ">KOSDAQ</button>
+    </div>
+    <div class="toolbar-divider"></div>
+    <span class="tlabel">섹터</span>
+    <select class="select" id="sector-filter">
+      <option value="">전체 섹터</option>
+    </select>
+    <div class="toolbar-divider"></div>
+    <input type="text" class="search" id="search" placeholder="종목명 또는 코드 검색 (예: 삼성전자, 005930)" />
+    <div class="toolbar-divider"></div>
+    <span class="tlabel">표시</span>
+    <select class="select" id="show-limit">
+      <option value="50">상위 50</option>
+      <option value="100" selected>상위 100</option>
+      <option value="200">상위 200</option>
+      <option value="500">상위 500</option>
+      <option value="9999">전체</option>
+    </select>
+    <div class="toolbar-divider"></div>
+    <button class="btn" id="toggle-flow" title="외국인/기관/개인 순매수 데이터를 추가로 가져옵니다">+ 수급 데이터</button>
+    <button class="btn primary" id="scan-btn">스캔 시작</button>
+    <button class="btn warn" id="stop-btn" style="display:none;">중지</button>
+    <button class="btn" id="clear-cache" title="저장된 캐시를 지우고 다시 가져옵니다">캐시 삭제</button>
+  </div>
+
+  <!-- ============ STATUS BAR ============ -->
+  <div class="status-bar">
+    <div class="seg"><span class="dot" id="status-dot"></span><span id="status-text">대기 중</span></div>
+    <div class="seg"><span class="lbl">진행</span><span class="val" id="progress-text">0 / 0</span></div>
+    <div class="progress-track"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+    <div class="seg"><span class="lbl">캐시</span><span class="val" id="cache-info">—</span></div>
+    <div class="seg"><span class="lbl">소스</span><span class="val">Naver Finance</span></div>
+  </div>
+
+  <!-- ============ MARKET SUMMARY ============ -->
+  <div class="summary-row" id="summary">
+    <div class="summary-card"><div class="lbl">스캔된 종목</div><div class="val" id="sum-loaded">0</div><div class="sub">총 <span id="sum-total">0</span>개 중</div></div>
+    <div class="summary-card"><div class="lbl">상승 (1D)</div><div class="val up" id="sum-up">0</div><div class="sub" id="sum-up-pct">—</div></div>
+    <div class="summary-card"><div class="lbl">하락 (1D)</div><div class="val down" id="sum-down">0</div><div class="sub" id="sum-down-pct">—</div></div>
+    <div class="summary-card"><div class="lbl">평균 등락 (1D)</div><div class="val" id="sum-avg">—</div><div class="sub">스캔된 종목 기준</div></div>
+    <div class="summary-card"><div class="lbl">평균 등락 (1M)</div><div class="val" id="sum-avg-1m">—</div><div class="sub">스캔된 종목 기준</div></div>
+  </div>
+
+  <!-- ============ TABLE ============ -->
+  <div class="table-wrap">
+    <table class="scan">
+      <thead>
+        <tr id="head-row">
+          <th class="left" data-sort="name">종목 <span class="arrow">↕</span></th>
+          <th class="left sector-col" data-sort="sector">섹터 <span class="arrow">↕</span></th>
+          <th data-sort="price">현재가 <span class="arrow">↕</span></th>
+          <th data-sort="r1d">1D <span class="arrow">↕</span></th>
+          <th data-sort="r1w">1W <span class="arrow">↕</span></th>
+          <th data-sort="r1m">1M <span class="arrow">↕</span></th>
+          <th data-sort="r3m">3M <span class="arrow">↕</span></th>
+          <th data-sort="r6m">6M <span class="arrow">↕</span></th>
+          <th data-sort="r1y">1Y <span class="arrow">↕</span></th>
+          <th class="center" data-sort="trend">90일 추이</th>
+          <th data-sort="volume">거래량 <span class="arrow">↕</span></th>
+          <!-- flow columns toggled in via JS -->
+        </tr>
+      </thead>
+      <tbody id="scan-body"></tbody>
+    </table>
+  </div>
+
+  <div class="footer-info">
+    <span class="src">데이터: Naver Finance + Stooq fallback</span>
+    <span>1Y 일봉 종가로 환산한 누적 수익률 · 거래량은 최근 영업일 기준</span>
+    <span>캐시 TTL: 6시간 · 클릭 시 종목 딥다이브로 이동</span>
+  </div>
+
+</div>
+
+<script>
+/* =====================================================================
+ * Market Scanner — KOSPI/KOSDAQ all-tickers price-action overview
+ * ===================================================================== */
+
+const $ = id => document.getElementById(id);
+const REGISTRY = window.TICKER_REGISTRY || {};
+const ALL_CODES = Object.keys(REGISTRY).sort();
+
+/* ---- State ---- */
+const STATE = {
+  market: 'ALL',
+  sector: '',
+  query: '',
+  showLimit: 100,
+  withFlow: false,
+  sortKey: 'r1d',
+  sortDir: 'desc',
+  scanning: false,
+  abortFlag: false,
+  data: {}, // code -> row
+};
+
+const CACHE_TTL_MS = 6 * 3600 * 1000; // 6h
+const CACHE_PREFIX = 'mscan2:';
+const CACHE_FLOW_PREFIX = 'mflow2:';
+
+/* =====================================================================
+ * Data fetch — Naver primary, Stooq fallback (mirrors stock-deep-dive)
+ * ===================================================================== */
+const NAVER_HISTORY = (code, start, end) =>
+  `https://api.finance.naver.com/siseJson.naver?symbol=${code}&requestType=1&startTime=${start}&endTime=${end}&timeframe=day`;
+const NAVER_TREND = code => `https://m.stock.naver.com/api/stock/${code}/trend`;
+const STOOQ_HISTORY = (code, d1, d2) =>
+  `https://stooq.com/q/d/l/?s=${code.toLowerCase()}.kr&d1=${d1}&d2=${d2}&i=d`;
+
+const PROXIES = [
+  {
+    name: 'allorigins',
+    wrap: url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}&t=${Date.now()}`,
+    extract: async r => {
+      const j = await r.json();
+      if (!j || !j.contents) throw new Error('allorigins empty');
+      if (j.status && j.status.http_code >= 400) throw new Error('upstream ' + j.status.http_code);
+      return j.contents;
+    },
+  },
+  {
+    name: 'codetabs',
+    wrap: url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+    extract: async r => await r.text(),
+  },
+];
+
+async function fetchText(url) {
+  let lastErr;
+  for (const p of PROXIES) {
+    try {
+      const r = await fetch(p.wrap(url), { cache: 'no-store' });
+      if (!r.ok) { lastErr = new Error(`${p.name}: HTTP ${r.status}`); continue; }
+      const text = await p.extract(r);
+      if (text && text.length > 2) return text;
+      lastErr = new Error(`${p.name}: empty`);
+    } catch (e) { lastErr = new Error(`${p.name}: ${e.message}`); }
+  }
+  throw lastErr || new Error('all proxies failed');
+}
+
+function fmtDate(d) { return d.toISOString().slice(0, 10).replace(/-/g, ''); }
+
+/* Parse Naver siseJson: rows of ["YYYYMMDD", open, high, low, close, vol, foreign%] */
+function parseNaverHistory(text) {
+  const rowRe = /\[\s*"?(\d{8})"?\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/g;
+  const closes = [], dates = [], vols = [];
+  let m;
+  while ((m = rowRe.exec(text)) !== null) {
+    const close = parseFloat(m[5]);
+    if (!isFinite(close) || close <= 0) continue;
+    closes.push(close);
+    vols.push(parseFloat(m[6]) || 0);
+    dates.push(m[1]);
+  }
+  return { closes, vols, dates };
+}
+
+function parseStooqCSV(text) {
+  if (text.startsWith('<')) return null;
+  const lines = text.trim().split(/\r?\n/);
+  if (lines.length < 2) return null;
+  const closes = [], vols = [], dates = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cells = lines[i].split(',');
+    const close = parseFloat(cells[4]);
+    if (!isFinite(close) || close <= 0) continue;
+    closes.push(close);
+    vols.push(parseFloat(cells[5]) || 0);
+    dates.push(cells[0].replace(/-/g, ''));
+  }
+  return { closes, vols, dates };
+}
+
+async function fetchHistory(code) {
+  const end = new Date();
+  const start = new Date(end.getTime() - 400 * 86400000);
+  // Try Naver first
+  try {
+    const text = await fetchText(NAVER_HISTORY(code, fmtDate(start), fmtDate(end)));
+    const h = parseNaverHistory(text);
+    if (h.closes.length >= 5) return { ...h, source: 'Naver' };
+  } catch (e) { /* fallback */ }
+  // Stooq fallback
+  try {
+    const text = await fetchText(STOOQ_HISTORY(code, fmtDate(start), fmtDate(end)));
+    const h = parseStooqCSV(text);
+    if (h && h.closes.length >= 5) return { ...h, source: 'Stooq' };
+  } catch (e) { /* fallthrough */ }
+  throw new Error('no history for ' + code);
+}
+
+async function fetchFlow(code) {
+  const text = await fetchText(NAVER_TREND(code));
+  const j = JSON.parse(text);
+  if (!Array.isArray(j) || !j.length) throw new Error('flow: no data');
+  // Each entry: { bizdate, foreignerPureBuyQuant, organPureBuyQuant, individualPureBuyQuant, foreignerHoldRatio, ... }
+  const parseQty = s => {
+    if (s == null) return 0;
+    const n = parseFloat(String(s).replace(/[+,\s]/g, ''));
+    return isFinite(n) ? n : 0;
+  };
+  const rows = j.slice(0, 20).map(r => ({
+    date: r.bizdate,
+    foreign: parseQty(r.foreignerPureBuyQuant),
+    organ: parseQty(r.organPureBuyQuant),
+    individual: parseQty(r.individualPureBuyQuant),
+  }));
+  const sum = (arr, k) => arr.reduce((a, b) => a + b[k], 0);
+  const last5 = rows.slice(0, 5);
+  const last20 = rows.slice(0, 20);
+  return {
+    foreign1d: rows[0]?.foreign || 0,
+    organ1d: rows[0]?.organ || 0,
+    individual1d: rows[0]?.individual || 0,
+    foreign5d: sum(last5, 'foreign'),
+    organ5d: sum(last5, 'organ'),
+    individual5d: sum(last5, 'individual'),
+    foreign20d: sum(last20, 'foreign'),
+    organ20d: sum(last20, 'organ'),
+    individual20d: sum(last20, 'individual'),
+    foreignHoldRatio: parseFloat(String(j[0]?.foreignerHoldRatio || '').replace('%', '')) || NaN,
+  };
+}
+
+/* =====================================================================
+ * Returns calculation — pick close N trading days back
+ * ===================================================================== */
+function pctReturn(closes, lookback) {
+  // closes is most-recent-first (Naver) — but we'll normalize to that
+  if (!closes || closes.length < 2) return NaN;
+  const cur = closes[0];
+  const past = closes[Math.min(lookback, closes.length - 1)];
+  if (!isFinite(cur) || !isFinite(past) || past <= 0) return NaN;
+  return ((cur / past) - 1) * 100;
+}
+
+function buildRow(code, hist) {
+  // Normalize: ensure closes is most-recent-first
+  // Naver returns oldest-first usually; check by date
+  let closes = hist.closes.slice();
+  let vols = hist.vols.slice();
+  let dates = hist.dates.slice();
+  if (dates.length >= 2 && dates[0] < dates[dates.length - 1]) {
+    closes.reverse(); vols.reverse(); dates.reverse();
+  }
+  const reg = REGISTRY[code] || { name: code, mkt: '—', sector: '—' };
+  const avgVol20 = vols.slice(0, 20).reduce((a, b) => a + b, 0) / Math.min(20, vols.length || 1);
+  return {
+    code,
+    name: reg.name,
+    mkt: reg.mkt,
+    sector: reg.sector,
+    price: closes[0],
+    r1d: pctReturn(closes, 1),
+    r1w: pctReturn(closes, 5),
+    r1m: pctReturn(closes, 22),
+    r3m: pctReturn(closes, 66),
+    r6m: pctReturn(closes, 125),
+    r1y: pctReturn(closes, 248),
+    volume: vols[0],
+    avgVol20,
+    spark: closes.slice(0, 90).reverse(), // oldest-first 90-day series for sparkline
+    source: hist.source,
+    fetchedAt: Date.now(),
+  };
+}
+
+/* =====================================================================
+ * Cache (localStorage, 6h TTL)
+ * ===================================================================== */
+function cacheGet(prefix, code) {
+  try {
+    const raw = localStorage.getItem(prefix + code);
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    if (!obj.fetchedAt || Date.now() - obj.fetchedAt > CACHE_TTL_MS) return null;
+    return obj;
+  } catch (e) { return null; }
+}
+function cacheSet(prefix, code, obj) {
+  try { localStorage.setItem(prefix + code, JSON.stringify(obj)); }
+  catch (e) {
+    // storage full — drop oldest entries and retry
+    pruneCache(prefix, 200);
+    try { localStorage.setItem(prefix + code, JSON.stringify(obj)); } catch (_) {}
+  }
+}
+function pruneCache(prefix, dropCount) {
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith(prefix)) {
+      try {
+        const t = JSON.parse(localStorage.getItem(k)).fetchedAt || 0;
+        keys.push([k, t]);
+      } catch (_) { keys.push([k, 0]); }
+    }
+  }
+  keys.sort((a, b) => a[1] - b[1]);
+  keys.slice(0, dropCount).forEach(([k]) => localStorage.removeItem(k));
+}
+function clearAllCache() {
+  const toDel = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && (k.startsWith(CACHE_PREFIX) || k.startsWith(CACHE_FLOW_PREFIX))) toDel.push(k);
+  }
+  toDel.forEach(k => localStorage.removeItem(k));
+  STATE.data = {};
+  refreshCacheInfo();
+  render();
+}
+function refreshCacheInfo() {
+  let n = 0;
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith(CACHE_PREFIX)) n++;
+  }
+  $('cache-info').textContent = `${n}개 저장됨`;
+}
+
+/* =====================================================================
+ * Scanner — concurrency-limited progressive loader
+ * ===================================================================== */
+function getScanCodes() {
+  // Apply current filters to get target set
+  let codes = ALL_CODES;
+  if (STATE.market !== 'ALL') {
+    codes = codes.filter(c => REGISTRY[c].mkt === STATE.market);
+  }
+  if (STATE.sector) {
+    codes = codes.filter(c => REGISTRY[c].sector === STATE.sector);
+  }
+  if (STATE.query) {
+    const q = STATE.query.toLowerCase();
+    codes = codes.filter(c => c.includes(q) || REGISTRY[c].name.toLowerCase().includes(q));
+  }
+  return codes.slice(0, STATE.showLimit);
+}
+
+async function scanAll() {
+  if (STATE.scanning) return;
+  STATE.scanning = true;
+  STATE.abortFlag = false;
+  $('scan-btn').style.display = 'none';
+  $('stop-btn').style.display = 'inline-block';
+  setStatus('live', '스캔 진행 중');
+
+  const codes = getScanCodes();
+  let done = 0, errors = 0;
+  $('progress-text').textContent = `0 / ${codes.length}`;
+  $('progress-bar').style.width = '0%';
+
+  const CONCURRENCY = 5;
+  const queue = codes.slice();
+
+  // Pre-load from cache
+  for (const code of codes) {
+    const cached = cacheGet(CACHE_PREFIX, code);
+    if (cached) STATE.data[code] = cached;
+    if (STATE.withFlow) {
+      const flow = cacheGet(CACHE_FLOW_PREFIX, code);
+      if (flow && STATE.data[code]) STATE.data[code].flow = flow;
+    }
+  }
+  render();
+
+  async function worker() {
+    while (queue.length && !STATE.abortFlag) {
+      const code = queue.shift();
+      if (!code) break;
+      // Skip if already loaded from cache and (no-flow-needed OR flow already cached)
+      const cached = STATE.data[code];
+      const needHist = !cached || cached.fetchedAt < Date.now() - CACHE_TTL_MS;
+      const needFlow = STATE.withFlow && (!cached?.flow || cached.flow.fetchedAt < Date.now() - CACHE_TTL_MS);
+      if (!needHist && !needFlow) {
+        done++;
+        updateProgress(done, codes.length);
+        continue;
+      }
+      try {
+        if (needHist) {
+          const hist = await fetchHistory(code);
+          const row = buildRow(code, hist);
+          cacheSet(CACHE_PREFIX, code, row);
+          STATE.data[code] = { ...(STATE.data[code] || {}), ...row };
+        }
+        if (needFlow && STATE.data[code]) {
+          try {
+            const flow = await fetchFlow(code);
+            flow.fetchedAt = Date.now();
+            cacheSet(CACHE_FLOW_PREFIX, code, flow);
+            STATE.data[code].flow = flow;
+          } catch (e) { /* flow failure non-fatal */ }
+        }
+      } catch (e) {
+        errors++;
+        console.warn('[scan]', code, e.message);
+      }
+      done++;
+      updateProgress(done, codes.length);
+      // Light throttle to be nice to the proxy
+      await new Promise(r => setTimeout(r, 60));
+      // Re-render incrementally every 5 items
+      if (done % 5 === 0) render();
+    }
+  }
+
+  const workers = Array.from({ length: CONCURRENCY }, () => worker());
+  await Promise.all(workers);
+
+  STATE.scanning = false;
+  $('scan-btn').style.display = 'inline-block';
+  $('stop-btn').style.display = 'none';
+  setStatus(errors ? 'error' : '', errors ? `완료 (${errors}개 실패)` : '완료');
+  render();
+  refreshCacheInfo();
+}
+
+function updateProgress(done, total) {
+  $('progress-text').textContent = `${done} / ${total}`;
+  $('progress-bar').style.width = total ? (done / total * 100) + '%' : '0%';
+}
+
+function setStatus(cls, text) {
+  const dot = $('status-dot');
+  dot.className = 'dot ' + (cls || '');
+  $('status-text').textContent = text;
+}
+
+/* =====================================================================
+ * Render — table + summary
+ * ===================================================================== */
+function fmtPct(v) {
+  if (!isFinite(v)) return { txt: '—', cls: 'empty' };
+  const sign = v > 0 ? '+' : '';
+  const cls = v > 0.05 ? 'up' : v < -0.05 ? 'down' : 'flat';
+  return { txt: sign + v.toFixed(2) + '%', cls };
+}
+function fmtNum(v) {
+  if (!isFinite(v) || v == null) return '—';
+  return Math.round(v).toLocaleString();
+}
+function fmtVol(v) {
+  if (!isFinite(v) || v <= 0) return '—';
+  if (v >= 1e8) return (v / 1e8).toFixed(2) + '억';
+  if (v >= 1e4) return (v / 1e4).toFixed(0) + '만';
+  return v.toLocaleString();
+}
+function fmtFlow(v) {
+  if (!isFinite(v) || v === 0) return { txt: '0', cls: 'flat' };
+  const cls = v > 0 ? 'buy' : 'sell';
+  const sign = v > 0 ? '+' : '−';
+  const abs = Math.abs(v);
+  let txt;
+  if (abs >= 1e8) txt = sign + (abs / 1e8).toFixed(2) + '억';
+  else if (abs >= 1e4) txt = sign + (abs / 1e4).toFixed(0) + '만';
+  else txt = sign + abs.toLocaleString();
+  return { txt, cls };
+}
+
+function sparkSVG(series, w = 80, h = 24) {
+  if (!series || series.length < 2) return '';
+  const min = Math.min(...series), max = Math.max(...series);
+  const span = max - min || 1;
+  const step = w / (series.length - 1);
+  const pts = series.map((v, i) => `${(i * step).toFixed(1)},${(h - ((v - min) / span) * h).toFixed(1)}`).join(' ');
+  const last = series[series.length - 1], first = series[0];
+  const color = last >= first ? 'var(--green)' : 'var(--red)';
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><polyline fill="none" stroke="${color}" stroke-width="1.3" points="${pts}"/></svg>`;
+}
+
+function getFilteredSorted() {
+  let codes = ALL_CODES;
+  if (STATE.market !== 'ALL') codes = codes.filter(c => REGISTRY[c].mkt === STATE.market);
+  if (STATE.sector) codes = codes.filter(c => REGISTRY[c].sector === STATE.sector);
+  if (STATE.query) {
+    const q = STATE.query.toLowerCase();
+    codes = codes.filter(c => c.includes(q) || REGISTRY[c].name.toLowerCase().includes(q));
+  }
+  // Sort
+  const dirMul = STATE.sortDir === 'asc' ? 1 : -1;
+  const k = STATE.sortKey;
+  codes.sort((a, b) => {
+    const da = STATE.data[a], db = STATE.data[b];
+    let va, vb;
+    if (k === 'name') { va = REGISTRY[a].name; vb = REGISTRY[b].name; return va.localeCompare(vb, 'ko') * dirMul; }
+    if (k === 'sector') { va = REGISTRY[a].sector || ''; vb = REGISTRY[b].sector || ''; return va.localeCompare(vb, 'ko') * dirMul; }
+    if (k === 'trend') { va = da?.r3m; vb = db?.r3m; }
+    else { va = da?.[k]; vb = db?.[k]; }
+    const aN = isFinite(va) ? va : (dirMul > 0 ? Infinity : -Infinity);
+    const bN = isFinite(vb) ? vb : (dirMul > 0 ? Infinity : -Infinity);
+    return (aN - bN) * dirMul;
+  });
+  return codes.slice(0, STATE.showLimit);
+}
+
+function buildHeader() {
+  const flowCols = STATE.withFlow ? `
+    <th data-sort="foreign5d">외국인 5D <span class="arrow">↕</span></th>
+    <th data-sort="organ5d">기관 5D <span class="arrow">↕</span></th>
+    <th data-sort="individual5d">개인 5D <span class="arrow">↕</span></th>
+  ` : '';
+  $('head-row').innerHTML = `
+    <th class="left" data-sort="name">종목 <span class="arrow">↕</span></th>
+    <th class="left sector-col" data-sort="sector">섹터 <span class="arrow">↕</span></th>
+    <th data-sort="price">현재가 <span class="arrow">↕</span></th>
+    <th data-sort="r1d">1D <span class="arrow">↕</span></th>
+    <th data-sort="r1w">1W <span class="arrow">↕</span></th>
+    <th data-sort="r1m">1M <span class="arrow">↕</span></th>
+    <th data-sort="r3m">3M <span class="arrow">↕</span></th>
+    <th data-sort="r6m">6M <span class="arrow">↕</span></th>
+    <th data-sort="r1y">1Y <span class="arrow">↕</span></th>
+    <th class="center" data-sort="trend">90일 추이</th>
+    <th data-sort="volume">거래량 <span class="arrow">↕</span></th>
+    ${flowCols}
+  `;
+  // Mark sorted column
+  $('head-row').querySelectorAll('th').forEach(th => {
+    if (th.dataset.sort === STATE.sortKey) {
+      th.classList.add('sorted');
+      const arr = th.querySelector('.arrow');
+      if (arr) arr.textContent = STATE.sortDir === 'asc' ? '↑' : '↓';
+    }
+  });
+}
+
+function render() {
+  buildHeader();
+  const codes = getFilteredSorted();
+  const tbody = $('scan-body');
+  const cellSpan = STATE.withFlow ? 14 : 11;
+
+  if (!codes.length) {
+    tbody.innerHTML = `<tr><td class="muted center" colspan="${cellSpan}" style="padding:40px;">조건에 맞는 종목이 없습니다.</td></tr>`;
+    updateSummary([]);
+    return;
+  }
+
+  // Build rows
+  const rows = codes.map(code => {
+    const d = STATE.data[code];
+    const reg = REGISTRY[code];
+    const mktPill = reg.mkt === 'KOSPI' ? 'kospi' : 'kosdaq';
+    const sectorTrim = (reg.sector || '—').slice(0, 18);
+
+    if (!d) {
+      return `<tr class="empty" data-code="${code}">
+        <td class="left"><div class="name-cell"><span class="code">${code}</span><span class="nm">${reg.name}</span><span class="mkt-pill ${mktPill}">${reg.mkt}</span></div></td>
+        <td class="left sector-col sector-cell">${sectorTrim}</td>
+        <td class="muted">—</td>
+        <td><span class="pct empty">—</span></td>
+        <td><span class="pct empty">—</span></td>
+        <td><span class="pct empty">—</span></td>
+        <td><span class="pct empty">—</span></td>
+        <td><span class="pct empty">—</span></td>
+        <td><span class="pct empty">—</span></td>
+        <td class="center muted">—</td>
+        <td class="muted">—</td>
+        ${STATE.withFlow ? '<td class="muted">—</td><td class="muted">—</td><td class="muted">—</td>' : ''}
+      </tr>`;
+    }
+
+    const r1d = fmtPct(d.r1d), r1w = fmtPct(d.r1w), r1m = fmtPct(d.r1m);
+    const r3m = fmtPct(d.r3m), r6m = fmtPct(d.r6m), r1y = fmtPct(d.r1y);
+    const flowCells = STATE.withFlow ? (() => {
+      if (!d.flow) return '<td class="muted">—</td><td class="muted">—</td><td class="muted">—</td>';
+      const f = fmtFlow(d.flow.foreign5d);
+      const o = fmtFlow(d.flow.organ5d);
+      const ind = fmtFlow(d.flow.individual5d);
+      return `<td><span class="flow-cell ${f.cls}">${f.txt}</span></td>
+              <td><span class="flow-cell ${o.cls}">${o.txt}</span></td>
+              <td><span class="flow-cell ${ind.cls}">${ind.txt}</span></td>`;
+    })() : '';
+
+    return `<tr data-code="${code}">
+      <td class="left"><div class="name-cell"><span class="code">${code}</span><span class="nm">${reg.name}</span><span class="mkt-pill ${mktPill}">${reg.mkt}</span></div></td>
+      <td class="left sector-col sector-cell" title="${reg.sector || ''}">${sectorTrim}</td>
+      <td class="price">${fmtNum(d.price)}</td>
+      <td><span class="pct ${r1d.cls}">${r1d.txt}</span></td>
+      <td><span class="pct ${r1w.cls}">${r1w.txt}</span></td>
+      <td><span class="pct ${r1m.cls}">${r1m.txt}</span></td>
+      <td><span class="pct ${r3m.cls}">${r3m.txt}</span></td>
+      <td><span class="pct ${r6m.cls}">${r6m.txt}</span></td>
+      <td><span class="pct ${r1y.cls}">${r1y.txt}</span></td>
+      <td class="center spark-cell">${sparkSVG(d.spark)}</td>
+      <td><div class="vol-cell"><span class="today">${fmtVol(d.volume)}</span><span class="avg">평균 ${fmtVol(d.avgVol20)}</span></div></td>
+      ${flowCells}
+    </tr>`;
+  });
+
+  tbody.innerHTML = rows.join('');
+  // Bind row click → deep-dive
+  tbody.querySelectorAll('tr[data-code]').forEach(tr => {
+    tr.addEventListener('click', () => {
+      const code = tr.dataset.code;
+      window.location.href = `stock-deep-dive.html?code=${code}`;
+    });
+  });
+
+  updateSummary(codes.map(c => STATE.data[c]).filter(Boolean));
+}
+
+function updateSummary(loaded) {
+  const total = ALL_CODES.length;
+  $('sum-total').textContent = total.toLocaleString();
+  $('sum-loaded').textContent = loaded.length.toLocaleString();
+  if (!loaded.length) {
+    $('sum-up').textContent = '0';
+    $('sum-down').textContent = '0';
+    $('sum-up-pct').textContent = '—';
+    $('sum-down-pct').textContent = '—';
+    $('sum-avg').textContent = '—';
+    $('sum-avg-1m').textContent = '—';
+    return;
+  }
+  const up = loaded.filter(d => isFinite(d.r1d) && d.r1d > 0).length;
+  const dn = loaded.filter(d => isFinite(d.r1d) && d.r1d < 0).length;
+  const valid1d = loaded.filter(d => isFinite(d.r1d));
+  const valid1m = loaded.filter(d => isFinite(d.r1m));
+  const avg = valid1d.length ? valid1d.reduce((a, d) => a + d.r1d, 0) / valid1d.length : NaN;
+  const avg1m = valid1m.length ? valid1m.reduce((a, d) => a + d.r1m, 0) / valid1m.length : NaN;
+  $('sum-up').textContent = up.toLocaleString();
+  $('sum-down').textContent = dn.toLocaleString();
+  $('sum-up-pct').textContent = valid1d.length ? `${(up / valid1d.length * 100).toFixed(0)}%` : '—';
+  $('sum-down-pct').textContent = valid1d.length ? `${(dn / valid1d.length * 100).toFixed(0)}%` : '—';
+  const avgEl = $('sum-avg');
+  avgEl.textContent = isFinite(avg) ? (avg > 0 ? '+' : '') + avg.toFixed(2) + '%' : '—';
+  avgEl.className = 'val ' + (isFinite(avg) ? (avg > 0 ? 'up' : avg < 0 ? 'down' : '') : '');
+  const avg1mEl = $('sum-avg-1m');
+  avg1mEl.textContent = isFinite(avg1m) ? (avg1m > 0 ? '+' : '') + avg1m.toFixed(2) + '%' : '—';
+  avg1mEl.className = 'val ' + (isFinite(avg1m) ? (avg1m > 0 ? 'up' : avg1m < 0 ? 'down' : '') : '');
+}
+
+/* =====================================================================
+ * Sector dropdown
+ * ===================================================================== */
+function buildSectorOptions() {
+  const sectors = new Set();
+  ALL_CODES.forEach(c => { if (REGISTRY[c].sector) sectors.add(REGISTRY[c].sector); });
+  const sorted = Array.from(sectors).sort((a, b) => a.localeCompare(b, 'ko'));
+  const sel = $('sector-filter');
+  sel.innerHTML = '<option value="">전체 섹터 (' + sorted.length + ')</option>' +
+    sorted.map(s => `<option value="${s}">${s}</option>`).join('');
+}
+
+/* =====================================================================
+ * Initial cache load
+ * ===================================================================== */
+function loadCachedData() {
+  let n = 0;
+  for (const code of ALL_CODES) {
+    const cached = cacheGet(CACHE_PREFIX, code);
+    if (cached) {
+      STATE.data[code] = cached;
+      const flowCached = cacheGet(CACHE_FLOW_PREFIX, code);
+      if (flowCached) STATE.data[code].flow = flowCached;
+      n++;
+    }
+  }
+  return n;
+}
+
+/* =====================================================================
+ * Wire up UI
+ * ===================================================================== */
+function tickClock() {
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  const ss = String(now.getSeconds()).padStart(2, '0');
+  $('clock').textContent = `${hh}:${mm}:${ss}`;
+}
+
+function init() {
+  $('ticker-total').textContent = ALL_CODES.length.toLocaleString();
+  buildSectorOptions();
+
+  // Tabs
+  $('market-tabs').addEventListener('click', e => {
+    if (!e.target.classList.contains('tab')) return;
+    $('market-tabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    e.target.classList.add('active');
+    STATE.market = e.target.dataset.mkt;
+    render();
+  });
+
+  $('sector-filter').addEventListener('change', e => { STATE.sector = e.target.value; render(); });
+  $('show-limit').addEventListener('change', e => { STATE.showLimit = parseInt(e.target.value, 10); render(); });
+  let searchT;
+  $('search').addEventListener('input', e => {
+    clearTimeout(searchT);
+    searchT = setTimeout(() => { STATE.query = e.target.value.trim(); render(); }, 200);
+  });
+
+  // Header sort
+  $('head-row').addEventListener('click', e => {
+    const th = e.target.closest('th');
+    if (!th || !th.dataset.sort) return;
+    const k = th.dataset.sort;
+    if (STATE.sortKey === k) {
+      STATE.sortDir = STATE.sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      STATE.sortKey = k;
+      // Default direction: text asc, numbers desc
+      STATE.sortDir = (k === 'name' || k === 'sector') ? 'asc' : 'desc';
+    }
+    render();
+  });
+
+  $('toggle-flow').addEventListener('click', () => {
+    STATE.withFlow = !STATE.withFlow;
+    $('toggle-flow').classList.toggle('primary', STATE.withFlow);
+    $('toggle-flow').textContent = STATE.withFlow ? '✓ 수급 데이터' : '+ 수급 데이터';
+    render();
+  });
+
+  $('scan-btn').addEventListener('click', scanAll);
+  $('stop-btn').addEventListener('click', () => {
+    STATE.abortFlag = true;
+    setStatus('', '중지됨');
+  });
+  $('clear-cache').addEventListener('click', () => {
+    if (confirm('저장된 시세 캐시를 모두 삭제할까요?')) clearAllCache();
+  });
+
+  // Initial: load cache, render, update info
+  const cachedCount = loadCachedData();
+  refreshCacheInfo();
+  if (cachedCount > 0) {
+    setStatus('', `캐시 ${cachedCount}개 복원됨 — '스캔 시작'으로 최신화`);
+  } else {
+    setStatus('', `'스캔 시작'을 누르면 시세를 가져옵니다`);
+  }
+  render();
+
+  tickClock();
+  setInterval(tickClock, 1000);
+}
+
+init();
+</script>
+</body>
+</html>
