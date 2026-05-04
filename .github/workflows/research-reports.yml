@@ -1,0 +1,49 @@
+name: Daily Research Reports
+
+# Korean securities-firm research reports are published throughout the day.
+# Cron runs at 12:00 UTC = 21:00 KST — well after market close (15:30 KST)
+# and after most evening reports for the next day are uploaded.
+# Mon-Fri only.
+on:
+  schedule:
+    - cron: '0 12 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: research-reports
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install --quiet requests
+
+      - name: Fetch research reports
+        run: python scripts/fetch_research_reports.py
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/research-reports.json
+          if git diff --cached --quiet; then
+            echo "No changes — nothing to commit"
+          else
+            STAMP=$(date -u +"%Y-%m-%d")
+            COUNT=$(python -c "import json; print(json.load(open('data/research-reports.json'))['count'])")
+            git commit -m "📑 Research reports ${STAMP} (${COUNT} reports)"
+            git push
+          fi
