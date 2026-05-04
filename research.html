@@ -108,6 +108,26 @@
   .type-pill.company { background: var(--blue-bg); color: var(--blue); }
   .type-pill.industry { background: var(--purple-bg); color: var(--purple); }
 
+  .opinion-pill { font-family: var(--mono); font-size: 10px; padding: 2px 7px; border-radius: 3px; font-weight: 600; }
+  .opinion-pill.buy { background: var(--green-bg); color: var(--green); }
+  .opinion-pill.hold { background: var(--gold-bg); color: var(--gold); }
+  .opinion-pill.sell { background: var(--red-bg); color: var(--red); }
+  .opinion-pill.neutral { background: var(--surface-2); color: var(--ink-soft); }
+
+  .target-cell { font-family: var(--mono); font-weight: 500; white-space: nowrap; }
+  .change-pill { font-family: var(--mono); font-size: 11px; padding: 2px 6px; border-radius: 3px; font-weight: 500; white-space: nowrap; display: inline-block; min-width: 56px; text-align: center; }
+  .change-pill.up { background: var(--green-bg); color: var(--green); }
+  .change-pill.down { background: var(--red-bg); color: var(--red); }
+  .change-pill.flat { background: var(--surface-2); color: var(--ink-mid); }
+  .change-pill.new { background: var(--blue-bg); color: var(--blue); }
+  .change-pill.empty { color: var(--ink-faint); }
+  .prev-target { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); }
+
+  .preset-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; padding: 10px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+  .preset-chip { padding: 5px 11px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 14px; font-size: 11px; font-family: var(--mono); color: var(--ink-mid); transition: all 0.12s; letter-spacing: 0.04em; cursor: pointer; }
+  .preset-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .preset-chip.active { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+
   .summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 14px; }
   .summary-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
   .summary-card .lbl { font-family: var(--mono); font-size: 9px; color: var(--ink-soft); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
@@ -170,6 +190,18 @@
     <input type="text" class="search" id="search" placeholder="제목 / 종목명 / 증권사 검색" />
   </div>
 
+  <div class="preset-row">
+    <span class="tlabel">목표가 변화</span>
+    <button class="preset-chip" data-change="up" title="이전 리포트 대비 상향">▲ 상향</button>
+    <button class="preset-chip" data-change="down" title="이전 리포트 대비 하향">▼ 하향</button>
+    <button class="preset-chip" data-change="new" title="해당 증권사가 처음 다룬 종목">⬢ 신규</button>
+    <button class="preset-chip" data-change="flat" title="목표가 유지">= 유지</button>
+    <span class="tlabel" style="margin-left:auto;">의견</span>
+    <button class="preset-chip" data-opinion="buy">Buy</button>
+    <button class="preset-chip" data-opinion="hold">Hold</button>
+    <button class="preset-chip" data-opinion="sell">Sell</button>
+  </div>
+
   <div class="status-bar">
     <div class="seg"><span class="lbl">생성</span><span class="val" id="generated-at">—</span></div>
     <div class="seg"><span class="lbl">필터링됨</span><span class="val" id="filtered-count">0</span></div>
@@ -178,9 +210,10 @@
 
   <div class="summary-row" id="summary">
     <div class="summary-card"><div class="lbl">개별 종목</div><div class="val" id="cnt-company">—</div><div class="sub">전체 기간</div></div>
-    <div class="summary-card"><div class="lbl">업종 리포트</div><div class="val" id="cnt-industry">—</div><div class="sub">전체 기간</div></div>
+    <div class="summary-card"><div class="lbl">▲ 목표가 상향</div><div class="val" id="cnt-up" style="color:var(--green);">—</div><div class="sub">동일 증권사 기준</div></div>
+    <div class="summary-card"><div class="lbl">▼ 목표가 하향</div><div class="val" id="cnt-down" style="color:var(--red);">—</div><div class="sub">동일 증권사 기준</div></div>
+    <div class="summary-card"><div class="lbl">⬢ 신규 커버리지</div><div class="val" id="cnt-new" style="color:var(--blue);">—</div><div class="sub">처음 다룬 종목</div></div>
     <div class="summary-card"><div class="lbl">증권사</div><div class="val" id="cnt-houses">—</div><div class="sub">고유 작성기관</div></div>
-    <div class="summary-card"><div class="lbl">분석된 종목</div><div class="val" id="cnt-tickers">—</div><div class="sub">고유 코드</div></div>
   </div>
 
   <div class="table-wrap">
@@ -191,6 +224,9 @@
           <th data-sort="type">유형 <span class="arrow">↕</span></th>
           <th data-sort="title">종목 / 제목 <span class="arrow">↕</span></th>
           <th data-sort="house">증권사 <span class="arrow">↕</span></th>
+          <th data-sort="opinion">의견 <span class="arrow">↕</span></th>
+          <th data-sort="targetPrice">목표가 <span class="arrow">↕</span></th>
+          <th data-sort="targetChange">변화 <span class="arrow">↕</span></th>
           <th>다운로드</th>
         </tr>
       </thead>
@@ -214,6 +250,8 @@ const STATE = {
   house: '',
   window: 7,
   query: '',
+  changeFilter: '',  // '' | 'up' | 'down' | 'new' | 'flat'
+  opinionFilter: '', // '' | 'buy' | 'hold' | 'sell'
   sortKey: 'date',
   sortDir: 'desc',
   reports: [],
@@ -252,13 +290,24 @@ function buildHouseFilter() {
 
 function updateSummary() {
   const company = STATE.reports.filter(r => r.type === 'company');
-  const industry = STATE.reports.filter(r => r.type === 'industry');
   const houses = new Set(STATE.reports.map(r => r.house).filter(Boolean));
-  const tickers = new Set(STATE.reports.map(r => r.ticker).filter(Boolean));
+  const up = company.filter(r => r.targetChange === 'up').length;
+  const down = company.filter(r => r.targetChange === 'down').length;
+  const newCnt = company.filter(r => r.targetChange === 'new').length;
   $('cnt-company').textContent = company.length.toLocaleString();
-  $('cnt-industry').textContent = industry.length.toLocaleString();
+  $('cnt-up').textContent = up.toLocaleString();
+  $('cnt-down').textContent = down.toLocaleString();
+  $('cnt-new').textContent = newCnt.toLocaleString();
   $('cnt-houses').textContent = houses.size.toLocaleString();
-  $('cnt-tickers').textContent = tickers.size.toLocaleString();
+}
+
+function opinionClass(op) {
+  if (!op) return 'neutral';
+  const u = op.toLowerCase();
+  if (u.includes('buy') || u.includes('매수') || u.includes('비중확대') || u.includes('outperform')) return 'buy';
+  if (u.includes('sell') || u.includes('매도') || u.includes('비중축소') || u.includes('underperform')) return 'sell';
+  if (u.includes('hold') || u.includes('보유') || u.includes('중립') || u.includes('neutral') || u.includes('marketperform')) return 'hold';
+  return 'neutral';
 }
 
 function getFiltered() {
@@ -283,12 +332,24 @@ function getFiltered() {
       (r.house || '').toLowerCase().includes(q)
     );
   }
+  if (STATE.changeFilter) {
+    list = list.filter(r => r.targetChange === STATE.changeFilter);
+  }
+  if (STATE.opinionFilter) {
+    list = list.filter(r => opinionClass(r.opinion) === STATE.opinionFilter);
+  }
   // Sort
   const dirMul = STATE.sortDir === 'asc' ? 1 : -1;
   const k = STATE.sortKey;
   list.sort((a, b) => {
-    const va = a[k] || '', vb = b[k] || '';
-    return String(va).localeCompare(String(vb), 'ko') * dirMul;
+    const va = a[k], vb = b[k];
+    // Numeric sort for targetPrice; string sort for everything else
+    if (k === 'targetPrice') {
+      const aN = isFinite(va) ? va : (dirMul > 0 ? Infinity : -Infinity);
+      const bN = isFinite(vb) ? vb : (dirMul > 0 ? Infinity : -Infinity);
+      return (aN - bN) * dirMul;
+    }
+    return String(va || '').localeCompare(String(vb || ''), 'ko') * dirMul;
   });
   return list;
 }
@@ -313,12 +374,37 @@ function render() {
   $('filtered-count').textContent = list.length.toLocaleString();
   const tbody = $('report-body');
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">조건에 맞는 리포트가 없습니다.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="empty-state">조건에 맞는 리포트가 없습니다.</td></tr>`;
     return;
   }
   const escapeHtml = s => String(s || '').replace(/[&<>"']/g, c => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
   }[c]));
+
+  const fmtTarget = r => {
+    if (!isFinite(r.targetPrice)) return '<span class="prev-target">—</span>';
+    return `<span class="target-cell">${r.targetPrice.toLocaleString()}</span>`;
+  };
+
+  const fmtChange = r => {
+    if (!r.targetChange) return '<span class="change-pill empty">—</span>';
+    if (r.targetChange === 'new') {
+      return '<span class="change-pill new" title="해당 증권사가 처음 다룬 종목">⬢ 신규</span>';
+    }
+    if (r.targetChange === 'flat') {
+      return `<span class="change-pill flat" title="${r.prevTargetPrice ? '이전 ' + r.prevTargetPrice.toLocaleString() : ''}">= 유지</span>`;
+    }
+    if (r.targetChange === 'up' && r.prevTargetPrice) {
+      const pct = ((r.targetPrice / r.prevTargetPrice - 1) * 100).toFixed(1);
+      return `<span class="change-pill up" title="이전 ${r.prevTargetPrice.toLocaleString()} → ${r.targetPrice.toLocaleString()}">▲ +${pct}%</span>`;
+    }
+    if (r.targetChange === 'down' && r.prevTargetPrice) {
+      const pct = ((r.targetPrice / r.prevTargetPrice - 1) * 100).toFixed(1);
+      return `<span class="change-pill down" title="이전 ${r.prevTargetPrice.toLocaleString()} → ${r.targetPrice.toLocaleString()}">▼ ${pct}%</span>`;
+    }
+    return '<span class="change-pill empty">—</span>';
+  };
+
   tbody.innerHTML = list.map(r => {
     const stk = r.ticker
       ? `<a class="stk" href="stock-deep-dive.html#${r.ticker}">${r.ticker} ${escapeHtml(r.stockName || '')}</a> · `
@@ -329,15 +415,39 @@ function render() {
     const pdfBtn = r.pdfUrl
       ? `<a class="pdf-btn" href="${escapeHtml(r.pdfUrl)}" target="_blank" rel="noopener" style="background:var(--accent-bg);color:var(--accent);border-color:var(--accent-bg);">📄 PDF</a>`
       : '';
+    const opinionCell = r.opinion
+      ? `<span class="opinion-pill ${opinionClass(r.opinion)}">${escapeHtml(r.opinion)}</span>`
+      : '<span class="prev-target">—</span>';
     return `<tr>
       <td class="date">${r.date || ''}</td>
       <td class="type"><span class="type-pill ${r.type}">${r.type === 'company' ? '종목' : '업종'}</span></td>
       <td class="title">${stk}<span class="ttl">${escapeHtml(r.title || '')}</span></td>
       <td class="house">${escapeHtml(r.house || '')}</td>
+      <td>${opinionCell}</td>
+      <td>${fmtTarget(r)}</td>
+      <td>${fmtChange(r)}</td>
       <td class="actions">${detailBtn} ${pdfBtn}</td>
     </tr>`;
   }).join('');
 }
+
+// Preset chip toggle (target-change / opinion)
+document.querySelectorAll('.preset-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const change = chip.dataset.change;
+    const opinion = chip.dataset.opinion;
+    if (change !== undefined) {
+      STATE.changeFilter = STATE.changeFilter === change ? '' : change;
+      document.querySelectorAll('.preset-chip[data-change]').forEach(c =>
+        c.classList.toggle('active', c.dataset.change === STATE.changeFilter));
+    } else if (opinion !== undefined) {
+      STATE.opinionFilter = STATE.opinionFilter === opinion ? '' : opinion;
+      document.querySelectorAll('.preset-chip[data-opinion]').forEach(c =>
+        c.classList.toggle('active', c.dataset.opinion === STATE.opinionFilter));
+    }
+    render();
+  });
+});
 
 // Events
 $('type-tabs').addEventListener('click', e => {
