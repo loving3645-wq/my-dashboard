@@ -1870,10 +1870,29 @@ function getInstantSeed(ticker) {
     return {
       code: ticker, name: reg.name, mkt: reg.mkt, sector: reg.sector,
       price: s.price, r1d: s.r1d, volume: s.volume, avgVol20: s.avgVol20,
+      spark: s.spark,
       ts: Date.parse(_snapshotCache.generatedAt) || Date.now(),
     };
   }
   return null;
+}
+
+/* ---- Instant chart from snapshot spark (60 trading-day closes, oldest-first) ----
+ * Labels are approximated by walking back N calendar days from today — exact
+ * dates aren't critical for a sparkline-style price chart. The live fetch
+ * later replaces this with a precise series via buildPriceChart. */
+function paintInstantChart(seed) {
+  if (!seed || !Array.isArray(seed.spark) || seed.spark.length < 5) return false;
+  const series = seed.spark.slice();
+  const today = new Date();
+  const labels = series.map((_, i) => {
+    const d = new Date(today.getTime() - (series.length - 1 - i) * 86400000);
+    return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  });
+  const isUp = series[series.length - 1] >= series[0];
+  buildPriceChart({ labels, series, label: '최근 60일 (스냅샷)' }, isUp);
+  $('chart-range-lbl').textContent = '최근 60일 (스냅샷)';
+  return true;
 }
 
 function paintInstantHeader(seed) {
@@ -1946,16 +1965,21 @@ async function loadStock(ticker) {
   enterLoadingState(ticker, reg, curated);
   renderQuicklist();
 
-  // 1b) Paint header instantly from scanner hand-off (sessionStorage) or
-  // already-loaded snapshot. Then kick off snapshot fetch (cached) so a
-  // direct URL visit also gets instant data on the next ticker switch.
-  paintInstantHeader(getInstantSeed(ticker));
+  // 1b) Paint header + price chart instantly from scanner hand-off
+  // (sessionStorage) or already-loaded snapshot. Then kick off snapshot
+  // fetch (cached) so a direct URL visit also gets instant data on the
+  // next ticker switch.
+  const seed0 = getInstantSeed(ticker);
+  paintInstantHeader(seed0);
+  paintInstantChart(seed0);
   loadSnapshotOnce().then(() => {
-    // If the live fetch hasn't returned yet AND we now have snapshot data,
-    // upgrade the header from snapshot.
+    // If we still have no chart drawn (direct URL, snapshot just arrived),
+    // paint from snapshot now.
+    const seed1 = getInstantSeed(ticker);
     if ($('sh-price').classList.contains('loading-shimmer')) {
-      paintInstantHeader(getInstantSeed(ticker));
+      paintInstantHeader(seed1);
     }
+    if (!priceChart) paintInstantChart(seed1);
   });
 
   // 2) Try fetching live quote from Stooq
