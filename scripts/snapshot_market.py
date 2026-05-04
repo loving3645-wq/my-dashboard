@@ -28,6 +28,7 @@ NAVER_TREND = "https://m.stock.naver.com/api/stock/{code}/trend"
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TICKERS_FILE = os.path.join(ROOT, "tickers-full.js")
+TICKERS_ETF_FILE = os.path.join(ROOT, "tickers-etf.js")
 OUTPUT_FILE = os.path.join(ROOT, "data", "market-snapshot.json")
 
 USER_AGENT = (
@@ -51,10 +52,19 @@ ROW_RE = re.compile(
 
 
 def load_tickers():
-    """Extract 6-digit ticker codes from tickers-full.js."""
-    with open(TICKERS_FILE, "r", encoding="utf-8") as f:
-        text = f.read()
-    return sorted(set(re.findall(r"'(\d{6})'\s*:", text)))
+    """Extract ticker codes from both tickers-full.js (stocks/SPACs) and
+    tickers-etf.js (ETFs). Codes can be 6-digit numeric or 6-char
+    alphanumeric — both forms are valid KRX symbols since the new alpha
+    code series was introduced for recent ETF listings."""
+    codes = set()
+    for path in (TICKERS_FILE, TICKERS_ETF_FILE):
+        if not os.path.exists(path):
+            continue
+        with open(path, "r", encoding="utf-8") as f:
+            text = f.read()
+        # 6 chars: digits, or digits + uppercase letters
+        codes.update(re.findall(r"'([0-9A-Z]{6})'\s*:", text))
+    return sorted(codes)
 
 
 def parse_history(text):
@@ -219,8 +229,16 @@ def main():
     )
 
     # ---- Phase B: investor flow (only for tickers with valid history) ----
+    # ETFs/funds don't have investor-flow trend data on Naver, so skip them
+    # to avoid ~1k pointless 4xx requests per run. The /trend endpoint is
+    # for common stocks (corporations) only.
+    etf_codes = set()
+    if os.path.exists(TICKERS_ETF_FILE):
+        with open(TICKERS_ETF_FILE, "r", encoding="utf-8") as f:
+            etf_codes = set(re.findall(r"'([0-9A-Z]{6})'\s*:", f.read()))
     print("Phase B: fetching investor flow (24 workers)...", flush=True)
-    flow_codes = list(snapshot.keys())
+    flow_codes = [c for c in snapshot.keys() if c not in etf_codes]
+    print(f"  (skipping {len(snapshot) - len(flow_codes)} ETFs)", flush=True)
     flow_errors = 0
     completed = 0
     with ThreadPoolExecutor(max_workers=FLOW_WORKERS) as ex:

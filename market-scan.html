@@ -12,6 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..600,0..100&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
 <script src="tickers-full.js"></script>
+<script src="tickers-etf.js"></script>
 <script src="themes.js"></script>
 
 <style>
@@ -146,6 +147,8 @@
   .mkt-pill { font-family: var(--mono); font-size: 9px; padding: 2px 5px; border-radius: 2px; letter-spacing: 0.08em; }
   .mkt-pill.kospi { background: var(--blue-bg); color: var(--blue); }
   .mkt-pill.kosdaq { background: var(--gold-bg); color: var(--gold); }
+  .mkt-pill.etf { background: var(--purple-bg); color: var(--purple); }
+  .mkt-pill.spac { background: var(--accent-bg); color: var(--accent); }
   .sector-cell { font-size: 11px; color: var(--ink-mid); max-width: 180px; overflow: hidden; text-overflow: ellipsis; }
 
   .pct { font-family: var(--mono); font-weight: 500; padding: 2px 6px; border-radius: 3px; display: inline-block; min-width: 56px; text-align: right; }
@@ -276,6 +279,8 @@
       <button class="tab active" data-mkt="ALL">전체</button>
       <button class="tab" data-mkt="KOSPI">KOSPI</button>
       <button class="tab" data-mkt="KOSDAQ">KOSDAQ</button>
+      <button class="tab" data-mkt="ETF">ETF</button>
+      <button class="tab" data-mkt="SPAC" title="기업인수목적회사">스팩</button>
       <button class="tab" data-mkt="WATCH" title="별표 찍은 종목만">★ 관심</button>
     </div>
     <div class="toolbar-divider"></div>
@@ -388,8 +393,21 @@
  * ===================================================================== */
 
 const $ = id => document.getElementById(id);
-const REGISTRY = window.TICKER_REGISTRY || {};
+// Merge stock + ETF registries. ETFs use mkt='ETF' (their KRX home is KOSPI
+// for most but functionally distinct). SPACs are detected by name suffix
+// "스팩" — they're tagged via inferSpac() rather than mkt because they're
+// already in TICKER_REGISTRY as KOSDAQ corporations.
+const REGISTRY = Object.assign(
+  {},
+  window.TICKER_REGISTRY || {},
+  window.TICKER_ETF_REGISTRY || {},
+);
 const ALL_CODES = Object.keys(REGISTRY).sort();
+function isSpac(code) {
+  const n = REGISTRY[code]?.name;
+  return !!(n && n.includes('스팩'));
+}
+function isEtf(code) { return REGISTRY[code]?.mkt === 'ETF'; }
 const THEMES = window.THEMES || {};
 
 // Reverse index: code → [theme names]. Built once on load.
@@ -719,8 +737,15 @@ function refreshCacheInfo() {
 function getScanCodes() {
   // Apply current filters to get target set
   let codes = ALL_CODES;
-  if (STATE.market !== 'ALL') {
-    codes = codes.filter(c => REGISTRY[c].mkt === STATE.market);
+  if (STATE.market === 'WATCH') {
+    codes = codes.filter(c => STATE.watch.has(c));
+  } else if (STATE.market === 'SPAC') {
+    codes = codes.filter(c => isSpac(c));
+  } else if (STATE.market === 'ETF') {
+    codes = codes.filter(c => isEtf(c));
+  } else if (STATE.market === 'KOSPI' || STATE.market === 'KOSDAQ') {
+    // Plain stocks only on these tabs (exclude ETFs even if listed on KOSPI)
+    codes = codes.filter(c => REGISTRY[c].mkt === STATE.market && !isSpac(c));
   }
   if (STATE.sector) {
     codes = codes.filter(c => inTheme(c, STATE.sector));
@@ -1039,8 +1064,12 @@ function getFilteredSorted() {
   let codes = ALL_CODES;
   if (STATE.market === 'WATCH') {
     codes = codes.filter(c => STATE.watch.has(c));
-  } else if (STATE.market !== 'ALL') {
-    codes = codes.filter(c => REGISTRY[c].mkt === STATE.market);
+  } else if (STATE.market === 'SPAC') {
+    codes = codes.filter(c => isSpac(c));
+  } else if (STATE.market === 'ETF') {
+    codes = codes.filter(c => isEtf(c));
+  } else if (STATE.market === 'KOSPI' || STATE.market === 'KOSDAQ') {
+    codes = codes.filter(c => REGISTRY[c].mkt === STATE.market && !isSpac(c));
   }
   if (STATE.sector) codes = codes.filter(c => inTheme(c, STATE.sector));
   if (STATE.query) {
@@ -1138,12 +1167,13 @@ function render() {
   const rows = codes.map(code => {
     const d = STATE.data[code];
     const reg = REGISTRY[code];
-    const mktPill = reg.mkt === 'KOSPI' ? 'kospi' : 'kosdaq';
+    const mktPill = isSpac(code) ? 'spac' : reg.mkt === 'ETF' ? 'etf' : reg.mkt === 'KOSPI' ? 'kospi' : 'kosdaq';
+    const mktLabel = isSpac(code) ? 'SPAC' : reg.mkt;
     const sectorTrim = (reg.sector || '—').slice(0, 18);
 
     if (!d) {
       return `<tr class="empty" data-code="${code}">
-        <td class="left"><div class="name-cell">${starCell(code)}<span class="code">${code}</span><span class="nm">${reg.name}</span><span class="mkt-pill ${mktPill}">${reg.mkt}</span></div></td>
+        <td class="left"><div class="name-cell">${starCell(code)}<span class="code">${code}</span><span class="nm">${reg.name}</span><span class="mkt-pill ${mktPill}">${mktLabel}</span></div></td>
         <td class="left sector-col sector-cell">${sectorTrim}</td>
         <td class="muted">—</td>
         <td><span class="pct empty">—</span></td>
@@ -1183,7 +1213,7 @@ function render() {
     })() : '';
 
     return `<tr data-code="${code}">
-      <td class="left"><div class="name-cell">${starCell(code)}<span class="code">${code}</span><span class="nm">${reg.name}</span><span class="mkt-pill ${mktPill}">${reg.mkt}</span></div></td>
+      <td class="left"><div class="name-cell">${starCell(code)}<span class="code">${code}</span><span class="nm">${reg.name}</span><span class="mkt-pill ${mktPill}">${mktLabel}</span></div></td>
       <td class="left sector-col sector-cell" title="${reg.sector || ''}">${sectorTrim}</td>
       <td class="price">${fmtNum(d.price)}</td>
       <td><span class="pct ${r1d.cls}">${r1d.txt}</span></td>
