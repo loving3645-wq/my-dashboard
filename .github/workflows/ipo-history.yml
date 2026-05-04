@@ -32,6 +32,17 @@ jobs:
       - name: Build IPO history
         run: python scripts/build_ipo_history.py
 
+      - name: Enrich with DART (Phase 2A)
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+        run: |
+          if [ -z "$DART_API_KEY" ]; then
+            echo "DART_API_KEY not set — skipping DART enrichment"
+            exit 0
+          fi
+          python scripts/build_ipo_lockup.py
+        continue-on-error: true
+
       - name: Commit if changed
         run: |
           git config user.name "github-actions[bot]"
