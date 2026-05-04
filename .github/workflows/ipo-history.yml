@@ -6,6 +6,12 @@ on:
   schedule:
     - cron: '0 9 * * 0'
   workflow_dispatch:
+  # paths-self trigger — main에 이 파일이 변경되어 머지될 때 1회 자동 실행
+  # (data 부트스트랩 / 스크립트 변경 후 즉시 갱신용. cron까지 안 기다려도 됨)
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/ipo-history.yml'
 
 permissions:
   contents: write

@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 """Build IPO history dataset for the Post-IPO sheet (2016~present).
 
-Pulls the new-listing master from KRX's public dataset endpoint
-(data.krx.co.kr/comm/bldattendant/getJsonData.cmd, bld=MDCSTAT08001),
-then enriches each listing with +1W / +1M / +3M / +6M / +1Y price
-returns from Naver siseJson.
-
-Designed to run from GitHub Actions runner — KRX/Naver are reachable
-directly from there, no CORS proxy needed.
+KRX bot-blocks GitHub Actions runners (returns HTML error page instead of JSON),
+so this implementation pulls the new-listing master from 38커뮤니케이션
+(http://www.38.co.kr/html/fund/index.htm?o=nw) — same site we already use for
+the IPO calendar. Then it enriches each listing with the ticker (from the detail
+page) and ±1Y price returns from Naver siseJson.
 
 Output: data/ipo-history.json
 """
@@ -17,7 +15,7 @@ import os
 import re
 import sys
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 
 import requests
@@ -32,20 +30,22 @@ USER_AGENT = (
     "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"
 )
 
-KRX_API = "https://data.krx.co.kr/comm/bldattendant/getJsonData.cmd"
-KRX_REFERER = "https://data.krx.co.kr/"
+BASE_38 = "http://www.38.co.kr"
+LIST_URL = f"{BASE_38}/html/fund/index.htm"
+DETAIL_URL = f"{BASE_38}/html/fund/"
+ENC = "euc-kr"
 
-# Naver siseJson — same endpoint we use elsewhere
 NAVER_HISTORY = (
     "https://api.finance.naver.com/siseJson.naver"
     "?symbol={code}&requestType=1&startTime={start}&endTime={end}&timeframe=day"
 )
 
-# Concurrency for Naver per-ticker fetches
+START_DATE = "2016-01-01"
+DETAIL_WORKERS = 12
 PRICE_WORKERS = 16
+MAX_PAGES = 80  # 70~75 pages cover 2016 → present
 
-START_DATE = "20160101"  # 2016-01-01
-
+DATE_RE = re.compile(r"(\d{4})/(\d{2})/(\d{2})")
 ROW_RE = re.compile(
     r'\[\s*"?(\d{8})"?\s*,'
     r"\s*(-?\d+(?:\.\d+)?)\s*,"
@@ -56,110 +56,126 @@ ROW_RE = re.compile(
 )
 
 
-def krx_session():
+def make_session():
     s = requests.Session()
-    s.headers.update({
-        "User-Agent": USER_AGENT,
-        "Accept": "application/json, text/javascript, */*; q=0.01",
-        "Accept-Language": "ko-KR,ko;q=0.9",
-        "Referer": "https://data.krx.co.kr/contents/MDC/STAT/issue/MDCSTAT08001.cmd",
-        "Origin": "https://data.krx.co.kr",
-        "X-Requested-With": "XMLHttpRequest",
-    })
-    # KRX 게이트웨이가 JSESSIONID cookie를 발급하도록 main 페이지 한 번 방문 (warmup).
-    # 이게 빠지면 getJsonData.cmd가 HTML 에러페이지를 반환함.
-    try:
-        s.get("https://data.krx.co.kr/contents/MDC/STAT/issue/MDCSTAT08001.cmd", timeout=20)
-    except Exception as e:
-        print(f"WARN: KRX warmup failed: {e}", file=sys.stderr)
+    s.headers.update({"User-Agent": USER_AGENT})
     return s
 
 
-def fetch_krx_new_listings(session, start_yyyymmdd, end_yyyymmdd):
-    """Pull KRX 'new listing' statistics (MDCSTAT08001) — every IPO/listing
-    transition in [start, end] with offering price, count, etc."""
-    payload = {
-        "bld": "dbms/MDC/STAT/issue/MDCSTAT08001",
-        "strtDd": start_yyyymmdd,
-        "endDd": end_yyyymmdd,
-        "share": "1",
-        "csvxls_isNo": "false",
-    }
-    last_exc = None
-    for attempt in range(3):
-        try:
-            r = session.post(KRX_API, data=payload, timeout=30)
-            r.raise_for_status()
-            ct = r.headers.get("Content-Type", "")
-            if "json" not in ct.lower() and not r.text.lstrip().startswith("{"):
-                # KRX가 HTML 에러페이지 반환 — 첫 200자를 stderr에 출력해 디버깅 도움
-                print(
-                    f"KRX returned non-JSON (attempt {attempt+1}, CT={ct}, len={len(r.text)}). "
-                    f"First 200 chars: {r.text[:200]!r}",
-                    file=sys.stderr,
-                )
-                if attempt < 2:
-                    time.sleep(2 * (attempt + 1))
-                    continue
-                raise RuntimeError("KRX non-JSON response after retries")
-            j = r.json()
-            break
-        except Exception as e:
-            last_exc = e
-            if attempt < 2:
-                time.sleep(2 * (attempt + 1))
-                continue
-            raise
-    rows = j.get("OutBlock_1") or j.get("output") or []
+def strip_tags(s):
+    s = re.sub(r"<br\s*/?>", " ", s, flags=re.I)
+    s = re.sub(r"<[^>]+>", "", s)
+    s = re.sub(r"&nbsp;", " ", s)
+    return re.sub(r"\s+", " ", s).strip()
+
+
+def to_int(s):
+    s = (s or "").replace(",", "").strip()
+    return int(s) if s.isdigit() else None
+
+
+def to_float_pct(s):
+    """'12.34%' → 12.34, '-' → None."""
+    if not s:
+        return None
+    m = re.match(r"(-?\d+(?:\.\d+)?)\s*%?", s.strip())
+    return float(m.group(1)) if m else None
+
+
+def parse_listing_page(html):
+    """Extract IPO rows from a 38.co.kr `?o=nw&page=N` listing page.
+
+    Observed columns:
+      0=name, 1=listingDate(YYYY/MM/DD), 2=시초가, 3=시초가등락률,
+      4=공모가, 5=시초가 vs 공모가 등락률(firstDayReturn), 6=현재가,
+      7=현재 등락률, 8=parPrice 또는 별도 가격
+    Anchor in cell 0 has detail page no=NNNN.
+    """
     out = []
-    for r in rows:
-        # KRX returns Korean keys; normalize
-        code = (r.get("ISU_SRT_CD") or r.get("isu_srt_cd") or "").strip()
-        name = (r.get("ISU_NM") or r.get("ISU_ABBRV") or r.get("isu_nm") or "").strip()
-        list_dd = (r.get("LIST_DD") or r.get("list_dd") or "").replace("/", "").replace("-", "")
-        mkt = (r.get("MKT_TP_NM") or r.get("MKT_NM") or r.get("mkt_tp_nm") or "").strip()
-        ipo_price_raw = (r.get("ISU_PRC") or r.get("ISSUE_PRICE") or r.get("isu_prc") or "").strip()
-        listed_shares_raw = (r.get("LIST_SHRS") or r.get("LIST_QTY") or "").replace(",", "")
-        # Skip non-equity events (REIT mergers, splits, transfers) — keep only fresh IPOs.
-        # KRX issue type 'IPO' marker varies by build; if missing we keep the row and let
-        # the price-fetch fail filter out non-tradeables.
-        if not code or len(code) != 6:
+    for tr_html in re.findall(r"<tr[^>]*>(.*?)</tr>", html, re.S | re.I):
+        if "href=" not in tr_html:
             continue
-        if not list_dd or len(list_dd) != 8:
+        cells_raw = re.findall(r"<td[^>]*>(.*?)</td>", tr_html, re.S | re.I)
+        if len(cells_raw) < 6:
             continue
-        try:
-            ipo_price = int(re.sub(r"[^\d]", "", ipo_price_raw)) if ipo_price_raw else None
-        except ValueError:
-            ipo_price = None
-        try:
-            listed_shares = int(listed_shares_raw) if listed_shares_raw else None
-        except ValueError:
-            listed_shares = None
+        cells = [strip_tags(c) for c in cells_raw]
+        name = cells[0]
+        if not name or len(name) > 50:
+            continue
+        m = DATE_RE.match(cells[1])
+        if not m:
+            continue
+        listing_date = f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
+        href_m = re.search(r"href=[\"']([^\"']+)[\"']", cells_raw[0])
+        no_m = re.search(r"no=(\d+)", href_m.group(1)) if href_m else None
+        if not no_m:
+            continue
         out.append({
-            "ticker": code,
             "name": name,
-            "listingDate": f"{list_dd[:4]}-{list_dd[4:6]}-{list_dd[6:8]}",
-            "market": mkt,
-            "ipoPrice": ipo_price,
-            "listedShares": listed_shares,
-            "marketCapAtListing": (ipo_price * listed_shares) if (ipo_price and listed_shares) else None,
+            "listingDate": listing_date,
+            "openPrice": to_int(cells[2]),
+            "ipoPrice": to_int(cells[4]),
+            "firstDayReturn": to_float_pct(cells[5]),
+            "detailNo": no_m.group(1),
         })
     return out
 
 
-def naver_session():
-    s = requests.Session()
-    s.headers.update({
-        "User-Agent": USER_AGENT,
-        "Accept": "application/json, text/plain, */*",
-        "Accept-Language": "ko-KR,ko;q=0.9",
-        "Referer": "https://finance.naver.com/",
-    })
-    return s
+def fetch_all_listings(session, start_date):
+    """Paginate ?o=nw until we hit a page older than start_date or run out."""
+    all_listings = []
+    seen = set()
+    for page in range(1, MAX_PAGES + 1):
+        try:
+            r = session.get(LIST_URL, params={"o": "nw", "page": page}, timeout=20)
+            r.encoding = ENC
+            r.raise_for_status()
+        except Exception as e:
+            print(f"  page {page} fetch failed: {e}", file=sys.stderr)
+            break
+        rows = parse_listing_page(r.text)
+        if not rows:
+            print(f"  page {page} empty — stopping", flush=True)
+            break
+        new_count = 0
+        for row in rows:
+            key = (row["name"], row["listingDate"])
+            if key in seen:
+                continue
+            seen.add(key)
+            all_listings.append(row)
+            new_count += 1
+        oldest = min(row["listingDate"] for row in rows)
+        print(f"  page {page}: +{new_count} (oldest {oldest})", flush=True)
+        if oldest < start_date:
+            break
+    return all_listings
+
+
+TICKER_RE = re.compile(r"종목코드[^0-9]{0,40}(\d{6})")
+MARKET_RE = re.compile(r"(코스피|코스닥|KOSPI|KOSDAQ)")
+
+
+def fetch_detail(session, detail_no):
+    """Detail page → (ticker, market). Returns (None, None) on failure."""
+    try:
+        r = session.get(DETAIL_URL, params={"o": "v", "no": detail_no}, timeout=15)
+        r.encoding = ENC
+        if r.status_code != 200:
+            return (None, None)
+        text = r.text
+    except Exception:
+        return (None, None)
+    t = TICKER_RE.search(text)
+    m = MARKET_RE.search(text)
+    market = None
+    if m:
+        market = "KOSDAQ" if m.group(1) in ("코스닥", "KOSDAQ") else "KOSPI"
+    return (t.group(1) if t else None, market)
 
 
 def fetch_history(session, code, start_yyyymmdd, end_yyyymmdd):
-    """Fetch daily OHLCV for [start, end]. Returns list of (date_str, close)."""
+    """Fetch daily OHLCV for [start, end] from Naver. Returns sorted list of (date_str, close)."""
     url = NAVER_HISTORY.format(code=code, start=start_yyyymmdd, end=end_yyyymmdd)
     r = session.get(url, timeout=15)
     r.raise_for_status()
@@ -177,7 +193,6 @@ def fetch_history(session, code, start_yyyymmdd, end_yyyymmdd):
 
 
 def closest_close(series, target_yyyymmdd):
-    """Closest trading-day close on/after target. None if none in series."""
     for d, c in series:
         if d >= target_yyyymmdd:
             return c
@@ -190,9 +205,11 @@ def add_days(yyyymmdd, days):
 
 
 def compute_returns(session, ipo):
-    """Fetch ~1Y of post-listing prices and compute window returns vs IPO price."""
+    """Fetch ~1Y of post-listing prices, compute window returns vs IPO price."""
+    if not ipo.get("ticker"):
+        return ipo
     listing_dd = ipo["listingDate"].replace("-", "")
-    end_dd = add_days(listing_dd, 400)  # ~1Y + buffer
+    end_dd = add_days(listing_dd, 400)
     try:
         series = fetch_history(session, ipo["ticker"], listing_dd, end_dd)
     except Exception:
@@ -200,12 +217,12 @@ def compute_returns(session, ipo):
     if not series:
         return ipo
 
-    first_close = series[0][1]  # first trading-day close
+    first_close = series[0][1]
     ipo["firstDayClose"] = round(first_close)
     ipo_p = ipo.get("ipoPrice")
-    if ipo_p:
+    if ipo_p and ipo.get("firstDayReturn") is None:
+        # 38.co.kr already gives firstDayReturn but recompute for consistency
         ipo["firstDayReturn"] = round((first_close / ipo_p - 1) * 100, 2)
-
     base = ipo_p or first_close
     for label, days in [("r1w", 7), ("r1m", 30), ("r3m", 90), ("r6m", 180), ("r1y", 365)]:
         target = add_days(listing_dd, days)
@@ -215,64 +232,76 @@ def compute_returns(session, ipo):
         ipo[label] = round((c / base - 1) * 100, 2)
         ipo[label + "Close"] = round(c)
 
-    # Drawdown / peak in first year
-    closes_only = [c for _, c in series]
-    if closes_only:
-        peak = max(closes_only)
-        trough = min(closes_only)
-        ipo["peak1y"] = round((peak / base - 1) * 100, 2)
-        ipo["trough1y"] = round((trough / base - 1) * 100, 2)
-
+    closes = [c for _, c in series]
+    if closes:
+        ipo["peak1y"] = round((max(closes) / base - 1) * 100, 2)
+        ipo["trough1y"] = round((min(closes) / base - 1) * 100, 2)
     return ipo
 
 
 def main():
-    today = datetime.now(KST).strftime("%Y%m%d")
-    print(f"Fetching KRX new-listing master {START_DATE} → {today}…", flush=True)
-    krx = krx_session()
-    listings = fetch_krx_new_listings(krx, START_DATE, today)
-    # Dedupe by (ticker, listingDate) — KRX sometimes lists the same event twice
-    seen = set()
-    deduped = []
-    for r in listings:
-        key = (r["ticker"], r["listingDate"])
-        if key in seen:
-            continue
-        seen.add(key)
-        deduped.append(r)
-    listings = deduped
-    print(f"  {len(listings)} listings collected", flush=True)
+    print(f"Fetching 38.co.kr listings since {START_DATE}...", flush=True)
+    sess = make_session()
+    listings = fetch_all_listings(sess, START_DATE)
+    # Only keep listings on/after start
+    listings = [r for r in listings if r["listingDate"] >= START_DATE]
+    print(f"  collected {len(listings)} listings", flush=True)
     if len(listings) < 50:
-        print("ERROR: KRX returned suspiciously few rows — aborting", file=sys.stderr)
+        print("ERROR: 38.co.kr returned suspiciously few rows — aborting", file=sys.stderr)
         sys.exit(1)
 
-    # Sort newest-first so the JSON is browser-friendly
+    # Sort newest-first
     listings.sort(key=lambda r: r["listingDate"], reverse=True)
 
-    # Enrich with Naver price returns (parallel)
-    print(f"Enriching {len(listings)} tickers with Naver price returns…", flush=True)
-    nv = naver_session()
+    # Enrich with ticker + market from detail page
+    print(f"Enriching {len(listings)} with ticker/market from detail pages...", flush=True)
     completed = [0]
-    errors = [0]
 
-    def enrich(ipo):
+    def enrich_detail(ipo):
+        ticker, market = fetch_detail(sess, ipo["detailNo"])
+        if ticker:
+            ipo["ticker"] = ticker
+        if market:
+            ipo["market"] = market
+        completed[0] += 1
+        if completed[0] % 100 == 0:
+            print(f"  detail {completed[0]}/{len(listings)}", flush=True)
+        return ipo
+
+    with ThreadPoolExecutor(max_workers=DETAIL_WORKERS) as ex:
+        listings = list(ex.map(enrich_detail, listings))
+    with_ticker = sum(1 for r in listings if r.get("ticker"))
+    print(f"  ticker resolved: {with_ticker}/{len(listings)}", flush=True)
+
+    # Enrich with Naver returns
+    print(f"Enriching with Naver price returns...", flush=True)
+    naver = make_session()
+    naver.headers.update({"Referer": "https://finance.naver.com/"})
+    completed[0] = 0
+
+    def enrich_prices(ipo):
         try:
-            return compute_returns(nv, ipo)
+            return compute_returns(naver, ipo)
         except Exception:
-            errors[0] += 1
             return ipo
         finally:
             completed[0] += 1
             if completed[0] % 100 == 0:
-                print(f"  enriched {completed[0]}/{len(listings)} (err {errors[0]})", flush=True)
+                print(f"  prices {completed[0]}/{len(listings)}", flush=True)
 
     with ThreadPoolExecutor(max_workers=PRICE_WORKERS) as ex:
-        listings = list(ex.map(enrich, listings))
+        listings = list(ex.map(enrich_prices, listings))
 
-    # Output
+    # Compute marketCapAtListing if we ever have shares (not from 38.co.kr — leave None)
+    for r in listings:
+        r.setdefault("marketCapAtListing", None)
+        # detailNo is internal — keep, useful for direct linking back
+        # 38.co.kr doesn't expose listed shares; users can compute via deep-dive
+
     output = {
         "generatedAt": datetime.now(KST).isoformat(timespec="seconds"),
         "windowFrom": START_DATE,
+        "source": "38.co.kr + Naver siseJson",
         "count": len(listings),
         "listings": listings,
     }
