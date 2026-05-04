@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#fafaf7" />
+<meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="pragma" content="no-cache" />
+<meta http-equiv="expires" content="0" />
+<title>IPO 캘린더 · 지니의 리서치</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..600,0..100&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #fafaf7; --bg-warm: #f4f1ea; --surface: #ffffff; --surface-2: #f7f5f0;
+    --ink: #1a1a1a; --ink-mid: #555; --ink-soft: #8a8580; --ink-faint: #b8b3ad;
+    --line: #e8e4dc; --line-strong: #d4cfc4;
+    --accent: #b8421f; --accent-bg: #fbeae3;
+    --gold: #b8923f; --gold-bg: #f7eecf;
+    --green: #4a7c4e; --green-bg: #e0ebd9;
+    --red: #c43e3e; --red-bg: #fbe4e4;
+    --blue: #3a5e7e; --blue-bg: #dde6ee;
+    --purple: #6b4a7c; --purple-bg: #ebe0ee;
+    --serif: 'Fraunces','Nanum Myeongjo',serif;
+    --sans: 'Pretendard',-apple-system,sans-serif;
+    --mono: 'JetBrains Mono',ui-monospace,monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  body { min-height: 100vh; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+  button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; background: none; border: none; }
+  a { color: inherit; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  .app { max-width: 1900px; margin: 0 auto; padding: 24px 28px 80px; }
+
+  .topnav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; gap: 12px; }
+  .brand { font-family: var(--serif); font-weight: 400; font-size: 22px; letter-spacing: -0.02em; }
+  .brand em { font-style: italic; color: var(--accent); font-weight: 500; }
+  .crumbs { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.18em; text-transform: uppercase; }
+  .crumbs a { color: var(--ink-soft); text-decoration: none; }
+  .crumbs a:hover { color: var(--accent); }
+  .crumbs .sep { margin: 0 8px; color: var(--ink-faint); }
+
+  .page-head { margin-bottom: 16px; }
+  .page-head h1 { font-family: var(--serif); font-weight: 400; font-size: 28px; letter-spacing: -0.02em; }
+  .page-head h1 em { font-style: italic; color: var(--accent); font-weight: 500; }
+  .page-head .sub { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); letter-spacing: 0.1em; margin-top: 6px; text-transform: uppercase; }
+
+  .status-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; padding: 10px 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; font-family: var(--mono); font-size: 11px; color: var(--ink-mid); flex-wrap: wrap; }
+  .status-bar .seg { display: flex; align-items: center; gap: 6px; }
+  .status-bar .lbl { color: var(--ink-soft); letter-spacing: 0.08em; text-transform: uppercase; font-size: 10px; }
+  .status-bar .val { color: var(--ink); font-weight: 500; }
+
+  .section { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; margin-bottom: 18px; }
+  .section h2 { font-family: var(--serif); font-weight: 500; font-size: 18px; letter-spacing: -0.01em; margin-bottom: 4px; }
+  .section h2 em { font-style: italic; color: var(--accent); font-weight: 500; }
+  .section .desc { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 14px; }
+
+  .toolbar-mini { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+  .tlabel { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.12em; text-transform: uppercase; }
+  .select { padding: 5px 10px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 5px; font-size: 11px; font-family: var(--mono); color: var(--ink-mid); cursor: pointer; }
+
+  table.cal { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .cal thead { background: var(--surface-2); }
+  .cal th { text-align: right; padding: 9px 10px; font-family: var(--mono); font-weight: 500; font-size: 10px; color: var(--ink-soft); letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .cal th.left { text-align: left; }
+  .cal tbody tr { border-bottom: 1px solid var(--line); transition: background 0.1s; }
+  .cal tbody tr:hover { background: var(--bg-warm); }
+  .cal tbody tr.clickable { cursor: pointer; }
+  .cal td { padding: 9px 10px; text-align: right; font-family: var(--mono); font-size: 12px; color: var(--ink); white-space: nowrap; }
+  .cal td.left { text-align: left; }
+  .cal td.muted { color: var(--ink-faint); }
+  .muted { color: var(--ink-faint); }
+
+  .name-cell { display: flex; align-items: center; gap: 8px; min-width: 180px; }
+  .name-cell .code { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); width: 50px; flex-shrink: 0; }
+  .name-cell .nm { font-family: var(--sans); font-size: 13px; font-weight: 500; }
+  .mkt-pill { font-family: var(--mono); font-size: 9px; padding: 2px 5px; border-radius: 2px; letter-spacing: 0.08em; }
+  .mkt-pill.kospi { background: var(--blue-bg); color: var(--blue); }
+  .mkt-pill.kosdaq { background: var(--gold-bg); color: var(--gold); }
+
+  .day-pill { font-family: var(--mono); font-size: 10px; padding: 2px 6px; border-radius: 3px; display: inline-block; min-width: 56px; text-align: center; letter-spacing: 0.04em; }
+  .day-pill.today { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
+  .day-pill.soon { background: var(--gold-bg); color: var(--gold); }
+  .day-pill.later { background: var(--surface-2); color: var(--ink-mid); }
+  .day-pill.past { background: transparent; color: var(--ink-faint); }
+
+  .reason-pill { font-family: var(--mono); font-size: 9px; padding: 2px 6px; border-radius: 2px; letter-spacing: 0.04em; }
+  .reason-pill.lockup6m { background: var(--blue-bg); color: var(--blue); }
+  .reason-pill.lockup1y { background: var(--purple-bg); color: var(--purple); }
+  .reason-pill.dart { background: var(--green-bg); color: var(--green); }
+
+  .empty-state { padding: 36px 20px; text-align: center; color: var(--ink-faint); font-family: var(--mono); font-size: 12px; }
+
+  .footer-info { margin-top: 14px; font-family: var(--mono); font-size: 10px; color: var(--ink-soft); display: flex; gap: 14px; flex-wrap: wrap; align-items: center; letter-spacing: 0.05em; }
+
+  @media (max-width: 900px) {
+    .app { padding: 18px 14px 60px; }
+    .cal th, .cal td { padding: 6px 6px; font-size: 11px; }
+    .section { padding: 14px 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <nav class="topnav">
+    <div>
+      <div class="brand">지니<em>.</em></div>
+      <div class="crumbs">
+        <a href="index.html">대시보드</a><span class="sep">/</span>
+        <a href="market-scan.html">시장 스캐너</a><span class="sep">/</span>
+        <a href="research.html">리서치</a><span class="sep">/</span>
+        <a href="post-ipo.html">Post-IPO</a><span class="sep">/</span>
+        <span style="color:var(--ink);">IPO 캘린더</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page-head">
+    <h1>IPO <em>캘린더</em></h1>
+    <div class="sub">다가오는 청약 / 상장 + 보호예수 만기 (의무보유 해제)</div>
+  </div>
+
+  <div class="status-bar">
+    <div class="seg"><span class="lbl">청약 캘린더</span><span class="val" id="cal-generated">—</span></div>
+    <div class="seg"><span class="lbl">소스</span><span class="val">38커뮤니케이션 + KRX</span></div>
+    <div class="seg"><span class="lbl">보호예수</span><span class="val" id="lockup-count">—</span></div>
+  </div>
+
+  <!-- 다가오는 청약/상장 -->
+  <div class="section">
+    <h2>다가오는 <em>청약 · 상장</em></h2>
+    <div class="desc">38.co.kr 공모청약 일정 + 신규상장 · 매일 06:00 KST 자동 갱신</div>
+
+    <div class="toolbar-mini">
+      <span class="tlabel">표시</span>
+      <select class="select" id="upcoming-window">
+        <option value="60">앞으로 60일</option>
+        <option value="30" selected>앞으로 30일</option>
+        <option value="14">앞으로 14일</option>
+        <option value="all">전체</option>
+      </select>
+    </div>
+
+    <table class="cal">
+      <thead>
+        <tr>
+          <th class="left">D-day</th>
+          <th class="left">종목</th>
+          <th class="left">청약일</th>
+          <th class="left">상장 예정</th>
+          <th class="left">공모가</th>
+          <th class="left">주간사</th>
+        </tr>
+      </thead>
+      <tbody id="upcoming-body"><tr><td colspan="6" class="empty-state">불러오는 중…</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- 다가오는 보호예수 만기 -->
+  <div class="section">
+    <h2>다가오는 <em>보호예수 만기</em></h2>
+    <div class="desc">상장일 +6M / +1Y 표준 lockup 가정 · 실제 일정은 증권신고서 기준 다를 수 있음</div>
+
+    <div class="toolbar-mini">
+      <span class="tlabel">기간</span>
+      <select class="select" id="lockup-window">
+        <option value="30">앞으로 30일</option>
+        <option value="60" selected>앞으로 60일</option>
+        <option value="90">앞으로 90일</option>
+        <option value="180">앞으로 180일</option>
+      </select>
+      <span class="tlabel" style="margin-left:8px;">유형</span>
+      <select class="select" id="lockup-type">
+        <option value="">전체</option>
+        <option value="6m">+6M (기관·우리사주 일부)</option>
+        <option value="1y">+1Y (최대주주·임직원)</option>
+      </select>
+    </div>
+
+    <table class="cal">
+      <thead>
+        <tr>
+          <th class="left">D-day</th>
+          <th class="left">해제일</th>
+          <th class="left">종목</th>
+          <th class="left">유형</th>
+          <th>상장일</th>
+          <th>공모가</th>
+          <th>현재 수익률</th>
+        </tr>
+      </thead>
+      <tbody id="lockup-body"><tr><td colspan="7" class="empty-state">불러오는 중…</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="footer-info">
+    <span>데이터: 38커뮤니케이션 (스크랩) + 자체 IPO history</span>
+    <span>보호예수 만기는 표준 6M/1Y 가정 — DART 증권신고서가 들어오면 실제 일정으로 교체</span>
+    <span>종목 클릭 → 딥다이브</span>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+const STATE = {
+  upcoming: [],
+  upcomingGenerated: null,
+  history: [],
+  upcomingWindow: 30,
+  lockupWindow: 60,
+  lockupType: '',
+};
+
+async function loadAll() {
+  await Promise.allSettled([loadUpcoming(), loadHistory()]);
+  renderUpcoming();
+  renderLockups();
+}
+
+async function loadUpcoming() {
+  try {
+    const r = await fetch('data/ipo-calendar.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json();
+    STATE.upcoming = j.upcoming || [];
+    STATE.upcomingGenerated = j.generatedAt;
+    $('cal-generated').textContent = j.generatedAt
+      ? new Date(j.generatedAt).toLocaleString('ko-KR') : '—';
+  } catch (e) {
+    STATE.upcoming = [];
+    $('cal-generated').textContent = '—';
+    console.warn('upcoming load failed', e);
+  }
+}
+
+async function loadHistory() {
+  try {
+    const r = await fetch('data/ipo-history.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json();
+    STATE.history = j.listings || [];
+  } catch (e) {
+    STATE.history = [];
+    console.warn('history load failed', e);
+  }
+}
+
+function daysFromToday(yyyymmdd) {
+  if (!yyyymmdd) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const t = new Date(yyyymmdd + 'T00:00:00'); if (isNaN(t)) return null;
+  return Math.round((t - today) / 86400000);
+}
+
+function dayPill(days) {
+  if (days === null) return '<span class="day-pill past">—</span>';
+  if (days < 0) return `<span class="day-pill past">D+${-days}</span>`;
+  if (days === 0) return `<span class="day-pill today">D-DAY</span>`;
+  const cls = days <= 7 ? 'soon' : days <= 30 ? 'soon' : 'later';
+  return `<span class="day-pill ${cls}">D-${days}</span>`;
+}
+
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+function renderUpcoming() {
+  const tbody = $('upcoming-body');
+  if (!STATE.upcoming.length) {
+    tbody.innerHTML = `<tr><td colspan="6" class="empty-state">
+      예정된 청약 정보를 불러올 수 없습니다.<br>
+      <span style="font-size:10px;">매일 06:00 KST 자동 갱신 · 또는 Actions 'Daily IPO Calendar' 워크플로 수동 실행</span>
+    </td></tr>`;
+    return;
+  }
+  const winDays = STATE.upcomingWindow === 'all' ? 9999 : Number(STATE.upcomingWindow);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const items = STATE.upcoming.map(r => {
+    const target = r.subscriptionStart || r.listingDate;
+    const days = daysFromToday(target);
+    return { r, target, days };
+  }).filter(x => x.days !== null && x.days >= -2 && x.days <= winDays)
+    .sort((a, b) => a.days - b.days);
+
+  if (!items.length) {
+    tbody.innerHTML = `<tr><td colspan="6" class="empty-state">선택한 기간 내 예정 IPO가 없습니다.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = items.map(({ r, days }) => {
+    const sub = r.subscriptionStart && r.subscriptionEnd
+      ? (r.subscriptionStart === r.subscriptionEnd
+          ? r.subscriptionStart
+          : `${r.subscriptionStart} ~ ${r.subscriptionEnd.slice(5)}`)
+      : (r.subscriptionStart || '—');
+    let priceCell = '—';
+    if (Number.isFinite(r.ipoPrice)) {
+      priceCell = r.ipoPrice.toLocaleString() + '원';
+      if (r.ipoPriceBand) priceCell += ` <span class="muted">(${escapeHtml(r.ipoPriceBand)})</span>`;
+    } else if (r.ipoPriceBand) {
+      priceCell = `<span class="muted">${escapeHtml(r.ipoPriceBand)}</span>`;
+    }
+    return `<tr>
+      <td class="left">${dayPill(days)}</td>
+      <td class="left"><span class="nm" style="font-weight:500;">${escapeHtml(r.name)}</span></td>
+      <td class="left">${escapeHtml(sub)}</td>
+      <td class="left">${escapeHtml(r.listingDate || '—')}</td>
+      <td class="left">${priceCell}</td>
+      <td class="left muted">${escapeHtml(r.underwriter || '—')}</td>
+    </tr>`;
+  }).join('');
+}
+
+function buildLockupSchedule() {
+  // 표준 가정: listingDate +6M (기관 의무보유 일부) / +1Y (최대주주·임직원)
+  const events = [];
+  for (const r of STATE.history) {
+    if (!r.listingDate) continue;
+    const base = new Date(r.listingDate + 'T00:00:00');
+    if (isNaN(base)) continue;
+    const add = (months, type, label) => {
+      const d = new Date(base);
+      d.setMonth(d.getMonth() + months);
+      const iso = d.toISOString().slice(0, 10);
+      events.push({
+        ticker: r.ticker,
+        name: r.name,
+        market: r.market,
+        listingDate: r.listingDate,
+        ipoPrice: r.ipoPrice,
+        r1y: r.r1y,
+        r6m: r.r6m,
+        expiryDate: iso,
+        type,
+        label,
+      });
+    };
+    add(6, '6m', '+6M (기관·우리사주)');
+    add(12, '1y', '+1Y (최대주주·임직원)');
+  }
+  return events;
+}
+
+function renderLockups() {
+  const tbody = $('lockup-body');
+  const events = buildLockupSchedule();
+  $('lockup-count').textContent = events.length.toLocaleString() + '건';
+
+  if (!events.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">
+      IPO history가 비어있어 보호예수 일정을 계산할 수 없습니다.<br>
+      <span style="font-size:10px;">먼저 'Weekly IPO History' 워크플로를 실행하세요.</span>
+    </td></tr>`;
+    return;
+  }
+  const winDays = Number(STATE.lockupWindow);
+  let items = events.map(e => ({ ...e, days: daysFromToday(e.expiryDate) }))
+    .filter(e => e.days !== null && e.days >= 0 && e.days <= winDays);
+  if (STATE.lockupType) items = items.filter(e => e.type === STATE.lockupType);
+  items.sort((a, b) => a.days - b.days);
+
+  if (!items.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">선택한 조건에 해당하는 보호예수 만기가 없습니다.</td></tr>`;
+    return;
+  }
+
+  const fmtPct = v => {
+    if (!Number.isFinite(v)) return '<span class="muted">—</span>';
+    const sign = v > 0 ? '+' : '';
+    const cls = v > 0 ? 'up' : v < 0 ? 'down' : '';
+    const color = cls === 'up' ? 'var(--green)' : cls === 'down' ? 'var(--red)' : 'var(--ink-soft)';
+    return `<span style="color:${color};font-weight:500;">${sign}${v.toFixed(1)}%</span>`;
+  };
+
+  tbody.innerHTML = items.slice(0, 500).map(e => {
+    const mktKey = (e.market || '').toUpperCase().includes('KOSDAQ') ? 'kosdaq' : 'kospi';
+    const reasonCls = e.type === '6m' ? 'lockup6m' : 'lockup1y';
+    const currentReturn = e.type === '6m' ? e.r6m : e.r1y;
+    return `<tr class="clickable" data-code="${e.ticker}">
+      <td class="left">${dayPill(e.days)}</td>
+      <td class="left">${e.expiryDate}</td>
+      <td class="left"><div class="name-cell">
+        <span class="code">${e.ticker}</span>
+        <span class="nm">${escapeHtml(e.name)}</span>
+        <span class="mkt-pill ${mktKey}">${mktKey.toUpperCase()}</span>
+      </div></td>
+      <td class="left"><span class="reason-pill ${reasonCls}">${escapeHtml(e.label)}</span></td>
+      <td>${e.listingDate}</td>
+      <td>${Number.isFinite(e.ipoPrice) ? e.ipoPrice.toLocaleString() : '—'}</td>
+      <td>${fmtPct(currentReturn)}</td>
+    </tr>`;
+  }).join('');
+
+  tbody.querySelectorAll('tr.clickable').forEach(tr => {
+    tr.addEventListener('click', () => {
+      window.location.href = `stock-deep-dive.html#${tr.dataset.code}`;
+    });
+  });
+}
+
+$('upcoming-window').addEventListener('change', e => {
+  STATE.upcomingWindow = e.target.value;
+  renderUpcoming();
+});
+$('lockup-window').addEventListener('change', e => {
+  STATE.lockupWindow = e.target.value;
+  renderLockups();
+});
+$('lockup-type').addEventListener('change', e => {
+  STATE.lockupType = e.target.value;
+  renderLockups();
+});
+
+loadAll();
+</script>
+</body>
+</html>
