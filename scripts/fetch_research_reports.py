@@ -254,13 +254,43 @@ def enrich_with_detail(session, reports):
     print(f"  detail done ({errors} errors)", flush=True)
 
 
+# True "initiating coverage" markers — only tag as 'new' when the title
+# explicitly says so. Without this, "no prior data in our 14-day window"
+# was being misread as "first ever coverage" which is wrong for any
+# blue-chip already covered for years (한화투자증권 vs LG에너지솔루션 etc.).
+NEW_COVERAGE_MARKERS = (
+    "커버리지 개시",
+    "신규 커버리지",
+    "신규 커버",
+    "커버리지 시작",
+    "Initiating",
+    "Initiate",
+    "First Look",
+    "최초 커버",
+)
+
+
+def is_initiating_coverage(title):
+    if not title:
+        return False
+    t = title.lower()
+    return any(m.lower() in t for m in NEW_COVERAGE_MARKERS)
+
+
 def tag_target_changes(reports):
     """For each company report, tag whether the target price was raised /
     held / lowered vs the same securities firm's previous report on the same
-    stock within our window. NEW = first report seen.
+    stock *within our scrape window*.
 
-    Sets r['targetChange'] in {'up', 'flat', 'down', 'new', None}
-    and r['prevTargetPrice'] when applicable.
+    Sets r['targetChange'] in {'up', 'flat', 'down', 'new', None}:
+      - 'up' / 'flat' / 'down': we have a prior report from the same house
+        on the same stock — direct comparison.
+      - 'new': only when the report title contains an explicit "신규 커버리지
+        / Initiating Coverage" marker. We do NOT label first-seen-in-window
+        as 'new' because most blue chips are continuously covered for years
+        and our 14-day window simply lacks the older baseline.
+      - None: target price unknown OR we don't have a baseline yet
+        (most reports on first scrape — settles as cron accumulates).
     """
     # Sort oldest-first within each (ticker, house) group
     company = [r for r in reports if r.get("type") == "company"]
@@ -275,7 +305,8 @@ def tag_target_changes(reports):
             r["targetChange"] = None
             r["prevTargetPrice"] = None
         elif prev is None:
-            r["targetChange"] = "new"
+            # No baseline in window. Only call it 'new' if the title says so.
+            r["targetChange"] = "new" if is_initiating_coverage(r.get("title")) else None
             r["prevTargetPrice"] = None
         elif cur > prev:
             r["targetChange"] = "up"
