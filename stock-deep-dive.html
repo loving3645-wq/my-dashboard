@@ -1388,10 +1388,17 @@ const NAVER_HISTORY = (code, start, end) =>
   `https://api.finance.naver.com/siseJson.naver?symbol=${code}&requestType=1&startTime=${start}&endTime=${end}&timeframe=day`;
 
 // Proxy strategies (verified 2026-05). Each returns the upstream body as plain text.
-//  - allorigins.win/get: JSON wrapper { contents: "...", status: {...} } — must extract .contents
-//  - codetabs: returns raw body but corrupts leading bytes for some text endpoints
+//  - codetabs: returns raw upstream body. NOTE: requires trailing slash on /v1/proxy/
+//    — without it codetabs replies 301 and some clients swallow it as an error.
+//  - allorigins.win/get: JSON wrapper { contents: "...", status: {...} } — extract .contents.
+//    Currently flaky in 2026-05, kept as secondary racer.
 //  - direct: only works for endpoints that set CORS headers (rare for KR APIs)
 const PROXY_STRATS = [
+  {
+    name: 'codetabs',
+    wrap: url => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`,
+    extract: async r => await r.text(),
+  },
   {
     name: 'allorigins',
     wrap: url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}&t=${Date.now()}`,
@@ -1403,26 +1410,35 @@ const PROXY_STRATS = [
       return j.contents;
     },
   },
-  {
-    name: 'codetabs',
-    wrap: url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-    extract: async r => await r.text(),
-  },
 ];
 
+const PROXY_TIMEOUT_MS = 8000;
+
 async function fetchText(url, allowDirect) {
+  // Race all proxies in parallel — first non-empty success wins. Each attempt
+  // has its own AbortController-backed timeout so a hanging proxy can't block
+  // forever even if other proxies have already succeeded.
   const tryDirect = allowDirect ? [{ name: 'direct', wrap: u => u, extract: r => r.text() }] : [];
-  let lastErr;
-  for (const strat of [...tryDirect, ...PROXY_STRATS]) {
+  const strats = [...tryDirect, ...PROXY_STRATS];
+  const attempts = strats.map(strat => (async () => {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), PROXY_TIMEOUT_MS);
     try {
-      const r = await fetch(strat.wrap(url), { cache: 'no-store' });
-      if (!r.ok) { lastErr = new Error(`${strat.name}: HTTP ${r.status}`); continue; }
+      const r = await fetch(strat.wrap(url), { cache: 'no-store', signal: ctrl.signal });
+      if (!r.ok) throw new Error(`${strat.name}: HTTP ${r.status}`);
       const text = await strat.extract(r);
-      if (text && text.length > 2) return text;
-      lastErr = new Error(`${strat.name}: empty`);
-    } catch (e) { lastErr = new Error(`${strat.name}: ${e.message}`); }
+      if (!text || text.length <= 2) throw new Error(`${strat.name}: empty`);
+      return text;
+    } finally {
+      clearTimeout(t);
+    }
+  })());
+  try {
+    return await Promise.any(attempts);
+  } catch (e) {
+    const first = e.errors && e.errors[0];
+    throw new Error(first ? first.message : 'all proxies failed');
   }
-  throw lastErr || new Error('All proxies failed');
 }
 
 function num(v) {

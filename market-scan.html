@@ -447,6 +447,14 @@ const STOOQ_HISTORY = (code, d1, d2) =>
 
 const PROXIES = [
   {
+    // codetabs requires the trailing slash on /v1/proxy/ — without it we get
+    // a 301 to the slashed path that some browsers / fetch settings handle
+    // poorly, leading to silent failure.
+    name: 'codetabs',
+    wrap: url => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`,
+    extract: async r => await r.text(),
+  },
+  {
     name: 'allorigins',
     wrap: url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}&t=${Date.now()}`,
     extract: async r => {
@@ -456,23 +464,26 @@ const PROXIES = [
       return j.contents;
     },
   },
-  {
-    name: 'codetabs',
-    wrap: url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-    extract: async r => await r.text(),
-  },
 ];
 
+const PROXY_TIMEOUT_MS = 8000;
+
 async function fetchText(url) {
-  // Race all proxies in parallel — first non-empty success wins.
-  // This halves typical TTFB compared to sequential fallback because we
-  // don't pay the timeout/error penalty of a slow proxy before trying the next.
+  // Race all proxies in parallel — first non-empty success wins. Per-attempt
+  // AbortController timeout caps how long any single proxy can hang, so a
+  // dead proxy never blocks the page even if it's first in the list.
   const attempts = PROXIES.map(p => (async () => {
-    const r = await fetch(p.wrap(url), { cache: 'no-store' });
-    if (!r.ok) throw new Error(`${p.name}: HTTP ${r.status}`);
-    const text = await p.extract(r);
-    if (!text || text.length <= 2) throw new Error(`${p.name}: empty`);
-    return text;
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), PROXY_TIMEOUT_MS);
+    try {
+      const r = await fetch(p.wrap(url), { cache: 'no-store', signal: ctrl.signal });
+      if (!r.ok) throw new Error(`${p.name}: HTTP ${r.status}`);
+      const text = await p.extract(r);
+      if (!text || text.length <= 2) throw new Error(`${p.name}: empty`);
+      return text;
+    } finally {
+      clearTimeout(t);
+    }
   })());
   try {
     return await Promise.any(attempts);
