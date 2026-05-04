@@ -284,9 +284,20 @@
       <button class="tab" data-mkt="WATCH" title="별표 찍은 종목만">★ 관심</button>
     </div>
     <div class="toolbar-divider"></div>
-    <span class="tlabel">테마</span>
+    <span class="tlabel" id="theme-label">테마</span>
     <select class="select" id="sector-filter" title="투자 테마별 필터링 (반도체 / 2차전지 / 바이오 등)">
       <option value="">전체 테마</option>
+    </select>
+    <span class="tlabel" id="etfcat-label" style="display:none;">카테고리</span>
+    <select class="select" id="etfcat-filter" style="display:none;" title="ETF 카테고리별 필터 (국내지수 / 해외주식 / 채권 등)">
+      <option value="">전체 카테고리</option>
+      <option value="국내지수">국내지수</option>
+      <option value="국내테마">국내테마</option>
+      <option value="파생/레버리지">파생/레버리지</option>
+      <option value="해외주식">해외주식</option>
+      <option value="원자재">원자재</option>
+      <option value="채권">채권</option>
+      <option value="기타">기타</option>
     </select>
     <div class="toolbar-divider"></div>
     <input type="text" class="search" id="search" placeholder="종목명 또는 코드 검색 (예: 삼성전자, 005930)" />
@@ -427,6 +438,7 @@ function primaryTheme(code) { return THEMES_OF[code]?.[0]; }
 const STATE = {
   market: 'ALL',
   sector: '',
+  etfCategory: '',
   query: '',
   showLimit: 100,
   withFlow: false,
@@ -743,11 +755,14 @@ function getScanCodes() {
     codes = codes.filter(c => isSpac(c));
   } else if (STATE.market === 'ETF') {
     codes = codes.filter(c => isEtf(c));
+    if (STATE.etfCategory) {
+      codes = codes.filter(c => REGISTRY[c]?.sector === STATE.etfCategory);
+    }
   } else if (STATE.market === 'KOSPI' || STATE.market === 'KOSDAQ') {
     // Plain stocks only on these tabs (exclude ETFs even if listed on KOSPI)
     codes = codes.filter(c => REGISTRY[c].mkt === STATE.market && !isSpac(c));
   }
-  if (STATE.sector) {
+  if (STATE.sector && STATE.market !== 'ETF') {
     codes = codes.filter(c => inTheme(c, STATE.sector));
   }
   if (STATE.query) {
@@ -1068,6 +1083,9 @@ function getFilteredSorted() {
     codes = codes.filter(c => isSpac(c));
   } else if (STATE.market === 'ETF') {
     codes = codes.filter(c => isEtf(c));
+    if (STATE.etfCategory) {
+      codes = codes.filter(c => REGISTRY[c]?.sector === STATE.etfCategory);
+    }
   } else if (STATE.market === 'KOSPI' || STATE.market === 'KOSDAQ') {
     codes = codes.filter(c => REGISTRY[c].mkt === STATE.market && !isSpac(c));
   }
@@ -1550,10 +1568,23 @@ function init() {
     $('market-tabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     e.target.classList.add('active');
     STATE.market = e.target.dataset.mkt;
+    updateFilterUI();
     render();
   });
 
+  // Toggle theme dropdown ↔ ETF-category dropdown based on current market tab.
+  // ETF tab uses category (국내지수 / 해외주식 / 채권 …) since investment themes
+  // weren't defined for ETFs; stock tabs use the curated theme list.
+  function updateFilterUI() {
+    const isEtfTab = STATE.market === 'ETF';
+    $('theme-label').style.display = isEtfTab ? 'none' : '';
+    $('sector-filter').style.display = isEtfTab ? 'none' : '';
+    $('etfcat-label').style.display = isEtfTab ? '' : 'none';
+    $('etfcat-filter').style.display = isEtfTab ? '' : 'none';
+  }
+
   $('sector-filter').addEventListener('change', e => { STATE.sector = e.target.value; render(); });
+  $('etfcat-filter').addEventListener('change', e => { STATE.etfCategory = e.target.value; render(); });
   $('show-limit').addEventListener('change', e => { STATE.showLimit = parseInt(e.target.value, 10); render(); });
   let searchT;
   $('search').addEventListener('input', e => {
