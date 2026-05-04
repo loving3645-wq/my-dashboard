@@ -1,0 +1,46 @@
+name: Weekly IPO History
+
+# IPOs don't happen every day — weekly is enough.
+# Sun 09:00 UTC = Mon 06:00 KST (before the trading week starts).
+on:
+  schedule:
+    - cron: '0 9 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ipo-history
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install --quiet requests
+
+      - name: Build IPO history
+        run: python scripts/build_ipo_history.py
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/ipo-history.json
+          if git diff --cached --quiet; then
+            echo "No changes — nothing to commit"
+          else
+            COUNT=$(python -c "import json; print(json.load(open('data/ipo-history.json'))['count'])")
+            git commit -m "📈 IPO history $(date -u +%Y-%m-%d) (${COUNT} listings)"
+            git push
+          fi
