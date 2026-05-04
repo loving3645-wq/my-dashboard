@@ -92,6 +92,7 @@
   .ipo td { padding: 8px 10px; text-align: right; font-family: var(--mono); font-size: 12px; color: var(--ink); white-space: nowrap; }
   .ipo td.left { text-align: left; }
   .ipo td.muted { color: var(--ink-faint); }
+  .muted { color: var(--ink-faint); }
 
   .name-cell { display: flex; align-items: center; gap: 8px; min-width: 180px; }
   .name-cell .code { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); width: 50px; flex-shrink: 0; }
@@ -134,7 +135,7 @@
 
   <div class="page-head">
     <h1>Post-IPO <em>시트</em></h1>
-    <div class="sub"><span id="ipo-count">—</span>건 · 2016년 이후 상장 · 공모가 / 공모규모 / 주관사 / +1W·1M·3M·6M·1Y 수익률</div>
+    <div class="sub"><span id="ipo-count">—</span>건 · 2016년 이후 상장 · 공모가 / 공모규모 / 주관사 / +1W·1M·3M·6M·1Y 수익률 · <a href="ipo-calendar.html" style="color:var(--accent); text-decoration:none;">→ 청약 캘린더</a></div>
   </div>
 
   <div class="toolbar">
@@ -183,9 +184,11 @@
           <th data-sort="r1y">+1Y <span class="arrow">↕</span></th>
           <th data-sort="peak1y">최고 <span class="arrow">↕</span></th>
           <th data-sort="trough1y">최저 <span class="arrow">↕</span></th>
+          <th class="left dart-col" data-sort="dartParValue" style="display:none;">액면가 <span class="arrow">↕</span></th>
+          <th class="left dart-col" data-sort="dartStockKind" style="display:none;">주식종류 <span class="arrow">↕</span></th>
         </tr>
       </thead>
-      <tbody id="ipo-body"><tr><td colspan="12" class="empty-state">불러오는 중…</td></tr></tbody>
+      <tbody id="ipo-body"><tr><td colspan="14" class="empty-state">불러오는 중…</td></tr></tbody>
     </table>
   </div>
 
@@ -218,6 +221,23 @@ async function load() {
     const j = await r.json();
     STATE.listings = j.listings || [];
     STATE.generatedAt = j.generatedAt;
+    // Flatten DART summary into top-level fields for sorting/filtering
+    let hasDart = false;
+    for (const r of STATE.listings) {
+      const ev = r.dart && r.dart.events && r.dart.events[0];
+      if (ev) {
+        hasDart = true;
+        if (ev.parValue) {
+          const n = Number(ev.parValue);
+          r.dartParValue = Number.isFinite(n) ? n : null;
+        }
+        if (ev.stockKind) r.dartStockKind = ev.stockKind;
+      }
+    }
+    STATE.hasDart = hasDart;
+    document.querySelectorAll('.dart-col').forEach(el => {
+      el.style.display = hasDart ? '' : 'none';
+    });
     $('ipo-count').textContent = (j.count ?? STATE.listings.length).toLocaleString();
     $('generated-at').textContent = j.generatedAt
       ? new Date(j.generatedAt).toLocaleString('ko-KR') : '—';
@@ -225,7 +245,7 @@ async function load() {
     buildHouseFilter();
     render();
   } catch (e) {
-    $('ipo-body').innerHTML = `<tr><td colspan="12" class="empty-state">
+    $('ipo-body').innerHTML = `<tr><td colspan="14" class="empty-state">
       IPO 데이터를 불러올 수 없습니다.<br>
       <span style="font-size:10px;">${e.message} — 매주 일요일 cron이 돌면 자동 채워져요. 또는 Actions에서 'Weekly IPO History' 워크플로 수동 실행.</span>
     </td></tr>`;
@@ -307,7 +327,7 @@ function render() {
   updateSummary(list);
   const tbody = $('ipo-body');
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="12" class="empty-state">조건에 맞는 IPO가 없습니다.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="14" class="empty-state">조건에 맞는 IPO가 없습니다.</td></tr>`;
     return;
   }
   const escapeHtml = s => String(s || '').replace(/[&<>"']/g, c => ({
@@ -319,6 +339,10 @@ function render() {
     const cells = ['firstDayReturn', 'r1w', 'r1m', 'r3m', 'r6m', 'r1y', 'peak1y', 'trough1y']
       .map(k => { const p = fmtPct(r[k]); return `<td><span class="pct ${p.cls}">${p.txt}</span></td>`; })
       .join('');
+    const dartCells = STATE.hasDart
+      ? `<td class="left dart-col">${Number.isFinite(r.dartParValue) ? r.dartParValue.toLocaleString() : '<span class="muted">—</span>'}</td>
+         <td class="left dart-col">${escapeHtml(r.dartStockKind || '—')}</td>`
+      : '';
     return `<tr data-code="${r.ticker}">
       <td class="left">${r.listingDate || ''}</td>
       <td class="left"><div class="name-cell">
@@ -329,6 +353,7 @@ function render() {
       <td>${fmtNum(r.ipoPrice)}</td>
       <td>${fmtCap(r.marketCapAtListing)}</td>
       ${cells}
+      ${dartCells}
     </tr>`;
   }).join('');
   tbody.querySelectorAll('tr[data-code]').forEach(tr => {

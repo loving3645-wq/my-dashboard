@@ -1,0 +1,47 @@
+name: Daily IPO Calendar
+
+# 38커뮤니케이션 공모청약 일정 스크랩.
+# 매일 21:00 UTC = 06:00 KST (다음날 아침 시장 열기 전).
+on:
+  schedule:
+    - cron: '0 21 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ipo-calendar
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install --quiet requests
+
+      - name: Fetch IPO calendar
+        run: python scripts/fetch_ipo_calendar.py
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/ipo-calendar.json
+          if git diff --cached --quiet; then
+            echo "No changes — nothing to commit"
+          else
+            STAMP=$(date -u +"%Y-%m-%d")
+            COUNT=$(python -c "import json; print(json.load(open('data/ipo-calendar.json'))['count'])")
+            git commit -m "📅 IPO calendar ${STAMP} (${COUNT} entries)"
+            git push
+          fi
