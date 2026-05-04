@@ -1836,6 +1836,66 @@ function renderEmptyFundamentals() {
 /* =====================================================================
  * Master loadStock — async, fetches Stooq data
  * ===================================================================== */
+
+/* ---- Instant pre-fill from scanner hand-off or daily snapshot ----
+ * Scanner stashes the clicked row into sessionStorage('mscan:handoff') right
+ * before navigation. We also load data/market-snapshot.json once per session.
+ * Either source lets us paint the header (price + 1D change + volume) in the
+ * first frame, before the live Naver fetch returns. */
+let _snapshotCache = null;
+let _snapshotPromise = null;
+function loadSnapshotOnce() {
+  if (_snapshotCache) return Promise.resolve(_snapshotCache);
+  if (_snapshotPromise) return _snapshotPromise;
+  _snapshotPromise = fetch('data/market-snapshot.json', { cache: 'force-cache' })
+    .then(r => r.ok ? r.json() : null)
+    .then(j => { _snapshotCache = j; return j; })
+    .catch(() => null);
+  return _snapshotPromise;
+}
+
+function getInstantSeed(ticker) {
+  // Hand-off from scanner takes priority (most recent click within 60s)
+  try {
+    const raw = sessionStorage.getItem('mscan:handoff');
+    if (raw) {
+      const obj = JSON.parse(raw);
+      if (obj && obj.code === ticker && Date.now() - (obj.ts || 0) < 60000) return obj;
+    }
+  } catch (_) {}
+  // Fall back to in-memory snapshot if it's already loaded
+  if (_snapshotCache && _snapshotCache.tickers && _snapshotCache.tickers[ticker]) {
+    const s = _snapshotCache.tickers[ticker];
+    const reg = (window.TICKER_REGISTRY || {})[ticker] || {};
+    return {
+      code: ticker, name: reg.name, mkt: reg.mkt, sector: reg.sector,
+      price: s.price, r1d: s.r1d, volume: s.volume, avgVol20: s.avgVol20,
+      ts: Date.parse(_snapshotCache.generatedAt) || Date.now(),
+    };
+  }
+  return null;
+}
+
+function paintInstantHeader(seed) {
+  if (!seed || !isFinite(seed.price)) return false;
+  $('sh-price').textContent = Math.round(seed.price).toLocaleString();
+  $('sh-price').classList.remove('loading-shimmer');
+  if (isFinite(seed.r1d)) {
+    const isUp = seed.r1d >= 0;
+    const chgEl = $('sh-change');
+    chgEl.classList.toggle('up', isUp);
+    chgEl.classList.toggle('down', !isUp);
+    chgEl.querySelector('.arrow').textContent = isUp ? '▲' : '▼';
+    // Approximate absolute change from previous close = price / (1 + r1d/100)
+    const prev = seed.price / (1 + seed.r1d / 100);
+    const absChg = seed.price - prev;
+    $('sh-change-abs').textContent = (isUp ? '+' : '') + Math.round(absChg).toLocaleString();
+    $('sh-change-pct').textContent = `(${isUp ? '+' : ''}${seed.r1d.toFixed(2)}%)`;
+  }
+  $('sh-updated').textContent = '스냅샷 표시 중 · 최신 데이터 동기화 중…';
+  return true;
+}
+
 function enterLoadingState(ticker, reg, curated) {
   // Header
   $('sh-ticker').textContent = ticker;
@@ -1885,6 +1945,18 @@ async function loadStock(ticker) {
   // 1) Reset entire page to a clean loading state for this ticker
   enterLoadingState(ticker, reg, curated);
   renderQuicklist();
+
+  // 1b) Paint header instantly from scanner hand-off (sessionStorage) or
+  // already-loaded snapshot. Then kick off snapshot fetch (cached) so a
+  // direct URL visit also gets instant data on the next ticker switch.
+  paintInstantHeader(getInstantSeed(ticker));
+  loadSnapshotOnce().then(() => {
+    // If the live fetch hasn't returned yet AND we now have snapshot data,
+    // upgrade the header from snapshot.
+    if ($('sh-price').classList.contains('loading-shimmer')) {
+      paintInstantHeader(getInstantSeed(ticker));
+    }
+  });
 
   // 2) Try fetching live quote from Stooq
   let quote;
