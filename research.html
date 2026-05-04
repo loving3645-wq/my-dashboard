@@ -343,10 +343,12 @@ function getFiltered() {
   const k = STATE.sortKey;
   list.sort((a, b) => {
     const va = a[k], vb = b[k];
-    // Numeric sort for targetPrice; string sort for everything else
+    // Numeric sort for targetPrice; string sort for everything else.
+    // Use Number.isFinite (strict) — global isFinite would coerce null→0
+    // and group all missing-target rows with the cheapest stocks.
     if (k === 'targetPrice') {
-      const aN = isFinite(va) ? va : (dirMul > 0 ? Infinity : -Infinity);
-      const bN = isFinite(vb) ? vb : (dirMul > 0 ? Infinity : -Infinity);
+      const aN = Number.isFinite(va) ? va : (dirMul > 0 ? Infinity : -Infinity);
+      const bN = Number.isFinite(vb) ? vb : (dirMul > 0 ? Infinity : -Infinity);
       return (aN - bN) * dirMul;
     }
     return String(va || '').localeCompare(String(vb || ''), 'ko') * dirMul;
@@ -382,7 +384,10 @@ function render() {
   }[c]));
 
   const fmtTarget = r => {
-    if (!isFinite(r.targetPrice)) return '<span class="prev-target">—</span>';
+    // Number.isFinite is strict — does NOT coerce null/undefined to 0 like the
+    // global isFinite does. Industry reports leave targetPrice as null, which
+    // tripped global isFinite and crashed on null.toLocaleString().
+    if (!Number.isFinite(r.targetPrice)) return '<span class="prev-target">—</span>';
     return `<span class="target-cell">${r.targetPrice.toLocaleString()}</span>`;
   };
 
@@ -392,13 +397,14 @@ function render() {
       return '<span class="change-pill new" title="해당 증권사가 처음 다룬 종목">⬢ 신규</span>';
     }
     if (r.targetChange === 'flat') {
-      return `<span class="change-pill flat" title="${r.prevTargetPrice ? '이전 ' + r.prevTargetPrice.toLocaleString() : ''}">= 유지</span>`;
+      const prev = Number.isFinite(r.prevTargetPrice) ? r.prevTargetPrice.toLocaleString() : '';
+      return `<span class="change-pill flat" title="${prev ? '이전 ' + prev : ''}">= 유지</span>`;
     }
-    if (r.targetChange === 'up' && r.prevTargetPrice) {
+    if (r.targetChange === 'up' && Number.isFinite(r.prevTargetPrice) && Number.isFinite(r.targetPrice)) {
       const pct = ((r.targetPrice / r.prevTargetPrice - 1) * 100).toFixed(1);
       return `<span class="change-pill up" title="이전 ${r.prevTargetPrice.toLocaleString()} → ${r.targetPrice.toLocaleString()}">▲ +${pct}%</span>`;
     }
-    if (r.targetChange === 'down' && r.prevTargetPrice) {
+    if (r.targetChange === 'down' && Number.isFinite(r.prevTargetPrice) && Number.isFinite(r.targetPrice)) {
       const pct = ((r.targetPrice / r.prevTargetPrice - 1) * 100).toFixed(1);
       return `<span class="change-pill down" title="이전 ${r.prevTargetPrice.toLocaleString()} → ${r.targetPrice.toLocaleString()}">▼ ${pct}%</span>`;
     }
