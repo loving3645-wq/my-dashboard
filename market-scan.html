@@ -1185,6 +1185,7 @@ function render() {
         return;
       }
       const code = tr.dataset.code;
+      stashHandoff(code);
       window.location.href = `stock-deep-dive.html#${code}`;
     });
   });
@@ -1284,9 +1285,37 @@ function renderHotPanel() {
   // Click → deep-dive
   document.querySelectorAll('.hot-item').forEach(el => {
     el.addEventListener('click', () => {
-      window.location.href = `stock-deep-dive.html#${el.dataset.code}`;
+      const code = el.dataset.code;
+      stashHandoff(code);
+      window.location.href = `stock-deep-dive.html#${code}`;
     });
   });
+}
+
+/* ---- Hand-off to deep-dive: store the row's data in sessionStorage so the
+ * deep-dive page can render the header immediately, before its own fetch. */
+function stashHandoff(code) {
+  const d = STATE.data[code];
+  const reg = REGISTRY[code];
+  if (!reg) return;
+  try {
+    sessionStorage.setItem('mscan:handoff', JSON.stringify({
+      code,
+      name: reg.name,
+      mkt: reg.mkt,
+      sector: reg.sector,
+      price: d?.price,
+      r1d: d?.r1d,
+      r1w: d?.r1w,
+      r1m: d?.r1m,
+      r3m: d?.r3m,
+      r6m: d?.r6m,
+      r1y: d?.r1y,
+      volume: d?.volume,
+      avgVol20: d?.avgVol20,
+      ts: Date.now(),
+    }));
+  } catch (_) {}
 }
 
 /* =====================================================================
