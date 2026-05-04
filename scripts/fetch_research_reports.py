@@ -214,8 +214,46 @@ def parse_target_price(s):
         return None
 
 
+def extract_summary(html_text):
+    """Extract the analyst's own body text from a Naver report detail page.
+
+    Detail pages render the report's intro paragraph as plain HTML text
+    inline (not just metadata). We scan for text blocks, score by Korean-
+    character density to filter JS/HTML noise, and return the longest
+    Korean-heavy block clipped to ~600 chars on a word boundary.
+
+    No LLM — this is the analyst's actual writing as it appears on Naver.
+    """
+    if not html_text:
+        return None
+    chunks = re.findall(r">([^<>]{60,})<", html_text)
+    best, best_score = "", 0
+    for c in chunks:
+        c = c.strip()
+        if len(c) < 100:
+            continue
+        # Drop obvious JS/CSS noise
+        if any(tok in c for tok in ("function", "var ", "</", "==", "()=>",
+                                     "/*", "window.", "document.")):
+            continue
+        korean = len(re.findall(r"[가-힣]", c))
+        density = korean / len(c)
+        if density < 0.3:
+            continue
+        score = len(c) * density
+        if score > best_score:
+            best_score = score
+            best = c
+    if not best:
+        return None
+    best = re.sub(r"\s+", " ", best).strip()
+    if len(best) > 600:
+        best = best[:600].rsplit(" ", 1)[0] + "…"
+    return best
+
+
 def fetch_detail(session, detail_url):
-    """Fetch one report detail page and extract target price + opinion."""
+    """Fetch one report detail page and extract target price + opinion + summary."""
     r = session.get(detail_url, timeout=15)
     r.raise_for_status()
     text = r.content.decode("euc-kr", errors="replace")
@@ -224,6 +262,7 @@ def fetch_detail(session, detail_url):
     return {
         "targetPrice": parse_target_price(target_match.group(1)) if target_match else None,
         "opinion": html_lib.unescape(opinion_match.group(1).strip()) if opinion_match else None,
+        "summary": extract_summary(text),
     }
 
 
