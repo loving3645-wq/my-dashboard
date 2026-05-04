@@ -325,6 +325,8 @@ const CACHE_FLOW_PREFIX = 'mflow2:';
 const NAVER_HISTORY = (code, start, end) =>
   `https://api.finance.naver.com/siseJson.naver?symbol=${code}&requestType=1&startTime=${start}&endTime=${end}&timeframe=day`;
 const NAVER_TREND = code => `https://m.stock.naver.com/api/stock/${code}/trend`;
+const NAVER_BULK = codes => // up to ~40 codes per call — used for fast Phase-1 1D fill
+  `https://polling.finance.naver.com/api/realtime?query=${encodeURIComponent('SERVICE_RECENT_ITEM:' + codes.join(','))}`;
 const STOOQ_HISTORY = (code, d1, d2) =>
   `https://stooq.com/q/d/l/?s=${code.toLowerCase()}.kr&d1=${d1}&d2=${d2}&i=d`;
 
@@ -347,17 +349,23 @@ const PROXIES = [
 ];
 
 async function fetchText(url) {
-  let lastErr;
-  for (const p of PROXIES) {
-    try {
-      const r = await fetch(p.wrap(url), { cache: 'no-store' });
-      if (!r.ok) { lastErr = new Error(`${p.name}: HTTP ${r.status}`); continue; }
-      const text = await p.extract(r);
-      if (text && text.length > 2) return text;
-      lastErr = new Error(`${p.name}: empty`);
-    } catch (e) { lastErr = new Error(`${p.name}: ${e.message}`); }
+  // Race all proxies in parallel — first non-empty success wins.
+  // This halves typical TTFB compared to sequential fallback because we
+  // don't pay the timeout/error penalty of a slow proxy before trying the next.
+  const attempts = PROXIES.map(p => (async () => {
+    const r = await fetch(p.wrap(url), { cache: 'no-store' });
+    if (!r.ok) throw new Error(`${p.name}: HTTP ${r.status}`);
+    const text = await p.extract(r);
+    if (!text || text.length <= 2) throw new Error(`${p.name}: empty`);
+    return text;
+  })());
+  try {
+    return await Promise.any(attempts);
+  } catch (e) {
+    // AggregateError — surface the first reason for logs
+    const first = e.errors && e.errors[0];
+    throw new Error(first ? first.message : 'all proxies failed');
   }
-  throw lastErr || new Error('all proxies failed');
 }
 
 function fmtDate(d) { return d.toISOString().slice(0, 10).replace(/-/g, ''); }
@@ -442,6 +450,29 @@ async function fetchFlow(code) {
     individual20d: sum(last20, 'individual'),
     foreignHoldRatio: parseFloat(String(j[0]?.foreignerHoldRatio || '').replace('%', '')) || NaN,
   };
+}
+
+/* ---------- Bulk realtime quote — single proxied call returns ~40 tickers ----------
+ * Naver's polling endpoint returns: nv (current), pcv (prev close), cr (1D %),
+ * cv (abs change), aq (volume), ov/hv/lv (today OHL). This lets us fill the
+ * table's price + 1D + volume columns ~10x faster than per-ticker history. */
+async function fetchBulkQuotes(codes) {
+  if (!codes.length) return {};
+  const text = await fetchText(NAVER_BULK(codes));
+  const j = JSON.parse(text);
+  const datas = j?.result?.areas?.[0]?.datas;
+  if (!Array.isArray(datas)) throw new Error('bulk: malformed response');
+  const out = {};
+  for (const d of datas) {
+    if (!d || !d.cd) continue;
+    out[d.cd] = {
+      price: typeof d.nv === 'number' ? d.nv : parseFloat(d.nv),
+      prevClose: typeof d.pcv === 'number' ? d.pcv : parseFloat(d.pcv),
+      r1d: typeof d.cr === 'number' ? d.cr : parseFloat(d.cr),
+      volume: typeof d.aq === 'number' ? d.aq : parseFloat(d.aq),
+    };
+  }
+  return out;
 }
 
 /* =====================================================================
@@ -573,8 +604,9 @@ async function scanAll() {
   $('progress-text').textContent = `0 / ${codes.length}`;
   $('progress-bar').style.width = '0%';
 
-  const CONCURRENCY = 5;
+  const CONCURRENCY = 10;
   const queue = codes.slice();
+  const scanStartedAt = Date.now();
 
   // Pre-load from cache
   for (const code of codes) {
@@ -587,44 +619,92 @@ async function scanAll() {
   }
   render();
 
+  /* ---- Phase 1: bulk realtime fast-path ----
+   * One Naver polling call returns ~40 tickers with current price + 1D % +
+   * volume. We hit it concurrently in chunks so the visible columns
+   * (price, 1D, 거래량) fill within a few seconds even before history starts.
+   * Tickers already cached fresh skip the bulk fill. */
+  setStatus('live', '시세 빠른 조회 중 (1단계)');
+  const BULK_CHUNK = 40;
+  const BULK_CONCURRENCY = 4;
+  const bulkTargets = codes.filter(c => {
+    const d = STATE.data[c];
+    return !d || !isFinite(d.price) || (Date.now() - (d.fetchedAt || 0)) > CACHE_TTL_MS;
+  });
+  const bulkChunks = [];
+  for (let i = 0; i < bulkTargets.length; i += BULK_CHUNK) {
+    bulkChunks.push(bulkTargets.slice(i, i + BULK_CHUNK));
+  }
+  let bulkDone = 0;
+  const bulkQueue = bulkChunks.slice();
+  async function bulkWorker() {
+    while (bulkQueue.length && !STATE.abortFlag) {
+      const chunk = bulkQueue.shift();
+      try {
+        const bulk = await fetchBulkQuotes(chunk);
+        for (const c of chunk) {
+          const q = bulk[c];
+          if (!q) continue;
+          const reg = REGISTRY[c] || {};
+          STATE.data[c] = {
+            ...(STATE.data[c] || {}),
+            code: c,
+            name: reg.name,
+            mkt: reg.mkt,
+            sector: reg.sector,
+            price: isFinite(q.price) ? q.price : STATE.data[c]?.price,
+            r1d: isFinite(q.r1d) ? q.r1d : STATE.data[c]?.r1d,
+            volume: isFinite(q.volume) ? q.volume : STATE.data[c]?.volume,
+          };
+        }
+      } catch (e) { console.warn('[bulk]', e.message); }
+      bulkDone++;
+      $('progress-text').textContent = `1단계 시세 채우는 중 ${bulkDone} / ${bulkChunks.length} 묶음`;
+      $('progress-bar').style.width = bulkChunks.length ? (bulkDone / bulkChunks.length * 15) + '%' : '0%';
+      render();
+    }
+  }
+  await Promise.all(Array.from({ length: BULK_CONCURRENCY }, () => bulkWorker()));
+  setStatus('live', '히스토리 보강 중 (2단계)');
+
   async function worker() {
     while (queue.length && !STATE.abortFlag) {
       const code = queue.shift();
       if (!code) break;
-      // Skip if already loaded from cache and (no-flow-needed OR flow already cached)
+      // Skip if already loaded from cache and (no-flow-needed OR flow already cached).
+      // Note: a bulk-filled entry has price/r1d/volume but no spark/r1y → still needs history.
       const cached = STATE.data[code];
-      const needHist = !cached || cached.fetchedAt < Date.now() - CACHE_TTL_MS;
-      const needFlow = STATE.withFlow && (!cached?.flow || cached.flow.fetchedAt < Date.now() - CACHE_TTL_MS);
+      const histFresh = cached && cached.spark && (Date.now() - (cached.fetchedAt || 0)) < CACHE_TTL_MS;
+      const needHist = !histFresh;
+      const needFlow = STATE.withFlow && (!cached?.flow || (Date.now() - (cached.flow.fetchedAt || 0)) > CACHE_TTL_MS);
       if (!needHist && !needFlow) {
         done++;
         updateProgress(done, codes.length);
         continue;
       }
-      try {
-        if (needHist) {
-          const hist = await fetchHistory(code);
+      // Fire history + flow in parallel within the same ticker — they hit
+      // different upstream hosts so there's no contention, and this halves
+      // wall-time per ticker when "+ 수급 데이터" is on.
+      const tasks = [];
+      if (needHist) {
+        tasks.push(fetchHistory(code).then(hist => {
           const row = buildRow(code, hist);
           cacheSet(CACHE_PREFIX, code, row);
           STATE.data[code] = { ...(STATE.data[code] || {}), ...row };
-        }
-        if (needFlow && STATE.data[code]) {
-          try {
-            const flow = await fetchFlow(code);
-            flow.fetchedAt = Date.now();
-            cacheSet(CACHE_FLOW_PREFIX, code, flow);
-            STATE.data[code].flow = flow;
-          } catch (e) { /* flow failure non-fatal */ }
-        }
-      } catch (e) {
-        errors++;
-        console.warn('[scan]', code, e.message);
+        }).catch(e => { errors++; console.warn('[hist]', code, e.message); }));
       }
+      if (needFlow) {
+        tasks.push(fetchFlow(code).then(flow => {
+          flow.fetchedAt = Date.now();
+          cacheSet(CACHE_FLOW_PREFIX, code, flow);
+          if (STATE.data[code]) STATE.data[code].flow = flow;
+        }).catch(e => { /* flow is non-fatal */ console.warn('[flow]', code, e.message); }));
+      }
+      await Promise.all(tasks);
       done++;
-      updateProgress(done, codes.length);
-      // Light throttle to be nice to the proxy
-      await new Promise(r => setTimeout(r, 60));
-      // Re-render incrementally every 5 items
-      if (done % 5 === 0) render();
+      updateProgress(done, codes.length, scanStartedAt);
+      // Re-render incrementally every 8 items (concurrency-aligned)
+      if (done % 8 === 0) render();
     }
   }
 
@@ -639,9 +719,18 @@ async function scanAll() {
   refreshCacheInfo();
 }
 
-function updateProgress(done, total) {
-  $('progress-text').textContent = `${done} / ${total}`;
-  $('progress-bar').style.width = total ? (done / total * 100) + '%' : '0%';
+function updateProgress(done, total, startedAt) {
+  let txt = `2단계 히스토리 ${done} / ${total}`;
+  if (startedAt && done > 0 && done < total) {
+    const elapsed = (Date.now() - startedAt) / 1000;
+    const perItem = elapsed / done;
+    const remaining = Math.round(perItem * (total - done));
+    if (remaining > 0) txt += ` · 남은 시간 ${remaining < 60 ? remaining + '초' : Math.round(remaining / 60) + '분'}`;
+  }
+  $('progress-text').textContent = txt;
+  // Phase 2 occupies 15% → 100% of the bar (Phase 1 uses 0-15%)
+  const pct = total ? 15 + (done / total * 85) : 15;
+  $('progress-bar').style.width = pct + '%';
 }
 
 function setStatus(cls, text) {
