@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#fafaf7" />
+<title>증권사 리서치 · 지니의 리서치</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..600,0..100&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<script src="tickers-full.js"></script>
+
+<style>
+  :root {
+    --bg: #fafaf7;
+    --bg-warm: #f4f1ea;
+    --surface: #ffffff;
+    --surface-2: #f7f5f0;
+    --ink: #1a1a1a;
+    --ink-mid: #555;
+    --ink-soft: #8a8580;
+    --ink-faint: #b8b3ad;
+    --line: #e8e4dc;
+    --line-strong: #d4cfc4;
+    --accent: #b8421f;
+    --accent-bg: #fbeae3;
+    --gold: #b8923f;
+    --gold-bg: #f7eecf;
+    --green: #4a7c4e;
+    --green-bg: #e0ebd9;
+    --red: #c43e3e;
+    --red-bg: #fbe4e4;
+    --blue: #3a5e7e;
+    --blue-bg: #dde6ee;
+    --purple: #6b4a7c;
+    --purple-bg: #ebe0ee;
+    --serif: 'Fraunces', 'Nanum Myeongjo', serif;
+    --sans: 'Pretendard', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  body { min-height: 100vh; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+  button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; background: none; border: none; }
+  a { color: inherit; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  .app { max-width: 1700px; margin: 0 auto; padding: 24px 28px 80px; }
+
+  .topnav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; gap: 12px; }
+  .topnav-left { display: flex; align-items: baseline; gap: 18px; }
+  .brand { font-family: var(--serif); font-weight: 400; font-size: 22px; letter-spacing: -0.02em; }
+  .brand em { font-style: italic; color: var(--accent); font-weight: 500; }
+  .crumbs { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.18em; text-transform: uppercase; }
+  .crumbs a { color: var(--ink-soft); text-decoration: none; transition: color 0.15s; }
+  .crumbs a:hover { color: var(--accent); }
+  .crumbs .sep { margin: 0 8px; color: var(--ink-faint); }
+
+  .page-head { margin-bottom: 16px; }
+  .page-head h1 { font-family: var(--serif); font-weight: 400; font-size: 28px; letter-spacing: -0.02em; }
+  .page-head h1 em { font-style: italic; color: var(--accent); font-weight: 500; }
+  .page-head .sub { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); letter-spacing: 0.1em; margin-top: 6px; text-transform: uppercase; }
+
+  .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+  .tabs { display: flex; gap: 2px; background: var(--surface-2); padding: 3px; border-radius: 6px; border: 1px solid var(--line); }
+  .tab { padding: 6px 14px; font-size: 12px; color: var(--ink-soft); border-radius: 4px; transition: all 0.15s; font-weight: 500; font-family: var(--mono); letter-spacing: 0.05em; }
+  .tab:hover { color: var(--ink); }
+  .tab.active { background: var(--ink); color: var(--bg); }
+  .tlabel { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.12em; text-transform: uppercase; }
+  .search { flex: 1; min-width: 220px; padding: 7px 12px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 5px; font-size: 13px; }
+  .search:focus { outline: none; border-color: var(--accent); background: var(--surface); }
+  .select { padding: 6px 10px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 5px; font-size: 12px; font-family: var(--mono); color: var(--ink-mid); cursor: pointer; }
+  .toolbar-divider { width: 1px; height: 22px; background: var(--line); }
+
+  .status-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; padding: 10px 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; font-family: var(--mono); font-size: 11px; color: var(--ink-mid); flex-wrap: wrap; }
+  .status-bar .seg { display: flex; align-items: center; gap: 6px; }
+  .status-bar .seg .lbl { color: var(--ink-soft); letter-spacing: 0.08em; text-transform: uppercase; font-size: 10px; }
+  .status-bar .seg .val { color: var(--ink); font-weight: 500; }
+
+  .table-wrap { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: auto; max-height: calc(100vh - 240px); }
+  table.research { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .research thead { position: sticky; top: 0; background: var(--surface-2); z-index: 5; }
+  .research th { text-align: left; padding: 10px 12px; font-family: var(--mono); font-weight: 500; font-size: 10px; color: var(--ink-soft); letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 1px solid var(--line); white-space: nowrap; cursor: pointer; -webkit-user-select: none; user-select: none; transition: color 0.12s, background 0.12s; }
+  .research th:hover { color: var(--ink); background: var(--bg-warm); }
+  .research th.sorted { color: var(--accent); }
+  .research th .arrow { font-size: 9px; opacity: 0.6; margin-left: 4px; }
+  .research th.sorted .arrow { opacity: 1; }
+  .research tbody tr { border-bottom: 1px solid var(--line); transition: background 0.1s; }
+  .research tbody tr:hover { background: var(--bg-warm); }
+  .research td { padding: 10px 12px; vertical-align: top; }
+  .research td.date { font-family: var(--mono); font-size: 11px; color: var(--ink-mid); white-space: nowrap; }
+  .research td.type { white-space: nowrap; }
+  .research td.house { font-family: var(--sans); color: var(--ink); white-space: nowrap; font-size: 12px; }
+  .research td.title { color: var(--ink); line-height: 1.4; min-width: 320px; }
+  .research td.title .stk { font-family: var(--mono); font-size: 11px; color: var(--accent); margin-right: 6px; cursor: pointer; }
+  .research td.title .stk:hover { text-decoration: underline; }
+  .research td.title .ttl { font-weight: 500; }
+  .research td.actions { white-space: nowrap; text-align: right; }
+  .pdf-btn { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border: 1px solid var(--line-strong); border-radius: 4px; font-family: var(--mono); font-size: 11px; color: var(--ink-mid); text-decoration: none; transition: all 0.15s; }
+  .pdf-btn:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+  .type-pill { font-family: var(--mono); font-size: 9px; padding: 2px 6px; border-radius: 3px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .type-pill.company { background: var(--blue-bg); color: var(--blue); }
+  .type-pill.industry { background: var(--purple-bg); color: var(--purple); }
+
+  .summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .summary-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+  .summary-card .lbl { font-family: var(--mono); font-size: 9px; color: var(--ink-soft); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+  .summary-card .val { font-family: var(--serif); font-size: 22px; font-weight: 500; line-height: 1; }
+  .summary-card .sub { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); margin-top: 4px; letter-spacing: 0.05em; }
+
+  .empty-state { padding: 48px 20px; text-align: center; color: var(--ink-faint); font-family: var(--mono); font-size: 12px; }
+
+  .footer-info { margin-top: 14px; font-family: var(--mono); font-size: 10px; color: var(--ink-soft); display: flex; gap: 14px; flex-wrap: wrap; align-items: center; letter-spacing: 0.05em; }
+
+  @media (max-width: 900px) {
+    .app { padding: 18px 14px 60px; }
+    .research th, .research td { padding: 7px 8px; font-size: 12px; }
+    .research td.title { min-width: 200px; }
+    .research td.house { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <nav class="topnav">
+    <div class="topnav-left">
+      <div class="brand">지니<em>.</em></div>
+      <div class="crumbs">
+        <a href="index.html">대시보드</a>
+        <span class="sep">/</span>
+        <a href="market-scan.html">시장 스캐너</a>
+        <span class="sep">/</span>
+        <span style="color:var(--ink);">증권사 리서치</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page-head">
+    <h1>증권사 <em>리서치</em></h1>
+    <div class="sub"><span id="report-count">—</span>개 리포트 · 최근 14일 · 매일 21:00 KST 자동 갱신</div>
+  </div>
+
+  <div class="toolbar">
+    <div class="tabs" id="type-tabs">
+      <button class="tab active" data-type="ALL">전체</button>
+      <button class="tab" data-type="company">개별 종목</button>
+      <button class="tab" data-type="industry">업종</button>
+    </div>
+    <div class="toolbar-divider"></div>
+    <span class="tlabel">증권사</span>
+    <select class="select" id="house-filter">
+      <option value="">전체 증권사</option>
+    </select>
+    <div class="toolbar-divider"></div>
+    <span class="tlabel">기간</span>
+    <select class="select" id="window-filter">
+      <option value="1">오늘</option>
+      <option value="3">최근 3일</option>
+      <option value="7" selected>최근 7일</option>
+      <option value="14">최근 14일</option>
+    </select>
+    <div class="toolbar-divider"></div>
+    <input type="text" class="search" id="search" placeholder="제목 / 종목명 / 증권사 검색" />
+  </div>
+
+  <div class="status-bar">
+    <div class="seg"><span class="lbl">생성</span><span class="val" id="generated-at">—</span></div>
+    <div class="seg"><span class="lbl">필터링됨</span><span class="val" id="filtered-count">0</span></div>
+    <div class="seg"><span class="lbl">소스</span><span class="val">Naver Finance Research</span></div>
+  </div>
+
+  <div class="summary-row" id="summary">
+    <div class="summary-card"><div class="lbl">개별 종목</div><div class="val" id="cnt-company">—</div><div class="sub">전체 기간</div></div>
+    <div class="summary-card"><div class="lbl">업종 리포트</div><div class="val" id="cnt-industry">—</div><div class="sub">전체 기간</div></div>
+    <div class="summary-card"><div class="lbl">증권사</div><div class="val" id="cnt-houses">—</div><div class="sub">고유 작성기관</div></div>
+    <div class="summary-card"><div class="lbl">분석된 종목</div><div class="val" id="cnt-tickers">—</div><div class="sub">고유 코드</div></div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="research">
+      <thead>
+        <tr id="head-row">
+          <th data-sort="date">날짜 <span class="arrow">↕</span></th>
+          <th data-sort="type">유형 <span class="arrow">↕</span></th>
+          <th data-sort="title">종목 / 제목 <span class="arrow">↕</span></th>
+          <th data-sort="house">증권사 <span class="arrow">↕</span></th>
+          <th>다운로드</th>
+        </tr>
+      </thead>
+      <tbody id="report-body"><tr><td colspan="5" class="empty-state">불러오는 중…</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="footer-info">
+    <span>데이터: Naver Finance Research · 매일 21:00 KST 자동 갱신</span>
+    <span>리포트 PDF는 각 증권사 원본 링크로 연결</span>
+  </div>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const REGISTRY = window.TICKER_REGISTRY || {};
+
+const STATE = {
+  type: 'ALL',
+  house: '',
+  window: 7,
+  query: '',
+  sortKey: 'date',
+  sortDir: 'desc',
+  reports: [],
+  generatedAt: null,
+};
+
+async function loadReports() {
+  try {
+    const r = await fetch('data/research-reports.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json();
+    STATE.reports = j.reports || [];
+    STATE.generatedAt = j.generatedAt;
+    $('report-count').textContent = (j.count ?? STATE.reports.length).toLocaleString();
+    $('generated-at').textContent = j.generatedAt
+      ? new Date(j.generatedAt).toLocaleString('ko-KR') : '—';
+    buildHouseFilter();
+    updateSummary();
+    render();
+  } catch (e) {
+    $('report-body').innerHTML = `<tr><td colspan="5" class="empty-state">
+      리포트 데이터를 불러올 수 없습니다.<br>
+      <span style="font-size:10px;">${e.message} — 다음 cron(평일 21:00 KST)을 기다리거나 워크플로를 수동 실행하세요.</span>
+    </td></tr>`;
+  }
+}
+
+function buildHouseFilter() {
+  const houses = new Set();
+  STATE.reports.forEach(r => { if (r.house) houses.add(r.house); });
+  const sorted = Array.from(houses).sort((a, b) => a.localeCompare(b, 'ko'));
+  const sel = $('house-filter');
+  sel.innerHTML = '<option value="">전체 증권사 (' + sorted.length + ')</option>' +
+    sorted.map(h => `<option value="${h}">${h}</option>`).join('');
+}
+
+function updateSummary() {
+  const company = STATE.reports.filter(r => r.type === 'company');
+  const industry = STATE.reports.filter(r => r.type === 'industry');
+  const houses = new Set(STATE.reports.map(r => r.house).filter(Boolean));
+  const tickers = new Set(STATE.reports.map(r => r.ticker).filter(Boolean));
+  $('cnt-company').textContent = company.length.toLocaleString();
+  $('cnt-industry').textContent = industry.length.toLocaleString();
+  $('cnt-houses').textContent = houses.size.toLocaleString();
+  $('cnt-tickers').textContent = tickers.size.toLocaleString();
+}
+
+function getFiltered() {
+  let list = STATE.reports.slice();
+  if (STATE.type !== 'ALL') list = list.filter(r => r.type === STATE.type);
+  if (STATE.house) list = list.filter(r => r.house === STATE.house);
+  if (STATE.window) {
+    const cutoff = new Date();
+    cutoff.setHours(0, 0, 0, 0);
+    cutoff.setDate(cutoff.getDate() - STATE.window + 1);
+    list = list.filter(r => {
+      const d = new Date(r.date);
+      return isFinite(d.getTime()) && d >= cutoff;
+    });
+  }
+  if (STATE.query) {
+    const q = STATE.query.toLowerCase();
+    list = list.filter(r =>
+      (r.title || '').toLowerCase().includes(q) ||
+      (r.stockName || '').toLowerCase().includes(q) ||
+      (r.ticker || '').includes(q) ||
+      (r.house || '').toLowerCase().includes(q)
+    );
+  }
+  // Sort
+  const dirMul = STATE.sortDir === 'asc' ? 1 : -1;
+  const k = STATE.sortKey;
+  list.sort((a, b) => {
+    const va = a[k] || '', vb = b[k] || '';
+    return String(va).localeCompare(String(vb), 'ko') * dirMul;
+  });
+  return list;
+}
+
+function buildHeader() {
+  $('head-row').querySelectorAll('th').forEach(th => {
+    th.classList.toggle('sorted', th.dataset.sort === STATE.sortKey);
+    const arr = th.querySelector('.arrow');
+    if (arr) {
+      if (th.dataset.sort === STATE.sortKey) {
+        arr.textContent = STATE.sortDir === 'asc' ? '↑' : '↓';
+      } else {
+        arr.textContent = '↕';
+      }
+    }
+  });
+}
+
+function render() {
+  buildHeader();
+  const list = getFiltered();
+  $('filtered-count').textContent = list.length.toLocaleString();
+  const tbody = $('report-body');
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">조건에 맞는 리포트가 없습니다.</td></tr>`;
+    return;
+  }
+  const escapeHtml = s => String(s || '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+  tbody.innerHTML = list.map(r => {
+    const stk = r.ticker
+      ? `<a class="stk" href="stock-deep-dive.html#${r.ticker}">${r.ticker} ${escapeHtml(r.stockName || '')}</a> · `
+      : (r.stockName ? `<span class="stk" style="cursor:default;color:var(--purple);">${escapeHtml(r.stockName)}</span> · ` : '');
+    const detailBtn = r.detailUrl
+      ? `<a class="pdf-btn" href="${escapeHtml(r.detailUrl)}" target="_blank" rel="noopener">상세</a>`
+      : '';
+    const pdfBtn = r.pdfUrl
+      ? `<a class="pdf-btn" href="${escapeHtml(r.pdfUrl)}" target="_blank" rel="noopener" style="background:var(--accent-bg);color:var(--accent);border-color:var(--accent-bg);">📄 PDF</a>`
+      : '';
+    return `<tr>
+      <td class="date">${r.date || ''}</td>
+      <td class="type"><span class="type-pill ${r.type}">${r.type === 'company' ? '종목' : '업종'}</span></td>
+      <td class="title">${stk}<span class="ttl">${escapeHtml(r.title || '')}</span></td>
+      <td class="house">${escapeHtml(r.house || '')}</td>
+      <td class="actions">${detailBtn} ${pdfBtn}</td>
+    </tr>`;
+  }).join('');
+}
+
+// Events
+$('type-tabs').addEventListener('click', e => {
+  if (!e.target.classList.contains('tab')) return;
+  $('type-tabs').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  e.target.classList.add('active');
+  STATE.type = e.target.dataset.type;
+  render();
+});
+$('house-filter').addEventListener('change', e => { STATE.house = e.target.value; render(); });
+$('window-filter').addEventListener('change', e => { STATE.window = parseInt(e.target.value, 10); render(); });
+let searchT;
+$('search').addEventListener('input', e => {
+  clearTimeout(searchT);
+  searchT = setTimeout(() => { STATE.query = e.target.value.trim(); render(); }, 200);
+});
+$('head-row').addEventListener('click', e => {
+  const th = e.target.closest('th');
+  if (!th || !th.dataset.sort) return;
+  const k = th.dataset.sort;
+  if (STATE.sortKey === k) {
+    STATE.sortDir = STATE.sortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    STATE.sortKey = k;
+    STATE.sortDir = (k === 'date') ? 'desc' : 'asc';
+  }
+  render();
+});
+
+loadReports();
+</script>
+</body>
+</html>
