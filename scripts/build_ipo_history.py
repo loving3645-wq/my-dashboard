@@ -62,9 +62,16 @@ def krx_session():
         "User-Agent": USER_AGENT,
         "Accept": "application/json, text/javascript, */*; q=0.01",
         "Accept-Language": "ko-KR,ko;q=0.9",
-        "Referer": KRX_REFERER,
+        "Referer": "https://data.krx.co.kr/contents/MDC/STAT/issue/MDCSTAT08001.cmd",
+        "Origin": "https://data.krx.co.kr",
         "X-Requested-With": "XMLHttpRequest",
     })
+    # KRX 게이트웨이가 JSESSIONID cookie를 발급하도록 main 페이지 한 번 방문 (warmup).
+    # 이게 빠지면 getJsonData.cmd가 HTML 에러페이지를 반환함.
+    try:
+        s.get("https://data.krx.co.kr/contents/MDC/STAT/issue/MDCSTAT08001.cmd", timeout=20)
+    except Exception as e:
+        print(f"WARN: KRX warmup failed: {e}", file=sys.stderr)
     return s
 
 
@@ -78,9 +85,31 @@ def fetch_krx_new_listings(session, start_yyyymmdd, end_yyyymmdd):
         "share": "1",
         "csvxls_isNo": "false",
     }
-    r = session.post(KRX_API, data=payload, timeout=30)
-    r.raise_for_status()
-    j = r.json()
+    last_exc = None
+    for attempt in range(3):
+        try:
+            r = session.post(KRX_API, data=payload, timeout=30)
+            r.raise_for_status()
+            ct = r.headers.get("Content-Type", "")
+            if "json" not in ct.lower() and not r.text.lstrip().startswith("{"):
+                # KRX가 HTML 에러페이지 반환 — 첫 200자를 stderr에 출력해 디버깅 도움
+                print(
+                    f"KRX returned non-JSON (attempt {attempt+1}, CT={ct}, len={len(r.text)}). "
+                    f"First 200 chars: {r.text[:200]!r}",
+                    file=sys.stderr,
+                )
+                if attempt < 2:
+                    time.sleep(2 * (attempt + 1))
+                    continue
+                raise RuntimeError("KRX non-JSON response after retries")
+            j = r.json()
+            break
+        except Exception as e:
+            last_exc = e
+            if attempt < 2:
+                time.sleep(2 * (attempt + 1))
+                continue
+            raise
     rows = j.get("OutBlock_1") or j.get("output") or []
     out = []
     for r in rows:
