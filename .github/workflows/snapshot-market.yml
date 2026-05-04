@@ -1,0 +1,48 @@
+name: Daily Market Snapshot
+
+# Korean market closes at 15:30 KST.
+# Cron runs at 09:00 UTC = 18:00 KST (2.5h after close).
+# Mon-Fri only (장이 닫혀있는 주말은 스냅샷 의미 없음).
+on:
+  schedule:
+    - cron: '0 9 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: market-snapshot
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install --quiet requests
+
+      - name: Generate snapshot
+        run: python scripts/snapshot_market.py
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/market-snapshot.json
+          if git diff --cached --quiet; then
+            echo "No changes to snapshot — nothing to commit"
+          else
+            STAMP=$(date -u +"%Y-%m-%d")
+            COUNT=$(python -c "import json; d=json.load(open('data/market-snapshot.json')); print(d['tickerCount'])")
+            git commit -m "📊 Market snapshot ${STAMP} (${COUNT} tickers)"
+            git push
+          fi

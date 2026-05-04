@@ -249,6 +249,7 @@
     <div class="seg"><span class="lbl">진행</span><span class="val" id="progress-text">0 / 0</span></div>
     <div class="progress-track"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
     <div class="seg"><span class="lbl">캐시</span><span class="val" id="cache-info">—</span></div>
+    <div class="seg"><span class="lbl">스냅샷</span><span class="val" id="snapshot-info">불러오는 중…</span></div>
     <div class="seg"><span class="lbl">소스</span><span class="val">Naver Finance</span></div>
   </div>
 
@@ -287,7 +288,7 @@
   <div class="footer-info">
     <span class="src">데이터: Naver Finance + Stooq fallback</span>
     <span>1Y 일봉 종가로 환산한 누적 수익률 · 거래량은 최근 영업일 기준</span>
-    <span>캐시 TTL: 6시간 · 클릭 시 종목 딥다이브로 이동</span>
+    <span>일일 스냅샷: 평일 18:00 KST 자동 갱신 (GitHub Actions) · 수동 새로고침은 '스캔 시작'</span>
   </div>
 
 </div>
@@ -972,6 +973,66 @@ function loadCachedData() {
   return n;
 }
 
+/* ---- Daily snapshot loader ----
+ * Reads data/market-snapshot.json (refreshed by GitHub Actions cron at
+ * 18:00 KST each weekday). Hydrates STATE.data with the pre-computed
+ * returns/volume/flow for all 2,613 tickers. Falls back silently if the
+ * file isn't there yet (first-run before any cron has fired). */
+async function loadDailySnapshot() {
+  try {
+    const r = await fetch('data/market-snapshot.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const snap = await r.json();
+    if (!snap || !snap.tickers) throw new Error('malformed');
+    const fetchedAt = Date.parse(snap.generatedAtUtc || snap.generatedAt) || Date.now();
+    let n = 0;
+    for (const [code, row] of Object.entries(snap.tickers)) {
+      const reg = REGISTRY[code];
+      if (!reg) continue;
+      const merged = {
+        code,
+        name: reg.name,
+        mkt: reg.mkt,
+        sector: reg.sector,
+        price: row.price,
+        r1d: row.r1d,
+        r1w: row.r1w,
+        r1m: row.r1m,
+        r3m: row.r3m,
+        r6m: row.r6m,
+        r1y: row.r1y,
+        volume: row.volume,
+        avgVol20: row.avgVol20,
+        spark: row.spark || [],
+        source: 'Snapshot',
+        fetchedAt,
+        snapshotAt: fetchedAt,
+      };
+      if (row.flow) merged.flow = { ...row.flow, fetchedAt };
+      // Don't overwrite a fresher manually-scanned entry
+      const existing = STATE.data[code];
+      if (existing && existing.fetchedAt && existing.fetchedAt > fetchedAt && existing.spark) {
+        continue;
+      }
+      STATE.data[code] = merged;
+      n++;
+    }
+    return { count: n, generatedAt: snap.generatedAt, total: snap.tickerCount };
+  } catch (e) {
+    console.warn('[snapshot] not loaded:', e.message);
+    return null;
+  }
+}
+
+function fmtRelativeTime(iso) {
+  const t = Date.parse(iso);
+  if (!isFinite(t)) return iso;
+  const diffMin = (Date.now() - t) / 60000;
+  if (diffMin < 60) return Math.round(diffMin) + '분 전';
+  if (diffMin < 60 * 24) return Math.round(diffMin / 60) + '시간 전';
+  return Math.round(diffMin / 60 / 24) + '일 전';
+}
+
 /* =====================================================================
  * Wire up UI
  * ===================================================================== */
@@ -1039,11 +1100,25 @@ function init() {
   const cachedCount = loadCachedData();
   refreshCacheInfo();
   if (cachedCount > 0) {
-    setStatus('', `캐시 ${cachedCount}개 복원됨 — '스캔 시작'으로 최신화`);
-  } else {
-    setStatus('', `'스캔 시작'을 누르면 시세를 가져옵니다`);
+    setStatus('', `캐시 ${cachedCount}개 복원됨`);
   }
   render();
+
+  // Then hydrate from daily snapshot (overrides browser cache when fresher)
+  loadDailySnapshot().then(snap => {
+    if (snap) {
+      $('snapshot-info').textContent =
+        `${snap.count.toLocaleString()}종목 · ${fmtRelativeTime(snap.generatedAt)}`;
+      $('snapshot-info').title = '생성 시각: ' + snap.generatedAt;
+      setStatus('', `일일 스냅샷 ${snap.count.toLocaleString()}종목 로드 완료 (${fmtRelativeTime(snap.generatedAt)})`);
+      render();
+    } else {
+      $('snapshot-info').textContent = '없음';
+      if (cachedCount === 0) {
+        setStatus('', `스냅샷이 아직 생성되지 않았습니다 — '스캔 시작'으로 직접 가져오세요`);
+      }
+    }
+  });
 
   tickClock();
   setInterval(tickClock, 1000);
