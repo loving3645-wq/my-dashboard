@@ -49,6 +49,8 @@
     --indigo-bg: #d8d3f4;
     --paused: #b08a4a;
     --paused-bg: #f5e7c9;
+    --rose: #d63384;
+    --rose-bg: #ffd9ec;
     --p1-color: #e63946;
     --p2-color: #f77f00;
     --p3-color: #6b6b6b;
@@ -113,10 +115,11 @@
   .col-tab.contacts-tab .icon { background: var(--purple); }
   .col-tab.projects-tab .icon { background: var(--teal); }
   .col-tab.stocks-tab .icon { background: var(--indigo); }
-  .col-tab.active.cal-tab .icon, .col-tab.active.todo-tab .icon, .col-tab.active.paused-tab .icon, .col-tab.active.deals-tab .icon, .col-tab.active.done-tab .icon, .col-tab.active.contacts-tab .icon, .col-tab.active.projects-tab .icon, .col-tab.active.stocks-tab .icon { background: var(--bg); }
+  .col-tab.journal-tab .icon { background: var(--rose); }
+  .col-tab.active.cal-tab .icon, .col-tab.active.todo-tab .icon, .col-tab.active.paused-tab .icon, .col-tab.active.deals-tab .icon, .col-tab.active.done-tab .icon, .col-tab.active.contacts-tab .icon, .col-tab.active.projects-tab .icon, .col-tab.active.stocks-tab .icon, .col-tab.active.journal-tab .icon { background: var(--bg); }
   .col-tab .badge { font-family: var(--mono); font-size: 9px; opacity: 0.7; }
-  .board { display: grid; grid-template-columns: 1fr 1fr 0.9fr 1fr 1fr 1fr 1fr 0.9fr; gap: 9px; }
-  @media (max-width: 1600px) { .board { grid-template-columns: 1fr 1fr 1fr 1fr; } }
+  .board { display: grid; grid-template-columns: 1fr 1fr 0.9fr 1fr 1fr 1fr 1fr 0.9fr 1fr; gap: 9px; }
+  @media (max-width: 1600px) { .board { grid-template-columns: repeat(3, 1fr); } }
   @media (max-width: 1000px) { .board { grid-template-columns: 1fr 1fr; } }
   @media (max-width: 700px) {
     .board { grid-template-columns: 1fr; gap: 0; }
@@ -157,6 +160,8 @@
   .col.contacts .col-title .icon { background: var(--purple); }
   .col.projects .col-title .icon { background: var(--teal); }
   .col.stocks .col-title .icon { background: var(--indigo); }
+  .col.journal .col-title .icon { background: var(--rose); }
+  .col.journal { background: var(--surface-2); }
   .col.paused { background: var(--surface-2); }
   .col.paused .card { opacity: 0.85; border-style: dashed; }
   .col.paused .card:hover { opacity: 1; }
@@ -315,6 +320,15 @@
   .alert-badge { display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 9px; font-weight: 600; margin-left: 4px; }
   .alert-badge.active { background: #e63946; color: white; }
 
+  /* Journal (메모) */
+  .col.journal .col-add { background: var(--surface-2); }
+  .journal-card { background: var(--surface); border: 1px solid var(--line); border-radius: 7px; padding: 10px 12px 9px; transition: all 0.15s; position: relative; cursor: pointer; display: flex; flex-direction: column; gap: 5px; }
+  .journal-card:hover { border-color: var(--rose); box-shadow: var(--shadow-sm); }
+  .journal-card:hover .card-actions { opacity: 1; }
+  .journal-date { font-family: var(--mono); font-size: 10px; color: var(--rose); letter-spacing: 0.05em; font-weight: 600; }
+  .journal-date .rel { color: var(--ink-faint); font-weight: 400; margin-left: 4px; }
+  .journal-text { font-size: 12.5px; color: var(--ink); line-height: 1.45; white-space: pre-wrap; word-break: break-word; padding-right: 60px; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+
   /* Retrospect (회고) bar */
   .retro-bar { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin: 14px 0; }
   .retro-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -449,6 +463,7 @@
     <button class="col-tab contacts-tab" data-col="contacts"><span class="icon"></span>연락처<span class="badge" id="ct-contacts">0</span></button>
     <button class="col-tab projects-tab" data-col="projects"><span class="icon"></span>프로젝트<span class="badge" id="ct-projects">0</span></button>
     <button class="col-tab done-tab" data-col="done"><span class="icon"></span>완료<span class="badge" id="ct-done">0</span></button>
+    <button class="col-tab journal-tab" data-col="journal"><span class="icon"></span>메모<span class="badge" id="ct-journal">0</span></button>
   </div>
   <div class="board">
     <div class="col cal col-active" data-col="cal">
@@ -512,6 +527,14 @@
         <div class="col-count" id="cnt-done">0</div>
       </div>
       <div class="col-body" id="col-done" data-drop="done"></div>
+    </div>
+    <div class="col journal" data-col="journal">
+      <div class="col-header">
+        <div class="col-title"><span class="icon"></span>메모</div>
+        <div class="col-count" id="cnt-journal">0</div>
+      </div>
+      <div class="col-body" id="col-journal"></div>
+      <div class="col-add"><button class="col-add-btn" data-add-journal>+ 메모 추가</button></div>
     </div>
   </div>
   <footer class="footer">
@@ -652,6 +675,19 @@
     <div class="modal-actions">
       <button class="secondary" id="project-cancel">취소</button>
       <button class="primary" id="project-confirm">저장</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="journal-modal" style="display:none;">
+  <div class="modal">
+    <h2 id="journal-modal-title">메모 <span class="accent">추가</span></h2>
+    <label>날짜</label>
+    <input type="date" id="journal-date" />
+    <label>내용</label>
+    <textarea id="journal-text" placeholder="오늘 든 생각, 메모, 하루 정리..." maxlength="2000" style="min-height:140px;"></textarea>
+    <div class="modal-actions">
+      <button class="secondary" id="journal-cancel">취소</button>
+      <button class="primary" id="journal-confirm">저장</button>
     </div>
   </div>
 </div>
@@ -848,7 +884,7 @@ function buildStockChips(ticker) {
   }
   return chips.length ? `<div class="stock-chips">${chips.join('')}</div>` : '';
 }
-let state = { token: null, calendarGistId: null, todos: [], events: [], contacts: [], projects: [], stocks: [], activeTab: 'all', priFilter: 'all', activeCol: 'cal', modalContext: null, contactModalContext: null, projectModalContext: null, stockModalContext: null };
+let state = { token: null, calendarGistId: null, todos: [], events: [], contacts: [], projects: [], stocks: [], journal: [], activeTab: 'all', priFilter: 'all', activeCol: 'cal', modalContext: null, contactModalContext: null, projectModalContext: null, stockModalContext: null, journalModalContext: null };
 
 function todayKST() { const now = new Date(); return new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' })); }
 function isoDate(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
@@ -983,10 +1019,23 @@ async function loadTodos() {
       comment: s.comment || '',
       created: s.created || Date.now(), ...s,
     }));
+    // journal.json (in same gist)
+    const journalFile = data.files && data.files['journal.json'];
+    let journal = [];
+    if (journalFile && journalFile.content) try { journal = JSON.parse(journalFile.content); } catch {}
+    if (!Array.isArray(journal)) journal = [];
+    state.journal = journal.map(j => ({
+      id: j.id || (Date.now().toString(36) + Math.random().toString(36).slice(2,6)),
+      date: j.date || todayISO(),
+      text: j.text || '',
+      created: j.created || Date.now(),
+      updated: j.updated || j.created || Date.now(),
+    }));
     renderBoard();
     renderContacts();
     renderProjects();
     renderStocks();
+    renderJournal();
   } catch (e) { console.error(e); }
 }
 let saveTimer = null;
@@ -998,6 +1047,7 @@ async function saveAll() {
       'contacts.json': { content: JSON.stringify(state.contacts, null, 2) },
       'projects.json': { content: JSON.stringify(state.projects, null, 2) },
       'stocks.json': { content: JSON.stringify(state.stocks, null, 2) },
+      'journal.json': { content: JSON.stringify(state.journal, null, 2) },
     };
     const r = await fetch(`https://api.github.com/gists/${CONFIG.TODOS_GIST_ID}`, {
       method: 'PATCH',
@@ -1489,6 +1539,104 @@ document.getElementById('stock-cancel').addEventListener('click', closeStockModa
 document.getElementById('stock-confirm').addEventListener('click', confirmStockModal);
 document.getElementById('stock-name').addEventListener('keydown', e => { if (e.key === 'Escape') closeStockModal(); if (e.key === 'Enter') confirmStockModal(); });
 
+/* ===== 메모 (일기) ===== */
+function todayISO() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+function relDateLabel(iso) {
+  if (!iso) return '';
+  const today = todayISO();
+  if (iso === today) return '오늘';
+  const t = new Date(today + 'T00:00:00').getTime();
+  const d = new Date(iso + 'T00:00:00').getTime();
+  const diff = Math.round((t - d) / 86400000);
+  if (diff === 1) return '어제';
+  if (diff > 1 && diff <= 7) return `${diff}일 전`;
+  return '';
+}
+function renderJournal() {
+  const list = state.journal.slice().sort((a, b) => {
+    if (a.date !== b.date) return b.date.localeCompare(a.date);
+    return (b.updated || 0) - (a.updated || 0);
+  });
+  const el = document.getElementById('col-journal');
+  document.getElementById('cnt-journal').textContent = list.length;
+  document.getElementById('ct-journal').textContent = list.length;
+  if (!list.length) { el.innerHTML = '<div class="empty">메모가 비어있어요</div>'; return; }
+  el.innerHTML = list.map(j => {
+    const rel = relDateLabel(j.date);
+    return `<div class="journal-card" data-id="${j.id}">
+      <div class="journal-date">${escapeHTML(j.date)}${rel ? `<span class="rel">· ${rel}</span>` : ''}</div>
+      <div class="journal-text">${escapeHTML(j.text)}</div>
+      <div class="card-actions">
+        <button class="card-btn" data-jaction="edit" title="수정">✎</button>
+        <button class="card-btn del" data-jaction="delete" title="삭제">×</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function openJournalModal(ctx) {
+  state.journalModalContext = ctx || { mode: 'add' };
+  const isEdit = state.journalModalContext.mode === 'edit';
+  document.getElementById('journal-modal-title').innerHTML = isEdit
+    ? '메모 <span class="accent">수정</span>'
+    : '메모 <span class="accent">추가</span>';
+  let preset = {};
+  if (isEdit) {
+    const j = state.journal.find(x => x.id === state.journalModalContext.id);
+    if (j) preset = j;
+  }
+  document.getElementById('journal-date').value = preset.date || todayISO();
+  document.getElementById('journal-text').value = preset.text || '';
+  document.getElementById('journal-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('journal-text').focus(), 50);
+}
+function closeJournalModal() { document.getElementById('journal-modal').style.display = 'none'; state.journalModalContext = null; }
+function confirmJournalModal() {
+  const text = document.getElementById('journal-text').value.trim();
+  const date = document.getElementById('journal-date').value || todayISO();
+  if (!text) { document.getElementById('journal-text').focus(); return; }
+  const ctx = state.journalModalContext || {};
+  if (ctx.mode === 'edit') {
+    const j = state.journal.find(x => x.id === ctx.id);
+    if (j) { j.date = date; j.text = text; j.updated = Date.now(); }
+  } else {
+    state.journal.push({
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      date, text,
+      created: Date.now(), updated: Date.now(),
+    });
+  }
+  closeJournalModal(); renderJournal(); scheduleSave();
+  if (window.innerWidth <= 700) setActiveCol('journal');
+}
+document.querySelector('[data-add-journal]').addEventListener('click', () => openJournalModal({ mode: 'add' }));
+document.getElementById('journal-cancel').addEventListener('click', closeJournalModal);
+document.getElementById('journal-confirm').addEventListener('click', confirmJournalModal);
+document.getElementById('journal-text').addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeJournalModal();
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) confirmJournalModal();
+});
+document.addEventListener('click', e => {
+  const card = e.target.closest('.journal-card'); if (!card) return;
+  const id = card.dataset.id;
+  const editBtn = e.target.closest('[data-jaction="edit"]');
+  const delBtn = e.target.closest('[data-jaction="delete"]');
+  if (delBtn) {
+    if (!confirm('이 메모를 삭제할까요?')) return;
+    state.journal = state.journal.filter(x => x.id !== id);
+    renderJournal(); scheduleSave();
+    return;
+  }
+  if (editBtn || (!e.target.closest('.card-actions'))) {
+    openJournalModal({ mode: 'edit', id });
+  }
+});
+
 let draggedId = null;
 document.addEventListener('dragstart', e => {
   const card = e.target.closest('.card'); if (!card) return;
@@ -1720,6 +1868,7 @@ async function bootstrap() {
   document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.tab === state.activeTab));
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.pri === state.priFilter));
   setActiveCol(state.activeCol);
+  renderJournal();
   if (!state.token) { showTokenModal(); return; }
   await Promise.all([loadCalendar(), loadTodos()]);
   setInterval(() => { if (!document.hidden) loadCalendar(); }, 5 * 60 * 1000);
