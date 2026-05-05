@@ -1,0 +1,326 @@
+#!/usr/bin/env python3
+"""Mezzanine (CB/BW/EB) issuance history per KOSPI/KOSDAQ ticker via OpenDART.
+
+Hits three structured endpoints under 주요사항보고서:
+  - cvbdIsDecsn  : 전환사채권 발행결정      (CB)
+  - bdwtIsDecsn  : 신주인수권부사채권 발행결정 (BW)
+  - exbdIsDecsn  : 교환사채권 발행결정      (EB)
+
+DART parses the major-event reports for us — no document body parsing
+needed. We normalize the response into a uniform issuance schema and
+compute a simple "outstanding by maturity" estimate (sum of face amounts
+where maturity is still in the future). Real outstanding requires
+tracking conversion / put / call exercises and is out of scope for v1;
+the UI labels the figure accordingly.
+
+Output: data/mezzanine.json keyed by ticker.
+
+Run weekly — issuance announcements aren't constant but new ones can
+appear any business day for small caps.
+"""
+
+import io
+import json
+import os
+import re
+import sys
+import time
+import zipfile
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime, date, timedelta, timezone
+from xml.etree import ElementTree as ET
+
+import requests
+
+KST = timezone(timedelta(hours=9))
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TICKERS_FILE = os.path.join(ROOT, "tickers-full.js")
+OUTPUT_FILE = os.path.join(ROOT, "data", "mezzanine.json")
+
+DART_KEY = os.environ.get("OPENDART_KEY", "").strip()
+CORP_CODE_URL = "https://opendart.fss.or.kr/api/corpCode.xml"
+
+# 7-year lookback covers virtually all live mezzanine — typical CB tenor
+# is 3-5 years; even rare 7-year issues with year-2 puts will be picked up.
+LOOKBACK_YEARS = 7
+
+ENDPOINTS = {
+    "CB": "https://opendart.fss.or.kr/api/cvbdIsDecsn.json",
+    "BW": "https://opendart.fss.or.kr/api/bdwtIsDecsn.json",
+    "EB": "https://opendart.fss.or.kr/api/exbdIsDecsn.json",
+}
+
+WORKERS = 8
+TIMEOUT = 15
+RETRY_COUNT = 2
+
+# Field aliases — DART's response key naming varies subtly across these
+# three endpoints (and across legacy filings). We try each alias in order
+# and take the first non-empty value.
+FIELDS = {
+    "round": ["bd_kind", "bd_tm", "kind", "tm"],
+    "face_amount": ["bd_isu_amt", "bd_fta", "isu_amt", "bdfta"],
+    "currency": ["fdrm_crncy", "ovis_fdrm_crncy", "crncy"],
+    "issue_date": ["pymd", "pay_dt", "pymd_dt", "bd_isu_dt"],
+    "maturity": ["mtrt_dt", "bd_mtrt_dt", "mty_dt"],
+    "coupon_rate": ["bd_int_ex", "sl_intr_rt", "cpn_rt", "int_rt_ex"],
+    "ytm_rate": ["bd_int_sf", "mtrt_intr_rt", "ytm_rt", "int_rt_sf"],
+    "conversion_price": ["cv_prc", "cnv_prc", "exrc_prc"],
+    "conversion_ratio": ["cv_rt", "cnv_rt", "exrc_rt"],
+    "convert_start": ["cv_rqsr_bgd", "cnv_pd_bgn", "exrc_pd_bgn"],
+    "convert_end": ["cv_rqsr_edd", "cnv_pd_end", "exrc_pd_end"],
+    "put_start": ["pthbd_rcsr_bgd", "pt_pd_bgn", "ery_rdmpt_pd_bgn"],
+    "put_end": ["pthbd_rcsr_edd", "pt_pd_end", "ery_rdmpt_pd_end"],
+    "call_start": ["clbd_rcsr_bgd", "cl_pd_bgn"],
+    "call_end": ["clbd_rcsr_edd", "cl_pd_end"],
+}
+
+
+def make_session():
+    s = requests.Session()
+    s.headers.update({"User-Agent": "my-dashboard/1.0 (mezzanine cron)"})
+    return s
+
+
+def load_tickers():
+    with open(TICKERS_FILE, encoding="utf-8") as f:
+        text = f.read()
+    out = []
+    for m in re.finditer(r"'([0-9A-Z]{6})':\s*\{\s*name:\s*'([^']+)'", text):
+        out.append((m.group(1), m.group(2)))
+    return out
+
+
+def download_corp_code_map(sess):
+    r = sess.get(CORP_CODE_URL, params={"crtfc_key": DART_KEY}, timeout=30)
+    r.raise_for_status()
+    zf = zipfile.ZipFile(io.BytesIO(r.content))
+    xml_bytes = zf.read(zf.namelist()[0])
+    root = ET.fromstring(xml_bytes)
+    mapping = {}
+    for elt in root.findall("list"):
+        sc = (elt.findtext("stock_code") or "").strip()
+        cc = (elt.findtext("corp_code") or "").strip()
+        if sc and cc:
+            mapping[sc] = cc
+    return mapping
+
+
+def _pick(row, names):
+    for n in names:
+        v = row.get(n)
+        if v is None:
+            continue
+        s = str(v).strip()
+        if s and s != "-":
+            return s
+    return None
+
+
+def _to_int_amount(s):
+    if not s:
+        return None
+    s = s.replace(",", "").replace(" ", "")
+    # Sometimes amounts come with currency suffix like "5,000,000,000원"
+    s = re.sub(r"[^\d.\-]", "", s)
+    if not s:
+        return None
+    try:
+        return int(float(s))
+    except ValueError:
+        return None
+
+
+def _to_float_pct(s):
+    if not s:
+        return None
+    s = s.replace(",", "").replace("%", "").strip()
+    try:
+        return float(s)
+    except ValueError:
+        return None
+
+
+def _to_iso_date(s):
+    if not s:
+        return None
+    s = s.strip()
+    # Accept YYYY-MM-DD, YYYY.MM.DD, YYYY/MM/DD, YYYYMMDD
+    m = re.match(r"^(\d{4})[\-./]?(\d{2})[\-./]?(\d{2})", s)
+    if not m:
+        return None
+    y, mo, d = m.group(1), m.group(2), m.group(3)
+    return f"{y}-{mo}-{d}"
+
+
+def normalize_issuance(row, kind):
+    n = {
+        "type": kind,
+        "rceptNo": (row.get("rcept_no") or "").strip() or None,
+        "rceptDt": _to_iso_date(row.get("rcept_dt") or ""),
+        "round": _pick(row, FIELDS["round"]),
+        "issueDate": _to_iso_date(_pick(row, FIELDS["issue_date"]) or ""),
+        "maturityDate": _to_iso_date(_pick(row, FIELDS["maturity"]) or ""),
+        "faceAmount": _to_int_amount(_pick(row, FIELDS["face_amount"])),
+        "currency": _pick(row, FIELDS["currency"]) or "KRW",
+        "couponRate": _to_float_pct(_pick(row, FIELDS["coupon_rate"])),
+        "ytmRate": _to_float_pct(_pick(row, FIELDS["ytm_rate"])),
+        "conversionPrice": _to_int_amount(
+            _pick(row, FIELDS["conversion_price"])
+        ),
+        "conversionRatio": _to_float_pct(
+            _pick(row, FIELDS["conversion_ratio"])
+        ),
+        "convertStart": _to_iso_date(_pick(row, FIELDS["convert_start"]) or ""),
+        "convertEnd": _to_iso_date(_pick(row, FIELDS["convert_end"]) or ""),
+        "putStart": _to_iso_date(_pick(row, FIELDS["put_start"]) or ""),
+        "putEnd": _to_iso_date(_pick(row, FIELDS["put_end"]) or ""),
+        "callStart": _to_iso_date(_pick(row, FIELDS["call_start"]) or ""),
+        "callEnd": _to_iso_date(_pick(row, FIELDS["call_end"]) or ""),
+    }
+    return n
+
+
+def summarize(issuances):
+    today = date.today().isoformat()
+    total = 0
+    outstanding = 0
+    next_put = None
+    for x in issuances:
+        if x["faceAmount"]:
+            total += x["faceAmount"]
+            if x["maturityDate"] and x["maturityDate"] > today:
+                outstanding += x["faceAmount"]
+        # Pick the earliest upcoming put start (today < putStart).
+        ps = x["putStart"]
+        if ps and ps > today:
+            if next_put is None or ps < next_put["date"]:
+                next_put = {"date": ps, "amount": x["faceAmount"] or 0}
+    return {
+        "totalIssued": total,
+        "outstandingByMaturity": outstanding,
+        "issuanceCount": len(issuances),
+        "nextPut": next_put,
+    }
+
+
+def fetch_kind(sess, corp_code, kind, bgn_de, end_de):
+    url = ENDPOINTS[kind]
+    params = {
+        "crtfc_key": DART_KEY,
+        "corp_code": corp_code,
+        "bgn_de": bgn_de,
+        "end_de": end_de,
+    }
+    for attempt in range(RETRY_COUNT + 1):
+        try:
+            r = sess.get(url, params=params, timeout=TIMEOUT)
+            if r.status_code != 200:
+                return []
+            body = r.json()
+            status = body.get("status")
+            if status == "013":
+                return []
+            if status != "000":
+                if status in ("100", "101", "800", "900"):
+                    time.sleep(0.5 * (attempt + 1))
+                    continue
+                return []
+            rows = body.get("list") or []
+            return [normalize_issuance(row, kind) for row in rows]
+        except requests.RequestException:
+            time.sleep(0.5 * (attempt + 1))
+            continue
+    return []
+
+
+def fetch_one(sess, ticker, name, corp_code, bgn_de, end_de):
+    issuances = []
+    for kind in ENDPOINTS:
+        issuances.extend(fetch_kind(sess, corp_code, kind, bgn_de, end_de))
+    if not issuances:
+        return None
+    # Sort newest first (by 공시일).
+    issuances.sort(
+        key=lambda x: x["rceptDt"] or "0000-00-00",
+        reverse=True,
+    )
+    return {
+        "name": name,
+        "corpCode": corp_code,
+        "issuances": issuances,
+        "summary": summarize(issuances),
+    }
+
+
+def main():
+    if not DART_KEY:
+        print("ERROR: OPENDART_KEY env var not set", file=sys.stderr)
+        sys.exit(1)
+
+    sess = make_session()
+    print("Fetching DART corp_code master…", flush=True)
+    code_map = download_corp_code_map(sess)
+    print(f"  loaded {len(code_map):,} listed corp_code entries", flush=True)
+
+    tickers = load_tickers()
+    print(f"Loaded {len(tickers):,} tickers", flush=True)
+
+    today = datetime.now(KST).date()
+    bgn = today.replace(year=today.year - LOOKBACK_YEARS).strftime("%Y%m%d")
+    end = today.strftime("%Y%m%d")
+    print(f"Range {bgn} → {end} (CB/BW/EB)…", flush=True)
+
+    results = {}
+    skipped_no_corp = 0
+    total_issuances = 0
+
+    def task(ticker, name):
+        cc = code_map.get(ticker)
+        if not cc:
+            return ticker, None, "no_corp"
+        entry = fetch_one(sess, ticker, name, cc, bgn, end)
+        return ticker, entry, None
+
+    with ThreadPoolExecutor(max_workers=WORKERS) as ex:
+        futures = {ex.submit(task, t, n): t for t, n in tickers}
+        done = 0
+        total = len(futures)
+        for fut in as_completed(futures):
+            done += 1
+            ticker, entry, reason = fut.result()
+            if entry is not None:
+                results[ticker] = entry
+                total_issuances += entry["summary"]["issuanceCount"]
+            elif reason == "no_corp":
+                skipped_no_corp += 1
+            if done % 200 == 0:
+                print(
+                    f"  {done}/{total} · with_mezz={len(results)} "
+                    f"issuances={total_issuances} no_corp={skipped_no_corp}",
+                    flush=True,
+                )
+
+    payload = {
+        "asOf": datetime.now(KST).isoformat(timespec="seconds"),
+        "rangeStart": bgn,
+        "rangeEnd": end,
+        "count": len(tickers),
+        "issuersWithMezzanine": len(results),
+        "totalIssuances": total_issuances,
+        "mezzanine": results,
+    }
+    os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
+    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, separators=(",", ":"))
+
+    print(
+        f"Wrote {OUTPUT_FILE} · issuers={len(results)} "
+        f"issuances={total_issuances}",
+        flush=True,
+    )
+
+
+if __name__ == "__main__":
+    main()
