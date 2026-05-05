@@ -47,6 +47,8 @@
     --teal-bg: #c4eeee;
     --indigo: #3a0ca3;
     --indigo-bg: #d8d3f4;
+    --paused: #b08a4a;
+    --paused-bg: #f5e7c9;
     --p1-color: #e63946;
     --p2-color: #f77f00;
     --p3-color: #6b6b6b;
@@ -105,15 +107,16 @@
   .col-tab .icon { width: 5px; height: 5px; border-radius: 50%; }
   .col-tab.cal-tab .icon { background: var(--accent); }
   .col-tab.todo-tab .icon { background: var(--gold); }
+  .col-tab.paused-tab .icon { background: var(--paused); }
   .col-tab.deals-tab .icon { background: var(--blue); }
   .col-tab.done-tab .icon { background: var(--green); }
   .col-tab.contacts-tab .icon { background: var(--purple); }
   .col-tab.projects-tab .icon { background: var(--teal); }
   .col-tab.stocks-tab .icon { background: var(--indigo); }
-  .col-tab.active.cal-tab .icon, .col-tab.active.todo-tab .icon, .col-tab.active.deals-tab .icon, .col-tab.active.done-tab .icon, .col-tab.active.contacts-tab .icon, .col-tab.active.projects-tab .icon, .col-tab.active.stocks-tab .icon { background: var(--bg); }
+  .col-tab.active.cal-tab .icon, .col-tab.active.todo-tab .icon, .col-tab.active.paused-tab .icon, .col-tab.active.deals-tab .icon, .col-tab.active.done-tab .icon, .col-tab.active.contacts-tab .icon, .col-tab.active.projects-tab .icon, .col-tab.active.stocks-tab .icon { background: var(--bg); }
   .col-tab .badge { font-family: var(--mono); font-size: 9px; opacity: 0.7; }
-  .board { display: grid; grid-template-columns: 1fr 1fr 1.05fr 1fr 1fr 1.05fr 0.9fr; gap: 9px; }
-  @media (max-width: 1600px) { .board { grid-template-columns: 1fr 1fr 1fr; } }
+  .board { display: grid; grid-template-columns: 1fr 1fr 0.9fr 1fr 1fr 1fr 1fr 0.9fr; gap: 9px; }
+  @media (max-width: 1600px) { .board { grid-template-columns: 1fr 1fr 1fr 1fr; } }
   @media (max-width: 1000px) { .board { grid-template-columns: 1fr 1fr; } }
   @media (max-width: 700px) {
     .board { grid-template-columns: 1fr; gap: 0; }
@@ -148,11 +151,15 @@
   .col-title .icon { width: 6px; height: 6px; border-radius: 50%; }
   .col.cal .col-title .icon { background: var(--accent); }
   .col.todo .col-title .icon { background: var(--gold); }
+  .col.paused .col-title .icon { background: var(--paused); }
   .col.deals .col-title .icon { background: var(--blue); }
   .col.done .col-title .icon { background: var(--green); }
   .col.contacts .col-title .icon { background: var(--purple); }
   .col.projects .col-title .icon { background: var(--teal); }
   .col.stocks .col-title .icon { background: var(--indigo); }
+  .col.paused { background: var(--surface-2); }
+  .col.paused .card { opacity: 0.85; border-style: dashed; }
+  .col.paused .card:hover { opacity: 1; }
   .col-count { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); background: var(--bg); padding: 2px 7px; border-radius: 9px; letter-spacing: 0.05em; }
   .col-body { flex: 1; overflow-y: auto; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
   .empty { padding: 30px 12px; color: var(--ink-faint); font-style: italic; font-family: var(--serif); font-size: 13px; text-align: center; }
@@ -198,6 +205,8 @@
   .card-btn.complete:hover { background: var(--green); color: white; border-color: var(--green); }
   .card-btn.deal { color: var(--blue); }
   .card-btn.deal:hover { color: var(--blue); border-color: var(--blue); }
+  .card-btn.pause { color: var(--paused); }
+  .card-btn.pause:hover { color: var(--paused); border-color: var(--paused); background: var(--paused-bg); }
 
   /* Deal stage tracker */
   .deal-stages { display: flex; gap: 4px; margin-top: 4px; padding-top: 7px; border-top: 1px dashed var(--line); }
@@ -306,6 +315,23 @@
   .alert-badge { display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 9px; font-weight: 600; margin-left: 4px; }
   .alert-badge.active { background: #e63946; color: white; }
 
+  /* Retrospect (회고) bar */
+  .retro-bar { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin: 14px 0; }
+  .retro-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .retro-toggle { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; color: var(--ink-soft); padding: 3px 8px; border: 1px solid var(--line); border-radius: 3px; background: var(--bg); transition: all 0.15s; text-transform: uppercase; }
+  .retro-toggle:hover { color: var(--ink); border-color: var(--line-strong); }
+  .retro-body { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .retro-bar.collapsed .retro-body { display: none; }
+  .retro-bar.collapsed .retro-head { margin-bottom: 0; }
+  .retro-card { padding: 10px 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; display: flex; flex-direction: column; gap: 3px; }
+  .retro-card.accent-done { border-left: 3px solid var(--green); }
+  .retro-card.accent-paused { border-left: 3px solid var(--paused); }
+  .retro-card.accent-avg { border-left: 3px solid var(--blue); }
+  .retro-num { font-family: var(--serif); font-size: 22px; font-weight: 500; color: var(--ink); line-height: 1.1; }
+  .retro-lbl { font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; color: var(--ink-soft); text-transform: uppercase; }
+  .retro-sub { font-size: 11px; color: var(--ink-mid); margin-top: 2px; line-height: 1.35; }
+  @media (max-width: 700px) { .retro-body { grid-template-columns: 1fr; } }
+
   .col-add { padding: 10px 12px; border-top: 1px solid var(--line); flex-shrink: 0; background: var(--surface); }
   .col.contacts .col-add { background: var(--surface-2); }
   .col.projects .col-add { background: var(--surface-2); }
@@ -354,6 +380,7 @@
     <div class="header-right">
       <div class="stat" data-stat-jump="cal" title="캘린더로 이동"><div class="num" id="stat-total">0</div><div class="lbl">전체</div></div>
       <div class="stat" data-stat-jump="todo" title="할 일로 이동"><div class="num" id="stat-todo">0</div><div class="lbl">할일</div></div>
+      <div class="stat" data-stat-jump="paused" title="잠시중단으로 이동"><div class="num" id="stat-paused">0</div><div class="lbl">중단</div></div>
       <div class="stat" data-stat-jump="deals" title="검토 딜로 이동"><div class="num" id="stat-deals">0</div><div class="lbl">검토딜</div></div>
       <div class="stat" data-stat-jump="stocks" title="종목으로 이동"><div class="num" id="stat-stocks">0</div><div class="lbl">종목</div></div>
       <div class="stat" data-stat-jump="contacts" title="연락처로 이동"><div class="num" id="stat-contacts">0</div><div class="lbl">연락처</div></div>
@@ -389,9 +416,34 @@
     </div>
   </section>
 
+  <section class="retro-bar" id="retro-bar">
+    <div class="retro-head">
+      <div class="alerts-title"><span class="accent-dot"></span>회고</div>
+      <button class="retro-toggle" id="retro-toggle" aria-expanded="true">접기</button>
+    </div>
+    <div class="retro-body" id="retro-body">
+      <div class="retro-card accent-done">
+        <div class="retro-num" id="retro-week-done">0</div>
+        <div class="retro-lbl">이번 주 완료</div>
+        <div class="retro-sub" id="retro-week-sub">—</div>
+      </div>
+      <div class="retro-card accent-paused">
+        <div class="retro-num" id="retro-paused">0</div>
+        <div class="retro-lbl">잠시중단</div>
+        <div class="retro-sub" id="retro-paused-sub">—</div>
+      </div>
+      <div class="retro-card accent-avg">
+        <div class="retro-num" id="retro-avg">—</div>
+        <div class="retro-lbl">평균 체류일</div>
+        <div class="retro-sub" id="retro-avg-sub">카테고리별 평균</div>
+      </div>
+    </div>
+  </section>
+
   <div class="col-tabs" id="col-tabs">
     <button class="col-tab cal-tab active" data-col="cal"><span class="icon"></span>캘린더<span class="badge" id="ct-cal">0</span></button>
     <button class="col-tab todo-tab" data-col="todo"><span class="icon"></span>할 일<span class="badge" id="ct-todo">0</span></button>
+    <button class="col-tab paused-tab" data-col="paused"><span class="icon"></span>잠시중단<span class="badge" id="ct-paused">0</span></button>
     <button class="col-tab deals-tab" data-col="deals"><span class="icon"></span>검토딜<span class="badge" id="ct-deals">0</span></button>
     <button class="col-tab stocks-tab" data-col="stocks"><span class="icon"></span>종목<span class="badge" id="ct-stocks">0</span></button>
     <button class="col-tab contacts-tab" data-col="contacts"><span class="icon"></span>연락처<span class="badge" id="ct-contacts">0</span></button>
@@ -413,6 +465,14 @@
       </div>
       <div class="col-body" id="col-todo" data-drop="todo"></div>
       <div class="col-add"><button class="col-add-btn" data-add="todo">+ 할 일 추가</button></div>
+    </div>
+    <div class="col paused" data-col="paused" data-status="paused">
+      <div class="col-header">
+        <div class="col-title"><span class="icon"></span>잠시중단</div>
+        <div class="col-count" id="cnt-paused">0</div>
+      </div>
+      <div class="col-body" id="col-paused" data-drop="paused"></div>
+      <div class="col-add"><button class="col-add-btn" data-add="paused">+ 잠시중단 추가</button></div>
     </div>
     <div class="col deals" data-col="deals" data-status="deals">
       <div class="col-header">
@@ -994,7 +1054,7 @@ function filterTodos() {
 }
 function renderBoard() {
   const filtered = filterTodos();
-  const buckets = { todo: [], deals: [], done: [] };
+  const buckets = { todo: [], paused: [], deals: [], done: [] };
   for (const t of filtered) { const s = t.status || 'todo'; if (buckets[s]) buckets[s].push(t); }
   const sorter = (a,b) => {
     const pa = a.priority || 99, pb = b.priority || 99;
@@ -1004,13 +1064,14 @@ function renderBoard() {
     return (a.created || 0) - (b.created || 0);
   };
   buckets.todo.sort(sorter);
+  buckets.paused.sort((a,b) => (b.pausedAt||b.created||0) - (a.pausedAt||a.created||0));
   buckets.deals.sort((a,b) => {
     const sa = a.dealStage || 0, sb = b.dealStage || 0;
     if (sa !== sb) return sa - sb;
     return sorter(a,b);
   });
   buckets.done.sort((a,b) => (b.completedAt||0) - (a.completedAt||0));
-  for (const status of ['todo','deals','done']) {
+  for (const status of ['todo','paused','deals','done']) {
     const el = document.getElementById('col-' + status);
     document.getElementById('cnt-' + status).textContent = buckets[status].length;
     document.getElementById('ct-' + status).textContent = buckets[status].length;
@@ -1020,8 +1081,57 @@ function renderBoard() {
   const inTab = t => state.activeTab === 'all' || t.category === state.activeTab;
   document.getElementById('stat-total').textContent = state.todos.filter(inTab).length;
   document.getElementById('stat-todo').textContent = state.todos.filter(t => (t.status||'todo')==='todo' && inTab(t)).length;
+  document.getElementById('stat-paused').textContent = state.todos.filter(t => t.status==='paused' && inTab(t)).length;
   document.getElementById('stat-deals').textContent = state.todos.filter(t => t.status==='deals' && inTab(t)).length;
   document.getElementById('stat-done').textContent = state.todos.filter(t => t.status==='done' && inTab(t)).length;
+  renderRetrospect();
+}
+
+function startOfWeek(t) {
+  const d = new Date(t);
+  const dow = d.getDay() === 0 ? 6 : d.getDay() - 1;
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - dow);
+  return d.getTime();
+}
+function renderRetrospect() {
+  const now = Date.now();
+  const weekStart = startOfWeek(now);
+  const dayMs = 86400000;
+  const inTab = t => state.activeTab === 'all' || t.category === state.activeTab;
+
+  const weekDone = state.todos.filter(t => inTab(t) && t.status === 'done' && t.completedAt && t.completedAt >= weekStart);
+  const wWork = weekDone.filter(t => t.category === 'work').length;
+  const wPers = weekDone.filter(t => t.category === 'personal').length;
+  document.getElementById('retro-week-done').textContent = weekDone.length;
+  document.getElementById('retro-week-sub').textContent =
+    weekDone.length ? `회사 ${wWork} · 개인 ${wPers}` : '아직 없어요';
+
+  const paused = state.todos.filter(t => inTab(t) && t.status === 'paused');
+  const oldestDays = paused.reduce((m, t) => {
+    const ref = t.pausedAt || t.created || now;
+    return Math.max(m, Math.floor((now - ref) / dayMs));
+  }, 0);
+  document.getElementById('retro-paused').textContent = paused.length;
+  document.getElementById('retro-paused-sub').textContent =
+    paused.length ? `가장 오래 ${oldestDays}일째` : '보류 없음 ✨';
+
+  const cats = { work: [], personal: [] };
+  state.todos.forEach(t => {
+    if (!inTab(t)) return;
+    if (t.status === 'done' && t.created && t.completedAt && t.completedAt > t.created) {
+      const arr = cats[t.category]; if (arr) arr.push((t.completedAt - t.created) / dayMs);
+    }
+  });
+  const all = [...cats.work, ...cats.personal];
+  const avg = arr => arr.length ? (arr.reduce((a,b)=>a+b,0) / arr.length) : null;
+  const a = avg(all);
+  document.getElementById('retro-avg').textContent = a !== null ? `${a.toFixed(1)}일` : '—';
+  const parts = [];
+  const aw = avg(cats.work), ap = avg(cats.personal);
+  if (aw !== null) parts.push(`회사 ${aw.toFixed(1)}일`);
+  if (ap !== null) parts.push(`개인 ${ap.toFixed(1)}일`);
+  document.getElementById('retro-avg-sub').textContent = parts.length ? parts.join(' · ') : '완료 기록 쌓이면 표시';
 }
 function dealStagesHTML(t) {
   const cur = t.dealStage || 0;
@@ -1042,12 +1152,18 @@ function cardHTML(t) {
   let actionBtns = '';
   const status = t.status || 'todo';
   if (status === 'todo') {
-    // 할 일: ✓로 바로 완료, ▶로 검토 딜로 (선택)
     actionBtns = `
       <button class="card-btn complete" data-action="move" data-target="done" title="바로 완료로">✓</button>
+      <button class="card-btn move pause" data-action="move" data-target="paused" title="잠시중단으로">⏸</button>
       <button class="card-btn move deal" data-action="move" data-target="deals" title="검토 딜로 보내기">▶</button>`;
   } else if (status === 'deals') {
-    actionBtns = `<button class="card-btn complete" data-action="move" data-target="done" title="완료로">✓</button>`;
+    actionBtns = `
+      <button class="card-btn complete" data-action="move" data-target="done" title="완료로">✓</button>
+      <button class="card-btn move pause" data-action="move" data-target="paused" title="잠시중단으로">⏸</button>`;
+  } else if (status === 'paused') {
+    actionBtns = `
+      <button class="card-btn move" data-action="move" data-target="todo" title="할 일로 복귀">↺</button>
+      <button class="card-btn complete" data-action="move" data-target="done" title="완료로">✓</button>`;
   } else if (status === 'done') {
     actionBtns = `<button class="card-btn move" data-action="move" data-target="todo" title="할일로 되돌리기">↺</button>`;
   }
@@ -1397,6 +1513,7 @@ function moveTodo(id, newStatus) {
   if (!todo || todo.status === newStatus) return;
   todo.status = newStatus;
   if (newStatus === 'done') todo.completedAt = Date.now();
+  if (newStatus === 'paused') todo.pausedAt = Date.now();
   if (newStatus === 'deals' && typeof todo.dealStage !== 'number') todo.dealStage = 0;
   renderBoard(); scheduleSave();
 }
@@ -1472,6 +1589,22 @@ document.querySelectorAll('[data-stat-jump]').forEach(el => {
     scrollToCol(col);
   });
 });
+(function initRetro() {
+  const bar = document.getElementById('retro-bar');
+  const btn = document.getElementById('retro-toggle');
+  if (!bar || !btn) return;
+  const KEY = 'retroCollapsed';
+  let collapsed = false;
+  try { collapsed = localStorage.getItem(KEY) === '1'; } catch {}
+  if (collapsed) { bar.classList.add('collapsed'); btn.textContent = '펼치기'; btn.setAttribute('aria-expanded', 'false'); }
+  btn.addEventListener('click', () => {
+    bar.classList.toggle('collapsed');
+    const c = bar.classList.contains('collapsed');
+    btn.textContent = c ? '펼치기' : '접기';
+    btn.setAttribute('aria-expanded', c ? 'false' : 'true');
+    try { localStorage.setItem(KEY, c ? '1' : '0'); } catch {}
+  });
+})();
 function openTodoModal(ctx) {
   state.modalContext = ctx;
   const isFromCal = ctx.mode === 'add-from-calendar';
@@ -1502,6 +1635,7 @@ function confirmTodoModal() {
     time: document.getElementById('todo-time').value || null,
     status,
     dealStage: status === 'deals' ? 0 : undefined,
+    pausedAt: status === 'paused' ? Date.now() : undefined,
     fromCalendar: !!(ctx.preset && ctx.preset.fromCalendar),
     created: Date.now(),
   };
@@ -1512,7 +1646,7 @@ function confirmTodoModal() {
 document.querySelectorAll('[data-add]').forEach(btn => {
   btn.addEventListener('click', () => {
     const status = btn.dataset.add;
-    const labels = { todo: '할 일', deals: '검토 딜' };
+    const labels = { todo: '할 일', deals: '검토 딜', paused: '잠시중단' };
     openTodoModal({ mode: 'add', targetStatus: status, statusLabel: labels[status] });
   });
 });
