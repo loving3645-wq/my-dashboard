@@ -2117,6 +2117,24 @@ function mezzStatus(x, today) {
   return '만기 전';
 }
 
+function mezzEventBadge(x) {
+  // Count action events (전환/풋/콜/만기상환). 정정신고서는 별도 분류로 제외.
+  const list = (x.events || []).filter(e =>
+    e.type !== 'correction'
+  );
+  if (!list.length) return '';
+  const types = new Set(list.map(e => e.type));
+  let label;
+  if (types.has('conversion') || types.has('warrant_exercise') || types.has('exchange')) {
+    label = `행사 ${list.length}건`;
+  } else if (types.has('redemption') || types.has('put') || types.has('call')) {
+    label = `상환 ${list.length}건`;
+  } else {
+    label = `${list.length}건`;
+  }
+  return ` · <span class="pos">${label}</span>`;
+}
+
 async function loadMezzanineForTicker(ticker) {
   const section = $('mezz-section');
   if (!section) return;
@@ -2133,6 +2151,7 @@ async function loadMezzanineForTicker(ticker) {
     { lbl: '발행 건수', val: (s.issuanceCount || entry.issuances.length) + '건' },
     { lbl: '총 발행원금', val: fmtMezzKRW(s.totalIssued) },
     { lbl: '미상환 추정 (만기 미도래)', val: fmtMezzKRW(s.outstandingByMaturity) },
+    { lbl: '행사·상환 이벤트', val: (s.totalEvents || 0) + '건 (행사금액 미반영)' },
     { lbl: '다음 풋 도래', val: s.nextPut && s.nextPut.date ? s.nextPut.date : '—' },
   ];
   $('mezz-summary').innerHTML = summaryRows
@@ -2142,6 +2161,7 @@ async function loadMezzanineForTicker(ticker) {
   const rows = entry.issuances.map(x => {
     const status = mezzStatus(x, today);
     const statusCls = status === '만기 도래' ? 'neg' : (status === '풋 행사 가능' ? 'neg' : (status === '전환 가능' ? 'pos' : ''));
+    const badge = mezzEventBadge(x);
     return `<tr>
       <td>${escapeHtml(x.rceptDt || '')}</td>
       <td>${escapeHtml(x.type)}</td>
@@ -2149,7 +2169,7 @@ async function loadMezzanineForTicker(ticker) {
       <td>${escapeHtml(x.maturityDate || '—')}</td>
       <td class="num">${x.conversionPrice ? x.conversionPrice.toLocaleString() + '원' : '—'}</td>
       <td>${escapeHtml(x.putStart || '—')}</td>
-      <td class="${statusCls}">${status}</td>
+      <td class="${statusCls}">${status}${badge}</td>
     </tr>`;
   }).join('');
   $('mezz-tbl').querySelector('tbody').innerHTML = rows;
