@@ -94,6 +94,8 @@
   .day-pill.past { background: transparent; color: var(--ink-faint); }
 
   .reason-pill { font-family: var(--mono); font-size: 9px; padding: 2px 6px; border-radius: 2px; letter-spacing: 0.04em; }
+  .reason-pill.lockup1m { background: var(--accent-bg); color: var(--accent); }
+  .reason-pill.lockup3m { background: var(--gold-bg); color: var(--gold); }
   .reason-pill.lockup6m { background: var(--blue-bg); color: var(--blue); }
   .reason-pill.lockup1y { background: var(--purple-bg); color: var(--purple); }
   .reason-pill.dart { background: var(--green-bg); color: var(--green); }
@@ -182,8 +184,10 @@
       <span class="tlabel" style="margin-left:8px;">유형</span>
       <select class="select" id="lockup-type">
         <option value="">전체</option>
-        <option value="6m">+6M (기관·우리사주 일부)</option>
-        <option value="1y">+1Y (최대주주·임직원)</option>
+        <option value="1m">+1M (단기 의무보유)</option>
+        <option value="3m">+3M (의무보유)</option>
+        <option value="6m">+6M (기관·우리사주)</option>
+        <option value="1y">+1Y (최대주주)</option>
       </select>
     </div>
 
@@ -194,12 +198,13 @@
           <th class="left">해제일</th>
           <th class="left">종목</th>
           <th class="left">유형</th>
+          <th>의무보유%</th>
           <th>상장일</th>
           <th>공모가</th>
           <th>현재 수익률</th>
         </tr>
       </thead>
-      <tbody id="lockup-body"><tr><td colspan="7" class="empty-state">불러오는 중…</td></tr></tbody>
+      <tbody id="lockup-body"><tr><td colspan="8" class="empty-state">불러오는 중…</td></tr></tbody>
     </table>
   </div>
 
@@ -324,7 +329,8 @@ function renderUpcoming() {
 }
 
 function buildLockupSchedule() {
-  // 표준 가정: listingDate +6M (기관 의무보유 일부) / +1Y (최대주주·임직원)
+  // 표준 가정: listingDate + 1M / 3M / 6M / 1Y. 1M/3M/6M은 종목별 institutionalLockupPct
+  // (38.co.kr detail에서 추출), 1Y는 최대주주(추정).
   const events = [];
   for (const r of STATE.history) {
     if (!r.listingDate) continue;
@@ -345,10 +351,14 @@ function buildLockupSchedule() {
         expiryDate: iso,
         type,
         label,
+        instPct: r.institutionalLockupPct,
+        empPct: r.employeeSharesPct,
       });
     };
+    add(1, '1m', '+1M (단기 의무보유)');
+    add(3, '3m', '+3M (의무보유)');
     add(6, '6m', '+6M (기관·우리사주)');
-    add(12, '1y', '+1Y (최대주주·임직원)');
+    add(12, '1y', '+1Y (최대주주)');
   }
   return events;
 }
@@ -359,7 +369,7 @@ function renderLockups() {
   $('lockup-count').textContent = events.length.toLocaleString() + '건';
 
   if (!events.length) {
-    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">
+    tbody.innerHTML = `<tr><td colspan="8" class="empty-state">
       IPO history가 비어있어 보호예수 일정을 계산할 수 없습니다.<br>
       <span style="font-size:10px;">먼저 'Weekly IPO History' 워크플로를 실행하세요.</span>
     </td></tr>`;
@@ -372,7 +382,7 @@ function renderLockups() {
   items.sort((a, b) => a.days - b.days);
 
   if (!items.length) {
-    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">선택한 조건에 해당하는 보호예수 만기가 없습니다.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="empty-state">선택한 조건에 해당하는 보호예수 만기가 없습니다.</td></tr>`;
     return;
   }
 
@@ -386,8 +396,11 @@ function renderLockups() {
 
   tbody.innerHTML = items.slice(0, 500).map(e => {
     const mktKey = (e.market || '').toUpperCase().includes('KOSDAQ') ? 'kosdaq' : 'kospi';
-    const reasonCls = e.type === '6m' ? 'lockup6m' : 'lockup1y';
-    const currentReturn = e.type === '6m' ? e.r6m : e.r1y;
+    const reasonCls = 'lockup' + e.type;
+    const currentReturn = (e.type === '6m' || e.type === '1m' || e.type === '3m') ? e.r6m : e.r1y;
+    const pctTxt = (e.type !== '1y' && Number.isFinite(e.instPct))
+      ? `<span style="color:var(--accent);font-weight:600;">${e.instPct.toFixed(1)}%</span>`
+      : '<span style="color:var(--ink-faint);">—</span>';
     return `<tr${e.ticker ? ' class="clickable" data-code="' + e.ticker + '"' : ''}>
       <td class="left">${dayPill(e.days)}</td>
       <td class="left">${e.expiryDate}</td>
@@ -397,6 +410,7 @@ function renderLockups() {
         <span class="mkt-pill ${mktKey}">${mktKey.toUpperCase()}</span>
       </div></td>
       <td class="left"><span class="reason-pill ${reasonCls}">${escapeHtml(e.label)}</span></td>
+      <td>${pctTxt}</td>
       <td>${e.listingDate}</td>
       <td>${Number.isFinite(e.ipoPrice) ? e.ipoPrice.toLocaleString() : '—'}</td>
       <td>${fmtPct(currentReturn)}</td>
@@ -423,6 +437,26 @@ $('lockup-type').addEventListener('change', e => {
   renderLockups();
 });
 
+// URL hash로 type 자동 필터: #lockup=1m / 3m / 6m / 1y
+function applyHash() {
+  const m = (location.hash || '').match(/lockup=(1m|3m|6m|1y)/);
+  if (m) {
+    STATE.lockupType = m[1];
+    $('lockup-type').value = m[1];
+    // 1Y는 60일이면 너무 적을 수 있어 180일로 늘림
+    if (m[1] === '1y') {
+      STATE.lockupWindow = 180;
+      $('lockup-window').value = '180';
+    }
+    setTimeout(() => {
+      const el = document.querySelector('.section h2');
+      const sections = document.querySelectorAll('.section');
+      if (sections.length > 1) sections[1].scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 200);
+  }
+}
+applyHash();
+window.addEventListener('hashchange', () => { applyHash(); renderLockups(); });
 loadAll();
 </script>
 </body>
