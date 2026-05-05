@@ -154,6 +154,27 @@ def fetch_all_listings(session, start_date):
 
 TICKER_RE = re.compile(r"종목코드[^0-9]{0,40}(\d{6})")
 MARKET_RE = re.compile(r"(코스피|코스닥|KOSPI|KOSDAQ)")
+TICKER_MASTER_RE = re.compile(r"'(\d{6})':\s*\{\s*name:\s*'([^']+)',\s*mkt:\s*'([^']+)'")
+
+
+def load_ticker_master():
+    """tickers-full.js에서 정식 KRX 종목 master를 로딩 — SPAC·임시코드 종목의
+    name → (ticker, market) fallback 용도."""
+    path = os.path.join(ROOT, "tickers-full.js")
+    if not os.path.exists(path):
+        return {}
+    with open(path, "r", encoding="utf-8") as f:
+        text = f.read()
+    mapping = {}
+    for m in TICKER_MASTER_RE.finditer(text):
+        ticker, name, mkt = m.group(1), m.group(2), m.group(3)
+        mapping[name] = (ticker, mkt)
+    return mapping
+
+
+def normalize_name(name):
+    """'채비(구.대영채비)' → '채비'. KRX 마스터 매칭용."""
+    return re.sub(r"\s*\(구\.[^)]+\)\s*$", "", name or "").strip()
 
 
 def fetch_detail(session, detail_no):
@@ -258,24 +279,40 @@ def main():
     # Sort newest-first
     listings.sort(key=lambda r: r["listingDate"], reverse=True)
 
-    # Enrich with ticker + market from detail page
+    # KRX 종목 마스터 로딩 — SPAC·임시코드 종목의 name → ticker fallback
+    ticker_master = load_ticker_master()
+    print(f"  ticker master: {len(ticker_master)} names from tickers-full.js", flush=True)
+
+    # Enrich with ticker + market from detail page (+ master fallback)
     print(f"Enriching {len(listings)} with ticker/market from detail pages...", flush=True)
     completed = [0]
+    fallback_hits = [0]
 
     def enrich_detail(ipo):
         ticker, market = fetch_detail(sess, ipo["detailNo"])
+        if not ticker:
+            # Fallback — name으로 KRX master lookup. 38.co.kr이 SPAC 식별자
+            # ('0129K0')나 임시 등록번호('0011T0')만 보여주는 케이스.
+            clean = normalize_name(ipo["name"])
+            hit = ticker_master.get(clean)
+            if hit:
+                ticker, master_mkt = hit
+                if not market:
+                    market = master_mkt
+                fallback_hits[0] += 1
         if ticker:
             ipo["ticker"] = ticker
         if market:
             ipo["market"] = market
         completed[0] += 1
         if completed[0] % 100 == 0:
-            print(f"  detail {completed[0]}/{len(listings)}", flush=True)
+            print(f"  detail {completed[0]}/{len(listings)} (fallback={fallback_hits[0]})", flush=True)
         return ipo
 
     with ThreadPoolExecutor(max_workers=DETAIL_WORKERS) as ex:
         listings = list(ex.map(enrich_detail, listings))
     with_ticker = sum(1 for r in listings if r.get("ticker"))
+    print(f"  fallback name-lookup hits: {fallback_hits[0]}", flush=True)
     print(f"  ticker resolved: {with_ticker}/{len(listings)}", flush=True)
 
     # Enrich with Naver returns
