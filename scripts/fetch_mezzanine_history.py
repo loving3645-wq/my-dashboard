@@ -40,10 +40,31 @@ OUTPUT_FILE = os.path.join(ROOT, "data", "mezzanine.json")
 
 DART_KEY = os.environ.get("OPENDART_KEY", "").strip()
 CORP_CODE_URL = "https://opendart.fss.or.kr/api/corpCode.xml"
+LIST_URL = "https://opendart.fss.or.kr/api/list.json"
 
 # 7-year lookback covers virtually all live mezzanine — typical CB tenor
 # is 3-5 years; even rare 7-year issues with year-2 puts will be picked up.
 LOOKBACK_YEARS = 7
+
+# Cap pagination per ticker for the action-event scan. 10 pages × 100 =
+# 1000 disclosures over 7 years, more than enough for any Korean issuer.
+LIST_MAX_PAGES = 10
+LIST_PAGE_SIZE = 100
+
+# Title-pattern → event type. 전환청구권행사 reduces principal but the
+# AMOUNT isn't in the title — we'd need to fetch the disclosure body to
+# get it. v2 only captures the event itself; v3 will parse bodies for
+# accurate net outstanding.
+ROUND_RE = re.compile(r"제\s*(\d+(?:[\-–]\d+)?)\s*회")
+EVENT_PATTERNS = [
+    (re.compile(r"전환청구권행사"), "conversion"),
+    (re.compile(r"신주인수권행사"), "warrant_exercise"),
+    (re.compile(r"교환청구권행사"), "exchange"),
+    (re.compile(r"조기상환청구권행사|사채권\s*조기상환|사채\s*조기상환"), "put"),
+    (re.compile(r"사채권\s*매도청구|매도청구권행사|콜옵션행사"), "call"),
+    (re.compile(r"만기상환|사채\s*만기"), "redemption"),
+    (re.compile(r"^\[정정\].*전환사채|^\[기재정정\].*전환사채"), "correction"),
+]
 
 ENDPOINTS = {
     "CB": "https://opendart.fss.or.kr/api/cvbdIsDecsn.json",
@@ -182,17 +203,112 @@ def normalize_issuance(row, kind):
     return n
 
 
-def summarize(issuances):
+def categorize_event(title):
+    for pat, kind in EVENT_PATTERNS:
+        if pat.search(title):
+            return kind
+    return None
+
+
+def extract_round(text):
+    if not text:
+        return None
+    m = ROUND_RE.search(text)
+    return m.group(1) if m else None
+
+
+def scan_events(sess, corp_code, bgn_de, end_de):
+    """List.json scan for mezzanine action events. Title patterns only —
+    body parsing for amounts is deferred to v3. Returns list of dicts."""
+    events = []
+    for page_no in range(1, LIST_MAX_PAGES + 1):
+        params = {
+            "crtfc_key": DART_KEY,
+            "corp_code": corp_code,
+            "bgn_de": bgn_de,
+            "end_de": end_de,
+            "page_count": LIST_PAGE_SIZE,
+            "page_no": page_no,
+        }
+        try:
+            r = sess.get(LIST_URL, params=params, timeout=TIMEOUT)
+            if r.status_code != 200:
+                break
+            body = r.json()
+            status = body.get("status")
+            if status == "013":
+                break
+            if status != "000":
+                break
+            for row in (body.get("list") or []):
+                title = (row.get("report_nm") or "").strip()
+                kind = categorize_event(title)
+                if not kind:
+                    continue
+                events.append({
+                    "date": _to_iso_date(row.get("rcept_dt") or ""),
+                    "rceptNo": (row.get("rcept_no") or "").strip() or None,
+                    "title": title,
+                    "type": kind,
+                    "round": extract_round(title),
+                })
+            total_page = int(body.get("total_page") or 1)
+            if page_no >= total_page:
+                break
+        except (requests.RequestException, ValueError):
+            break
+    # Newest first.
+    events.sort(key=lambda e: e["date"] or "0000-00-00", reverse=True)
+    return events
+
+
+def attach_events(issuances, events):
+    """Match each event to an issuance by 회차 number when possible.
+    Unmatched events stay at ticker level so the UI can still show them."""
+    by_round = {}
+    for x in issuances:
+        rnd = extract_round(x.get("round") or "")
+        x["_round"] = rnd
+        x["events"] = []
+        if rnd:
+            by_round.setdefault(rnd, []).append(x)
+    unmatched = []
+    for ev in events:
+        r = ev["round"]
+        targets = by_round.get(r) if r else None
+        if targets:
+            # If multiple issuances share the same round (shouldn't happen
+            # but does when 회차 numbering resets across CB types), attach
+            # to the one whose type matches the event most plausibly.
+            best = targets[0]
+            if len(targets) > 1:
+                if ev["type"] in ("conversion",):
+                    best = next((t for t in targets if t["type"] == "CB"), best)
+                elif ev["type"] in ("warrant_exercise",):
+                    best = next((t for t in targets if t["type"] == "BW"), best)
+                elif ev["type"] in ("exchange",):
+                    best = next((t for t in targets if t["type"] == "EB"), best)
+            best["events"].append(ev)
+        else:
+            unmatched.append(ev)
+    # Drop scratch field.
+    for x in issuances:
+        x.pop("_round", None)
+    return unmatched
+
+
+def summarize(issuances, unmatched_events):
     today = date.today().isoformat()
     total = 0
     outstanding = 0
     next_put = None
+    total_events = sum(len(x.get("events") or []) for x in issuances)
+    total_events += len(unmatched_events or [])
     for x in issuances:
         if x["faceAmount"]:
             total += x["faceAmount"]
             if x["maturityDate"] and x["maturityDate"] > today:
                 outstanding += x["faceAmount"]
-        # Pick the earliest upcoming put start (today < putStart).
         ps = x["putStart"]
         if ps and ps > today:
             if next_put is None or ps < next_put["date"]:
@@ -201,6 +317,7 @@ def summarize(issuances):
         "totalIssued": total,
         "outstandingByMaturity": outstanding,
         "issuanceCount": len(issuances),
+        "totalEvents": total_events,
         "nextPut": next_put,
     }
 
@@ -246,11 +363,16 @@ def fetch_one(sess, ticker, name, corp_code, bgn_de, end_de):
         key=lambda x: x["rceptDt"] or "0000-00-00",
         reverse=True,
     )
+    # Only scan list.json for tickers that actually issued mezzanine —
+    # avoids 2K+ wasted calls per run.
+    events = scan_events(sess, corp_code, bgn_de, end_de)
+    unmatched = attach_events(issuances, events)
     return {
         "name": name,
         "corpCode": corp_code,
         "issuances": issuances,
-        "summary": summarize(issuances),
+        "unmatchedEvents": unmatched,
+        "summary": summarize(issuances, unmatched),
     }
 
 
@@ -275,6 +397,7 @@ def main():
     results = {}
     skipped_no_corp = 0
     total_issuances = 0
+    total_events = 0
 
     def task(ticker, name):
         cc = code_map.get(ticker)
@@ -293,12 +416,14 @@ def main():
             if entry is not None:
                 results[ticker] = entry
                 total_issuances += entry["summary"]["issuanceCount"]
+                total_events += entry["summary"]["totalEvents"]
             elif reason == "no_corp":
                 skipped_no_corp += 1
             if done % 200 == 0:
                 print(
                     f"  {done}/{total} · with_mezz={len(results)} "
-                    f"issuances={total_issuances} no_corp={skipped_no_corp}",
+                    f"issuances={total_issuances} events={total_events} "
+                    f"no_corp={skipped_no_corp}",
                     flush=True,
                 )
 
@@ -309,6 +434,7 @@ def main():
         "count": len(tickers),
         "issuersWithMezzanine": len(results),
         "totalIssuances": total_issuances,
+        "totalEvents": total_events,
         "mezzanine": results,
     }
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
@@ -317,7 +443,7 @@ def main():
 
     print(
         f"Wrote {OUTPUT_FILE} · issuers={len(results)} "
-        f"issuances={total_issuances}",
+        f"issuances={total_issuances} events={total_events}",
         flush=True,
     )
 
