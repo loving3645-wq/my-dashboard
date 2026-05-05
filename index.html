@@ -102,6 +102,10 @@
   .sync-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-faint); }
   .sync-pill.live .dot { background: var(--green); box-shadow: 0 0 6px rgba(74,124,78,0.4); }
   .sync-pill.error .dot { background: var(--accent); }
+  .notif-pill { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); display: inline-flex; align-items: center; gap: 5px; letter-spacing: 0.1em; padding: 4px 9px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); cursor: pointer; transition: all 0.15s; }
+  .notif-pill:hover { border-color: var(--line-strong); color: var(--ink); }
+  .notif-pill.on { color: var(--green); border-color: var(--green); background: var(--green-bg); }
+  .notif-pill.denied { color: var(--ink-faint); cursor: not-allowed; opacity: 0.7; }
   .col-tabs { display: none; gap: 6px; margin-bottom: 14px; background: var(--surface); padding: 4px; border-radius: 8px; border: 1px solid var(--line); overflow-x: auto; }
   .col-tab { flex: 1; min-width: max-content; padding: 8px 10px; font-size: 12px; color: var(--ink-soft); border-radius: 5px; transition: all 0.15s; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; }
   .col-tab:hover { color: var(--ink); }
@@ -416,6 +420,7 @@
     <button class="filter-btn" data-pri="2">P2</button>
     <button class="filter-btn" data-pri="3">P3</button>
     <div class="toolbar-spacer"></div>
+    <button class="notif-pill" id="notif-pill" type="button" title="알림 권한 / 켤 때는 한 번 클릭"><span>🔔</span><span class="lbl">OFF</span></button>
     <span class="sync-pill" id="sync-pill"><span class="dot"></span><span class="lbl">SYNC</span></span>
   </div>
   <section class="mezz-alerts-bar" id="mezz-alerts" hidden>
@@ -1857,6 +1862,102 @@ document.getElementById('contact-name').addEventListener('keydown', e => { if (e
 document.getElementById('reset-btn').addEventListener('click', resetToken);
 document.getElementById('token-save').addEventListener('click', saveToken);
 document.getElementById('token-input').addEventListener('keydown', e => { if (e.key === 'Enter') saveToken(); });
+/* ===== 브라우저 알림 ===== */
+const NOTIF_DEDUP_KEY = 'dash_notif_dedup';
+function _loadDedup() { try { return JSON.parse(localStorage.getItem(NOTIF_DEDUP_KEY)) || {}; } catch { return {}; } }
+function _saveDedup(d) { try { localStorage.setItem(NOTIF_DEDUP_KEY, JSON.stringify(d)); } catch {} }
+function pushNotif(key, title, body, ttlHours) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return false;
+  const dedup = _loadDedup();
+  const now = Date.now();
+  if (ttlHours > 0 && dedup[key] && (now - dedup[key]) < ttlHours * 3600 * 1000) return false;
+  try {
+    const n = new Notification(title, { body, tag: key });
+    n.onclick = () => { window.focus(); n.close(); };
+    dedup[key] = now;
+    for (const k in dedup) if (now - dedup[k] > 30 * 86400000) delete dedup[k];
+    _saveDedup(dedup);
+    return true;
+  } catch (e) { console.warn('notif error', e); return false; }
+}
+function checkAlerts() {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const now = Date.now();
+  const hourMs = 3600 * 1000;
+  const dayMs = 86400 * 1000;
+  // 1) 캘린더 1시간 이내
+  for (const ev of (state.events || [])) {
+    const startStr = ev.start && (ev.start.dateTime || ev.start.date);
+    if (!startStr || !ev.start.dateTime) continue;
+    const evStart = new Date(startStr).getTime();
+    if (isNaN(evStart)) continue;
+    const diff = evStart - now;
+    if (diff > 0 && diff <= hourMs) {
+      const mins = Math.max(1, Math.round(diff / 60000));
+      pushNotif(`cal:${ev.id || startStr}`, '⏰ 이벤트 임박', `${ev.summary || '(제목 없음)'} · ${mins}분 뒤`, 0);
+    }
+  }
+  // 2) 잠시중단 14일+ (주 1회)
+  for (const t of (state.todos || [])) {
+    if (t.status !== 'paused') continue;
+    const ref = t.pausedAt || t.created || now;
+    const days = Math.floor((now - ref) / dayMs);
+    if (days >= 14) {
+      const weekKey = Math.floor(now / (7 * dayMs));
+      pushNotif(`paused:${t.id}:${weekKey}`, '⏸ 오래된 잠시중단', `"${(t.text||'').slice(0,40)}" — ${days}일째`, 24 * 6);
+    }
+  }
+  // 3) P1 3일+ (하루 1회)
+  for (const t of (state.todos || [])) {
+    if ((t.status || 'todo') !== 'todo' || t.priority !== 1 || !t.created) continue;
+    const days = Math.floor((now - t.created) / dayMs);
+    if (days >= 3) {
+      const dayKey = Math.floor(now / dayMs);
+      pushNotif(`p1:${t.id}:${dayKey}`, '🔴 P1 미처리', `"${(t.text||'').slice(0,40)}" — ${days}일째`, 23);
+    }
+  }
+  // 4) 메자닌 풋 행사창 진행 중 (하루 1회)
+  if (typeof _dashStockCache !== 'undefined' && _dashStockCache.loaded && _dashStockCache.mezz && _dashStockCache.mezz.mezzanine) {
+    const todayStr = new Date(now - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    const dayKey = Math.floor(now / dayMs);
+    for (const ticker in _dashStockCache.mezz.mezzanine) {
+      const entry = _dashStockCache.mezz.mezzanine[ticker];
+      for (const x of (entry.issuances || [])) {
+        if (x.putStart && x.putEnd && x.putStart <= todayStr && todayStr <= x.putEnd) {
+          pushNotif(`mezz-put:${ticker}:${x.putStart}:${dayKey}`, '⚠️ 메자닌 풋 행사창', `${entry.name || ticker} (${ticker}) — ${x.putStart} ~ ${x.putEnd}`, 23);
+        }
+      }
+    }
+  }
+}
+function updateNotifPill() {
+  const pill = document.getElementById('notif-pill');
+  if (!pill) return;
+  const lbl = pill.querySelector('.lbl');
+  if (!('Notification' in window)) {
+    pill.classList.add('denied'); pill.classList.remove('on');
+    lbl.textContent = 'N/A'; pill.title = '이 브라우저는 알림을 지원하지 않아요';
+    return;
+  }
+  const p = Notification.permission;
+  if (p === 'granted') { pill.classList.add('on'); pill.classList.remove('denied'); lbl.textContent = 'ON'; pill.title = '알림 켜짐 · 클릭하면 테스트 알림'; }
+  else if (p === 'denied') { pill.classList.add('denied'); pill.classList.remove('on'); lbl.textContent = 'BLOCKED'; pill.title = '브라우저 설정에서 차단됨'; }
+  else { pill.classList.remove('on', 'denied'); lbl.textContent = 'OFF'; pill.title = '클릭해서 알림 켜기'; }
+}
+document.getElementById('notif-pill').addEventListener('click', async () => {
+  if (!('Notification' in window) || Notification.permission === 'denied') return;
+  if (Notification.permission === 'granted') {
+    pushNotif(`test:${Date.now()}`, '🔔 알림 테스트', '정상 작동 중!', 0);
+    return;
+  }
+  const result = await Notification.requestPermission();
+  updateNotifPill();
+  if (result === 'granted') {
+    pushNotif(`welcome:${Date.now()}`, '🔔 알림 켜짐', '캘린더·메자닌·미룬 일을 알려드릴게요.', 0);
+    setTimeout(checkAlerts, 1500);
+  }
+});
+
 async function bootstrap() {
   renderHeader(); tickClock(); setInterval(tickClock, 30000);
   state.token = localStorage.getItem(STORAGE_KEY.TOKEN);
@@ -1869,10 +1970,13 @@ async function bootstrap() {
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.pri === state.priFilter));
   setActiveCol(state.activeCol);
   renderJournal();
+  updateNotifPill();
   if (!state.token) { showTokenModal(); return; }
   await Promise.all([loadCalendar(), loadTodos()]);
   setInterval(() => { if (!document.hidden) loadCalendar(); }, 5 * 60 * 1000);
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) loadCalendar(); });
+  setInterval(() => { if (!document.hidden) checkAlerts(); }, 5 * 60 * 1000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { loadCalendar(); checkAlerts(); } });
+  setTimeout(checkAlerts, 3000);
 }
 bootstrap();
 </script>
