@@ -388,11 +388,11 @@ function renderLockups() {
     const mktKey = (e.market || '').toUpperCase().includes('KOSDAQ') ? 'kosdaq' : 'kospi';
     const reasonCls = e.type === '6m' ? 'lockup6m' : 'lockup1y';
     const currentReturn = e.type === '6m' ? e.r6m : e.r1y;
-    return `<tr class="clickable" data-code="${e.ticker}">
+    return `<tr${e.ticker ? ' class="clickable" data-code="' + e.ticker + '"' : ''}>
       <td class="left">${dayPill(e.days)}</td>
       <td class="left">${e.expiryDate}</td>
       <td class="left"><div class="name-cell">
-        <span class="code">${e.ticker}</span>
+        <span class="code">${e.ticker || ''}</span>
         <span class="nm">${escapeHtml(e.name)}</span>
         <span class="mkt-pill ${mktKey}">${mktKey.toUpperCase()}</span>
       </div></td>

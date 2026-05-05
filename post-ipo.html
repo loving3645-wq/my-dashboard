@@ -89,6 +89,8 @@
   .ipo th.sorted .arrow { opacity: 1; }
   .ipo tbody tr { border-bottom: 1px solid var(--line); transition: background 0.1s; cursor: pointer; }
   .ipo tbody tr:hover { background: var(--bg-warm); }
+  .ipo tbody tr.no-ticker { cursor: default; opacity: 0.7; }
+  .ipo tbody tr.no-ticker:hover { background: transparent; }
   .ipo td { padding: 8px 10px; text-align: right; font-family: var(--mono); font-size: 12px; color: var(--ink); white-space: nowrap; }
   .ipo td.left { text-align: left; }
   .ipo td.muted { color: var(--ink-faint); }
@@ -343,10 +345,10 @@ function render() {
       ? `<td class="left dart-col">${Number.isFinite(r.dartParValue) ? r.dartParValue.toLocaleString() : '<span class="muted">—</span>'}</td>
          <td class="left dart-col">${escapeHtml(r.dartStockKind || '—')}</td>`
       : '';
-    return `<tr data-code="${r.ticker}">
+    return `<tr${r.ticker ? ` data-code="${r.ticker}"` : ' class="no-ticker"'}>
       <td class="left">${r.listingDate || ''}</td>
       <td class="left"><div class="name-cell">
-        <span class="code">${r.ticker}</span>
+        <span class="code">${r.ticker || ''}</span>
         <span class="nm">${escapeHtml(r.name)}</span>
         <span class="mkt-pill ${mktKey}">${mktLabel}</span>
       </div></td>
@@ -358,7 +360,7 @@ function render() {
   }).join('');
   tbody.querySelectorAll('tr[data-code]').forEach(tr => {
     tr.addEventListener('click', () => {
-      window.location.href = `stock-deep-dive.html#${tr.dataset.code}`;
+      if (tr.dataset.code) window.location.href = `stock-deep-dive.html#${tr.dataset.code}`;
     });
   });
 }
