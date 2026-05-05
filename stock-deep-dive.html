@@ -488,6 +488,26 @@
     </div>
   </section>
 
+  <!-- ============ ROW 4.5: MEZZANINE (CB/BW/EB) ============ -->
+  <section class="grid stagger" style="animation-delay:0.28s;" id="mezz-section" hidden>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><span class="icon"></span>메자닌 <em>발행이력 · 잔량</em></div>
+        <div class="card-meta" id="mezz-meta">DART 주요사항보고서 기준 · 행사/상환 차감 전</div>
+      </div>
+      <div class="metric-rows" id="mezz-summary"></div>
+      <div style="overflow-x:auto; margin-top:12px;">
+        <table class="tbl" id="mezz-tbl">
+          <thead><tr>
+            <th>공시일</th><th>종류</th><th class="num">발행액</th>
+            <th>만기</th><th class="num">전환가</th><th>풋(시작)</th><th>상태</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ ROW 5: NEWS ============ -->
   <section class="grid stagger" style="animation-delay:0.32s;">
     <div class="card">
@@ -2064,6 +2084,77 @@ async function loadFinancialsForTicker(stock, ticker) {
   return true;
 }
 
+/* ---- DART mezzanine (CB/BW/EB) issuance history + outstanding ----
+ * Fed by data/mezzanine.json (weekly cron, fetch_mezzanine_history.py).
+ * Section is hidden by default; revealed only when this ticker has
+ * 1+ issuances on file. Outstanding is a maturity-based estimate
+ * (sum of face amounts where maturity > today) — exercises and
+ * redemptions are not subtracted in v1. */
+let _mezzCache = null;
+let _mezzPromise = null;
+function loadMezzanineOnce() {
+  if (_mezzCache) return Promise.resolve(_mezzCache);
+  if (_mezzPromise) return _mezzPromise;
+  _mezzPromise = fetch('data/mezzanine.json', { cache: 'force-cache' })
+    .then(r => r.ok ? r.json() : null)
+    .then(j => { _mezzCache = j; return j; })
+    .catch(() => null);
+  return _mezzPromise;
+}
+
+function fmtMezzKRW(won) {
+  if (won == null || !isFinite(won) || won <= 0) return '—';
+  if (won >= 1e12) return (won / 1e12).toFixed(2) + '조';
+  if (won >= 1e8) return (won / 1e8).toLocaleString(undefined, { maximumFractionDigits: 0 }) + '억';
+  return won.toLocaleString();
+}
+
+function mezzStatus(x, today) {
+  if (!x.maturityDate) return '—';
+  if (x.maturityDate <= today) return '만기 도래';
+  if (x.putStart && x.putEnd && x.putStart <= today && today <= x.putEnd) return '풋 행사 가능';
+  if (x.convertStart && x.convertEnd && x.convertStart <= today && today <= x.convertEnd) return '전환 가능';
+  return '만기 전';
+}
+
+async function loadMezzanineForTicker(ticker) {
+  const section = $('mezz-section');
+  if (!section) return;
+  const payload = await loadMezzanineOnce();
+  const entry = payload && payload.mezzanine && payload.mezzanine[ticker];
+  if (!entry || !entry.issuances || !entry.issuances.length) {
+    section.hidden = true;
+    return;
+  }
+  section.hidden = false;
+  const today = new Date().toISOString().slice(0, 10);
+  const s = entry.summary || {};
+  const summaryRows = [
+    { lbl: '발행 건수', val: (s.issuanceCount || entry.issuances.length) + '건' },
+    { lbl: '총 발행원금', val: fmtMezzKRW(s.totalIssued) },
+    { lbl: '미상환 추정 (만기 미도래)', val: fmtMezzKRW(s.outstandingByMaturity) },
+    { lbl: '다음 풋 도래', val: s.nextPut && s.nextPut.date ? s.nextPut.date : '—' },
+  ];
+  $('mezz-summary').innerHTML = summaryRows
+    .map(r => `<div class="metric-row"><span class="lbl">${r.lbl}</span><span class="val">${r.val}</span></div>`)
+    .join('');
+  const escapeHtml = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const rows = entry.issuances.map(x => {
+    const status = mezzStatus(x, today);
+    const statusCls = status === '만기 도래' ? 'neg' : (status === '풋 행사 가능' ? 'neg' : (status === '전환 가능' ? 'pos' : ''));
+    return `<tr>
+      <td>${escapeHtml(x.rceptDt || '')}</td>
+      <td>${escapeHtml(x.type)}</td>
+      <td class="num">${fmtMezzKRW(x.faceAmount)}</td>
+      <td>${escapeHtml(x.maturityDate || '—')}</td>
+      <td class="num">${x.conversionPrice ? x.conversionPrice.toLocaleString() + '원' : '—'}</td>
+      <td>${escapeHtml(x.putStart || '—')}</td>
+      <td class="${statusCls}">${status}</td>
+    </tr>`;
+  }).join('');
+  $('mezz-tbl').querySelector('tbody').innerHTML = rows;
+}
+
 async function loadStock(ticker) {
   ticker = String(ticker).toUpperCase().padStart(6, '0').slice(-6);
   if (!/^\d{6}$/.test(ticker)) {
@@ -2146,6 +2237,10 @@ async function loadStock(ticker) {
     // Try DART 3Y financials — replaces income table + rev/margin charts on hit.
     loadFinancialsForTicker(stock, ticker);
   }
+
+  // Mezzanine card is independent of curation (some curated big caps
+  // also have CBs). Always try; the section stays hidden if there's none.
+  loadMezzanineForTicker(ticker);
 
   // 5) Fetch chart history
   try {
