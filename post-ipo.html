@@ -71,50 +71,54 @@
   .status-bar .val { color: var(--ink); font-weight: 500; }
 
   .summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 14px; }
-  .summary-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
-  .summary-card .lbl { font-family: var(--mono); font-size: 9px; color: var(--ink-soft); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
-  .summary-card .val { font-family: var(--serif); font-size: 22px; font-weight: 500; line-height: 1; }
+  .summary-card { background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; padding: 14px 16px; border-left: 3px solid var(--accent); transition: box-shadow 0.15s; }
+  .summary-card:hover { box-shadow: 0 2px 6px rgba(184,66,31,0.1); }
+  .summary-card .lbl { font-family: var(--mono); font-size: 9px; color: var(--ink-mid); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; font-weight: 500; }
+  .summary-card .val { font-family: var(--serif); font-size: 24px; font-weight: 500; line-height: 1; color: var(--ink); }
   .summary-card .val.up { color: var(--green); }
   .summary-card .val.down { color: var(--red); }
   .summary-card .sub { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); margin-top: 4px; }
 
-  .lockup-section { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; margin-bottom: 14px; }
-  .lockup-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; }
-  .lockup-title { font-family: var(--serif); font-size: 16px; font-weight: 500; }
-  .lockup-title em { font-style: italic; color: var(--accent); font-weight: 500; }
-  .lockup-sub { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.08em; text-transform: uppercase; }
-  .lockup-more { font-family: var(--mono); font-size: 10px; color: var(--accent); text-decoration: none; letter-spacing: 0.05em; margin-left: auto; }
+  .lockup-section { background: linear-gradient(135deg, #1a1a1a 0%, #2a1f18 100%); color: #f0ebe2; border: 1px solid #3a2f24; border-radius: 10px; padding: 16px 18px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(184,66,31,0.12); }
+  .lockup-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+  .lockup-title { font-family: var(--serif); font-size: 17px; font-weight: 500; color: #faf6ed; }
+  .lockup-title em { font-style: italic; color: #ff7a4a; font-weight: 500; }
+  .lockup-sub { font-family: var(--mono); font-size: 10px; color: #b8a896; letter-spacing: 0.08em; text-transform: uppercase; }
+  .lockup-more { font-family: var(--mono); font-size: 10px; color: #ff7a4a; text-decoration: none; letter-spacing: 0.05em; margin-left: auto; }
   .lockup-more:hover { text-decoration: underline; }
-  .lockup-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
-  .lockup-card { background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; }
+  .lockup-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; }
+  .lockup-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 11px 13px; transition: background 0.15s, border-color 0.15s; }
+  .lockup-card:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,122,74,0.3); }
   .lockup-card .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
-  .lockup-card .lockup-tag { font-family: var(--mono); font-size: 10px; padding: 2px 6px; border-radius: 3px; letter-spacing: 0.05em; font-weight: 500; }
-  .lockup-card .lockup-tag.m1 { background: var(--accent-bg); color: var(--accent); }
-  .lockup-card .lockup-tag.m3 { background: var(--gold-bg); color: var(--gold); }
-  .lockup-card .lockup-tag.m6 { background: var(--blue-bg); color: var(--blue); }
-  .lockup-card .lockup-tag.y1 { background: var(--purple-bg); color: var(--purple); }
-  .lockup-card .cnt { font-family: var(--serif); font-size: 18px; font-weight: 500; }
-  .lockup-card .cnt small { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); margin-left: 4px; }
+  .lockup-card .lockup-tag { font-family: var(--mono); font-size: 10px; padding: 3px 7px; border-radius: 3px; letter-spacing: 0.05em; font-weight: 600; }
+  .lockup-card .lockup-tag.m1 { background: #ff7a4a; color: #1a1a1a; }
+  .lockup-card .lockup-tag.m3 { background: #f0c14b; color: #1a1a1a; }
+  .lockup-card .lockup-tag.m6 { background: #5b9bd5; color: #1a1a1a; }
+  .lockup-card .lockup-tag.y1 { background: #b388e8; color: #1a1a1a; }
+  .lockup-card .ratio { font-family: var(--mono); font-size: 10px; color: #b8a896; letter-spacing: 0.04em; margin-top: 2px; }
+  .lockup-card .cnt { font-family: var(--serif); font-size: 19px; font-weight: 500; color: #faf6ed; }
+  .lockup-card .cnt small { font-family: var(--mono); font-size: 10px; color: #8a8074; margin-left: 4px; font-weight: 400; }
   .lockup-card ul { list-style: none; margin: 0; padding: 0; font-family: var(--mono); font-size: 11px; }
-  .lockup-card li { display: flex; justify-content: space-between; padding: 3px 0; border-top: 1px dotted var(--line); color: var(--ink-mid); cursor: pointer; }
-  .lockup-card li:hover { color: var(--accent); }
-  .lockup-card li .nm { color: var(--ink); font-family: var(--sans); font-size: 12px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .lockup-card li .dd { color: var(--ink-soft); font-size: 10px; }
-  .lockup-card .empty { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); padding: 6px 0; }
+  .lockup-card li { display: flex; justify-content: space-between; padding: 4px 0; border-top: 1px dotted rgba(255,255,255,0.1); color: #d8cfc0; cursor: pointer; transition: color 0.15s; gap: 8px; }
+  .lockup-card li:hover { color: #ff7a4a; }
+  .lockup-card li .nm { color: #faf6ed; font-family: var(--sans); font-size: 12px; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lockup-card li .dd { color: #8a8074; font-size: 10px; white-space: nowrap; }
+  .lockup-card .empty { font-family: var(--mono); font-size: 11px; color: #6a6055; padding: 6px 0; }
 
-  .table-wrap { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: auto; max-height: calc(100vh - 280px); }
+  .table-wrap { background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; overflow: auto; max-height: calc(100vh - 280px); box-shadow: 0 1px 4px rgba(26,26,26,0.06); }
   table.ipo { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-  .ipo thead { position: sticky; top: 0; background: var(--surface-2); z-index: 5; }
-  .ipo th { text-align: right; padding: 10px 10px; font-family: var(--mono); font-weight: 500; font-size: 10px; color: var(--ink-soft); letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 1px solid var(--line); cursor: pointer; -webkit-user-select: none; user-select: none; white-space: nowrap; transition: color 0.12s, background 0.12s; }
-  .ipo th:hover { color: var(--ink); background: var(--bg-warm); }
+  .ipo thead { position: sticky; top: 0; background: #1a1a1a; z-index: 5; }
+  .ipo th { text-align: right; padding: 11px 10px; font-family: var(--mono); font-weight: 600; font-size: 10px; color: #c8b8a4; letter-spacing: 0.12em; text-transform: uppercase; border-bottom: 2px solid #b8421f; cursor: pointer; -webkit-user-select: none; user-select: none; white-space: nowrap; transition: color 0.12s, background 0.12s; }
+  .ipo th:hover { color: #fafaf7; background: #2a2520; }
   .ipo th.left { text-align: left; }
-  .ipo th.sorted { color: var(--accent); }
+  .ipo th.sorted { color: #ff7a4a; }
   .ipo th .arrow { display: inline-block; margin-left: 4px; font-size: 9px; opacity: 0.6; }
   .ipo th.sorted .arrow { opacity: 1; }
   .ipo tbody tr { border-bottom: 1px solid var(--line); transition: background 0.1s; cursor: pointer; }
-  .ipo tbody tr:hover { background: var(--bg-warm); }
-  .ipo tbody tr.no-ticker { cursor: default; opacity: 0.7; }
-  .ipo tbody tr.no-ticker:hover { background: transparent; }
+  .ipo tbody tr:nth-child(even) { background: #fbf9f4; }
+  .ipo tbody tr:hover { background: #f0e6d8; }
+  .ipo tbody tr.no-ticker { cursor: default; opacity: 0.55; }
+  .ipo tbody tr.no-ticker:hover { background: inherit; }
   .ipo td { padding: 8px 10px; text-align: right; font-family: var(--mono); font-size: 12px; color: var(--ink); white-space: nowrap; }
   .ipo td.left { text-align: left; }
   .ipo td.muted { color: var(--ink-faint); }
@@ -447,11 +451,13 @@ function renderLockups() {
   if (!grid) return;
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const WINDOW_DAYS = 60;
+  // 한국 IPO 평균 의무보유 비율 추정 — DART 증권신고서 기반 정확치 아님,
+  // KRX 통계 평균값. 종목별 실제 비율은 다를 수 있음.
   const PERIODS = [
-    { key: 'm1', label: '+1M (단기 의무보유)', months: 1, tag: 'm1' },
-    { key: 'm3', label: '+3M (의무보유)', months: 3, tag: 'm3' },
-    { key: 'm6', label: '+6M (기관·우리사주)', months: 6, tag: 'm6' },
-    { key: 'y1', label: '+1Y (최대주주)', months: 12, tag: 'y1' },
+    { key: 'm1', label: '+1M', sub: '단기 의무보유', months: 1, tag: 'm1', ratio: 5 },
+    { key: 'm3', label: '+3M', sub: '의무보유',     months: 3, tag: 'm3', ratio: 8 },
+    { key: 'm6', label: '+6M', sub: '기관·우리사주', months: 6, tag: 'm6', ratio: 20 },
+    { key: 'y1', label: '+1Y', sub: '최대주주',     months: 12, tag: 'y1', ratio: 40 },
   ];
   const buckets = PERIODS.map(p => ({ ...p, items: [] }));
   for (const r of STATE.listings) {
@@ -479,7 +485,10 @@ function renderLockups() {
       : '<div class="empty">60일 이내 없음</div>';
     return `<div class="lockup-card">
       <div class="head">
-        <span class="lockup-tag ${b.tag}">${b.label}</span>
+        <div>
+          <div><span class="lockup-tag ${b.tag}">${b.label}</span></div>
+          <div class="ratio">${b.sub} · 평균 ~${b.ratio}% 풀림</div>
+        </div>
         <span class="cnt">${b.items.length}<small>건</small></span>
       </div>
       ${liHtml}
