@@ -272,6 +272,15 @@
   .tag.sw-watching { background: var(--indigo-bg); color: var(--indigo); border: 1px solid var(--indigo); }
   .tag.sw-todo { background: var(--bg-warm); color: var(--ink-soft); border: 1px dashed var(--line-strong); }
   .stock-comment { font-size: 12px; color: var(--ink-mid); padding: 6px 8px; background: var(--bg-warm); border-radius: 4px; border-left: 2px solid var(--line-strong); white-space: pre-wrap; line-height: 1.45; }
+  .stock-link { color: inherit; text-decoration: none; border-bottom: 1px dotted var(--line-strong); }
+  .stock-link:hover { color: var(--accent); border-bottom-color: var(--accent); }
+  .stock-chips { display: flex; gap: 4px; flex-wrap: wrap; }
+  .stock-chip { display: inline-flex; align-items: center; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-family: var(--mono, 'JetBrains Mono', monospace); background: var(--bg-warm); color: var(--ink-mid); border: 1px solid var(--line); line-height: 1.4; white-space: nowrap; }
+  .stock-chip.price { color: var(--ink); font-weight: 600; }
+  .stock-chip.pos { color: #1F7A3C; border-color: #1F7A3C33; background: #1F7A3C0F; }
+  .stock-chip.neg { color: #B0352A; border-color: #B0352A33; background: #B0352A0F; }
+  .stock-chip.mezz { color: #8C6D1F; border-color: #C89B3C44; background: #C89B3C14; }
+  .stock-chip.disc { color: #2C4A8C; border-color: #3a6db044; background: #3a6db014; }
 
   .col-add { padding: 10px 12px; border-top: 1px solid var(--line); flex-shrink: 0; background: var(--surface); }
   .col.contacts .col-add { background: var(--surface-2); }
@@ -576,6 +585,73 @@ const DEAL_STAGES = ['검토', '보고예정', '계약예정'];
 const PROJECT_CAT_LABEL = { study: '자기개발', side: '사이드', hobby: '취미', work: '업무', other: '기타' };
 const PROJECT_STATUS_LABEL = { active: '진행중', paused: '일시정지', done: '완료' };
 const STOCK_STATUS_LABEL = { watching: '보고있는', todo: '봐야할' };
+
+/* ---- Dashboard stock-card enrichment (DART/snapshot) ----
+ * Loaded lazily on first render. Once data arrives, renderStocks()
+ * is re-invoked so the chips show up. Files missing → cards stay
+ * plain (no error UI — graceful degradation). */
+const _dashStockCache = { snap: null, mezz: null, disc: null, loaded: false, loading: false };
+async function loadDashStockData() {
+  if (_dashStockCache.loaded || _dashStockCache.loading) return;
+  _dashStockCache.loading = true;
+  const get = url => fetch(url, { cache: 'force-cache' })
+    .then(r => r.ok ? r.json() : null).catch(() => null);
+  const [snap, mezz, disc] = await Promise.all([
+    get('data/market-snapshot.json'),
+    get('data/mezzanine.json'),
+    get('data/disclosures.json'),
+  ]);
+  _dashStockCache.snap = snap;
+  _dashStockCache.mezz = mezz;
+  _dashStockCache.disc = disc;
+  _dashStockCache.loaded = true;
+  _dashStockCache.loading = false;
+  // Refresh cards now that enrichment is available.
+  if (typeof renderStocks === 'function') renderStocks();
+}
+function extractTicker(name) {
+  const m = String(name || '').match(/(?:^|[^0-9A-Z])([0-9]{6})(?:[^0-9A-Z]|$)/);
+  return m ? m[1] : null;
+}
+function _fmtKRWchip(won) {
+  if (!isFinite(won) || won <= 0) return '';
+  if (won >= 1e12) return (won / 1e12).toFixed(1) + '조';
+  if (won >= 1e8) return Math.round(won / 1e8).toLocaleString() + '억';
+  return Math.round(won).toLocaleString() + '원';
+}
+function buildStockChips(ticker) {
+  if (!ticker || !_dashStockCache.loaded) return '';
+  const chips = [];
+  const sn = _dashStockCache.snap && _dashStockCache.snap.tickers
+    ? _dashStockCache.snap.tickers[ticker] : null;
+  if (sn && sn.price) {
+    chips.push(`<span class="stock-chip price">${Number(sn.price).toLocaleString()}원</span>`);
+    if (typeof sn.r1d === 'number') {
+      const cls = sn.r1d >= 0 ? 'pos' : 'neg';
+      const sign = sn.r1d >= 0 ? '+' : '';
+      chips.push(`<span class="stock-chip ${cls}">${sign}${sn.r1d.toFixed(2)}%</span>`);
+    }
+  }
+  const mz = _dashStockCache.mezz && _dashStockCache.mezz.mezzanine
+    ? _dashStockCache.mezz.mezzanine[ticker] : null;
+  if (mz && mz.summary) {
+    const out = mz.summary.outstanding != null
+      ? mz.summary.outstanding : mz.summary.outstandingByMaturity;
+    if (out > 0) {
+      chips.push(`<span class="stock-chip mezz" title="메자닌 미상환 잔액">CB ${_fmtKRWchip(out)}</span>`);
+    }
+  }
+  const dList = _dashStockCache.disc && _dashStockCache.disc.disclosures
+    ? _dashStockCache.disc.disclosures[ticker] : null;
+  if (dList && dList.length) {
+    const cutoff = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+    const recent = dList.filter(d => d.date && d.date >= cutoff).length;
+    if (recent > 0) {
+      chips.push(`<span class="stock-chip disc" title="7일 내 공시 ${recent}건">📑 ${recent}</span>`);
+    }
+  }
+  return chips.length ? `<div class="stock-chips">${chips.join('')}</div>` : '';
+}
 let state = { token: null, calendarGistId: null, todos: [], events: [], contacts: [], projects: [], stocks: [], activeTab: 'all', priFilter: 'all', activeCol: 'cal', modalContext: null, contactModalContext: null, projectModalContext: null, stockModalContext: null };
 
 function todayKST() { const now = new Date(); return new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' })); }
@@ -1074,13 +1150,22 @@ function renderStocks() {
   document.getElementById('stat-stocks').textContent = state.stocks.filter(s => s.status === 'watching').length;
   if (list.length === 0) { el.innerHTML = '<div class="empty">종목을 추가해보세요</div>'; return; }
   el.innerHTML = list.map(stockCardHTML).join('');
+  // Lazy-load DART/snapshot enrichment on first render with stocks.
+  if (!_dashStockCache.loaded) loadDashStockData();
 }
 function stockCardHTML(s) {
   const statusLbl = STOCK_STATUS_LABEL[s.status] || '보고있는';
+  const ticker = extractTicker(s.name);
+  const safeName = escapeHTML(s.name || '(이름 없음)');
+  const nameHtml = ticker
+    ? `<a href="stock-deep-dive.html#${ticker}" class="stock-link" target="_blank" rel="noopener">${safeName}</a>`
+    : safeName;
+  const chips = buildStockChips(ticker);
   const commentRow = s.comment ? `<div class="stock-comment">${escapeHTML(s.comment)}</div>` : '';
   return `<div class="stock-card${s.status === 'todo' ? ' todo' : ''}" data-id="${s.id}">
-    <div class="stock-name">${escapeHTML(s.name || '(이름 없음)')}</div>
+    <div class="stock-name">${nameHtml}</div>
     <div class="stock-meta"><span class="tag sw-${s.status}">${statusLbl}</span></div>
+    ${chips}
     ${commentRow}
     <div class="card-actions">
       <button class="card-btn" data-saction="toggle" title="구분 전환">↔</button>
