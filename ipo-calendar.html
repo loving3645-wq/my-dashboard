@@ -94,6 +94,16 @@
   .day-pill.past { background: transparent; color: var(--ink-faint); }
 
   .reason-pill { font-family: var(--mono); font-size: 9px; padding: 2px 6px; border-radius: 2px; letter-spacing: 0.04em; }
+  .cal tbody tr.group-row { background: var(--bg-warm); cursor: default; }
+  .cal tbody tr.group-row:hover { background: var(--bg-warm); }
+  .cal tbody tr.group-row td { padding: 10px 12px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.05em; text-align: left; border-top: 2px solid var(--line-strong); border-bottom: 1px solid var(--line); }
+  .cal tbody tr.group-row .g-label { font-weight: 600; color: var(--ink); margin-right: 14px; }
+  .cal tbody tr.group-row .g-cnt { color: var(--accent); font-weight: 600; margin-right: 14px; }
+  .cal tbody tr.group-row .g-avg { color: var(--ink-soft); font-size: 10px; }
+  .cal tbody tr.group-row.group-1m { border-left: 3px solid var(--accent); }
+  .cal tbody tr.group-row.group-3m { border-left: 3px solid var(--gold); }
+  .cal tbody tr.group-row.group-6m { border-left: 3px solid var(--blue); }
+  .cal tbody tr.group-row.group-1y { border-left: 3px solid var(--purple); }
   .reason-pill.lockup1m { background: var(--accent-bg); color: var(--accent); }
   .reason-pill.lockup3m { background: var(--gold-bg); color: var(--gold); }
   .reason-pill.lockup6m { background: var(--blue-bg); color: var(--blue); }
@@ -379,7 +389,6 @@ function renderLockups() {
   let items = events.map(e => ({ ...e, days: daysFromToday(e.expiryDate) }))
     .filter(e => e.days !== null && e.days >= 0 && e.days <= winDays);
   if (STATE.lockupType) items = items.filter(e => e.type === STATE.lockupType);
-  items.sort((a, b) => a.days - b.days);
 
   if (!items.length) {
     tbody.innerHTML = `<tr><td colspan="8" class="empty-state">선택한 조건에 해당하는 보호예수 만기가 없습니다.</td></tr>`;
@@ -394,7 +403,14 @@ function renderLockups() {
     return `<span style="color:${color};font-weight:500;">${sign}${v.toFixed(1)}%</span>`;
   };
 
-  tbody.innerHTML = items.slice(0, 500).map(e => {
+  // 1M / 3M / 6M / 1Y 그룹화 — 그룹 헤더 + 행 + 그룹 내 D-day 정렬
+  const GROUPS = [
+    { type: '1m', label: '+1M · 단기 의무보유' },
+    { type: '3m', label: '+3M · 의무보유' },
+    { type: '6m', label: '+6M · 기관·우리사주' },
+    { type: '1y', label: '+1Y · 최대주주 (추정)' },
+  ];
+  const renderRow = e => {
     const mktKey = (e.market || '').toUpperCase().includes('KOSDAQ') ? 'kosdaq' : 'kospi';
     const reasonCls = 'lockup' + e.type;
     const currentReturn = (e.type === '6m' || e.type === '1m' || e.type === '3m') ? e.r6m : e.r1y;
@@ -415,7 +431,27 @@ function renderLockups() {
       <td>${Number.isFinite(e.ipoPrice) ? e.ipoPrice.toLocaleString() : '—'}</td>
       <td>${fmtPct(currentReturn)}</td>
     </tr>`;
-  }).join('');
+  };
+
+  let html = '';
+  let totalShown = 0;
+  for (const g of GROUPS) {
+    const groupItems = items.filter(e => e.type === g.type).sort((a,b) => a.days - b.days);
+    if (!groupItems.length) continue;
+    // 그룹 평균 의무보유%
+    const valid = groupItems.map(it => it.instPct).filter(v => Number.isFinite(v));
+    const avgPct = valid.length ? (valid.reduce((a,v)=>a+v,0)/valid.length).toFixed(1) + '%' : '—';
+    html += `<tr class="group-row group-${g.type}"><td colspan="8">
+      <span class="g-label">${g.label}</span>
+      <span class="g-cnt">${groupItems.length}건</span>
+      ${g.type !== '1y' ? `<span class="g-avg">평균 ${avgPct} 의무보유</span>` : '<span class="g-avg">최대주주 (38.co.kr 미공개)</span>'}
+    </td></tr>`;
+    const cap = groupItems.slice(0, 500 - totalShown);
+    html += cap.map(renderRow).join('');
+    totalShown += cap.length;
+    if (totalShown >= 500) break;
+  }
+  tbody.innerHTML = html;
 
   tbody.querySelectorAll('tr.clickable').forEach(tr => {
     tr.addEventListener('click', () => {
