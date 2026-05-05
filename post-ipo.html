@@ -89,7 +89,11 @@
   .lockup-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; }
   .lockup-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; padding: 11px 13px; transition: background 0.15s, border-color 0.15s; }
   .lockup-card:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,122,74,0.3); }
-  .lockup-card .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .lockup-card .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; cursor: pointer; padding: 2px 4px; margin: -2px -4px 6px; border-radius: 4px; transition: background 0.15s; }
+  .lockup-card .head:hover { background: rgba(255,122,74,0.08); }
+  .lockup-card li.more-link { color: #ff7a4a; border-top: 1px solid rgba(255,122,74,0.2); padding-top: 6px; margin-top: 2px; font-weight: 500; }
+  .lockup-card li.more-link .nm { color: #ff7a4a; font-family: var(--mono); font-size: 11px; }
+  .lockup-card li.more-link .dd { color: #ff7a4a; }
   .lockup-card .lockup-tag { font-family: var(--mono); font-size: 10px; padding: 3px 7px; border-radius: 3px; letter-spacing: 0.05em; font-weight: 600; }
   .lockup-card .lockup-tag.m1 { background: #ff7a4a; color: #1a1a1a; }
   .lockup-card .lockup-tag.m3 { background: #f0c14b; color: #1a1a1a; }
@@ -490,7 +494,7 @@ function renderLockups() {
   grid.innerHTML = buckets.map(b => {
     b.items.sort((a, b) => a.days - b.days);
     const top = b.items.slice(0, 5);
-    // 카드 헤더 평균 비율: useReal이면 표시되는 종목들의 instPct 평균
+    const more = b.items.length - top.length;
     let headerRatio;
     if (b.useReal) {
       const valid = b.items.map(it => it.instPct).filter(v => Number.isFinite(v));
@@ -510,9 +514,9 @@ function renderLockups() {
             <span class="nm">${escName}</span>
             <span class="dd">${it.expiry.slice(5)} · D-${it.days}${pct ? ' · ' + pct : ''}</span>
           </li>`;
-        }).join('')}</ul>`
+        }).join('')}${more > 0 ? `<li class="more-link" data-tag="${b.key}"><span class="nm">+ ${more}건 더 보기</span><span class="dd">전체 →</span></li>` : ''}</ul>`
       : '<div class="empty">60일 이내 없음</div>';
-    return `<div class="lockup-card">
+    return `<div class="lockup-card" data-tag="${b.key}">
       <div class="head">
         <div>
           <div><span class="lockup-tag ${b.tag}">${b.label}</span></div>
@@ -523,6 +527,18 @@ function renderLockups() {
       ${liHtml}
     </div>`;
   }).join('');
+  // 카드 헤더 클릭 → ipo-calendar.html#lockup={tag}
+  grid.querySelectorAll('.lockup-card').forEach(card => {
+    card.querySelector('.head').addEventListener('click', () => {
+      window.location.href = `ipo-calendar.html#lockup=${card.dataset.tag}`;
+    });
+  });
+  grid.querySelectorAll('li.more-link').forEach(li => {
+    li.addEventListener('click', e => {
+      e.stopPropagation();
+      window.location.href = `ipo-calendar.html#lockup=${li.dataset.tag}`;
+    });
+  });
   grid.querySelectorAll('li[data-code]').forEach(li => {
     li.addEventListener('click', () => {
       window.location.href = `stock-deep-dive.html#${li.dataset.code}`;
