@@ -508,6 +508,19 @@
     </div>
   </section>
 
+  <!-- ============ ROW 4.7: RECENT DISCLOSURES ============ -->
+  <section class="grid stagger" style="animation-delay:0.30s;">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><span class="icon"></span>최근 <em>공시</em></div>
+        <div class="card-meta" id="disclosures-count">— 건 · 30일</div>
+      </div>
+      <div class="reports-list" id="disclosures-list">
+        <div style="padding:20px 0; color:var(--ink-faint); font-family:var(--mono); font-size:11px;">공시 데이터 로드 중…</div>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ ROW 5: NEWS ============ -->
   <section class="grid stagger" style="animation-delay:0.32s;">
     <div class="card">
@@ -2135,6 +2148,90 @@ function mezzEventBadge(x) {
   return ` · <span class="pos">${label}</span>`;
 }
 
+/* ---- DART ownership (최대주주 + 소액주주) for current ticker ----
+ * Fed by data/ownership.json (monthly cron). Overwrites the donut and
+ * 지분 구조 metric rows (including curated mock) with the most recent
+ * annual filing's numbers, since DART is more authoritative. Top
+ * shareholders are appended as a small list below the standard rows. */
+let _ownershipCache = null;
+let _ownershipPromise = null;
+function loadOwnershipOnce() {
+  if (_ownershipCache) return Promise.resolve(_ownershipCache);
+  if (_ownershipPromise) return _ownershipPromise;
+  _ownershipPromise = fetch('data/ownership.json', { cache: 'force-cache' })
+    .then(r => r.ok ? r.json() : null)
+    .then(j => { _ownershipCache = j; return j; })
+    .catch(() => null);
+  return _ownershipPromise;
+}
+
+async function loadOwnershipForTicker(stock, ticker) {
+  const payload = await loadOwnershipOnce();
+  const entry = payload && payload.ownership && payload.ownership[ticker];
+  if (!entry) return false;
+  const major = entry.majorBlock;
+  const minority = entry.minorityBlock;
+  const insider = (major && major.totalRatio) || 0;
+  const retail = (minority && minority.ratio) || 0;
+  const institutional = Math.max(0, 100 - insider - retail);
+  stock.own = { insider, retail, institutional };
+  renderOwn(stock);
+  // Append top shareholders below the standard rows.
+  if (major && major.items && major.items.length) {
+    const escapeHtml = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const top = major.items.slice(0, 5).map(it => {
+      const ratio = it.ratio != null ? it.ratio.toFixed(2) + '%' : '—';
+      const rel = it.relation ? `<span class="sub">${escapeHtml(it.relation)}</span>` : '';
+      return `<div class="metric-row"><span class="lbl">${escapeHtml(it.name)} ${rel}</span><span class="val">${ratio}</span></div>`;
+    }).join('');
+    const head = `<div class="metric-row" style="border-top:1px dashed var(--line); margin-top:8px; padding-top:8px;"><span class="lbl" style="color:var(--ink-faint);">주요 주주 (FY${entry.fiscalYear})</span><span class="val"></span></div>`;
+    $('own-rows').insertAdjacentHTML('beforeend', head + top);
+  }
+  return true;
+}
+
+/* ---- DART recent disclosures (last 30 days, top 10) ---- */
+let _disclosuresCache = null;
+let _disclosuresPromise = null;
+function loadDisclosuresOnce() {
+  if (_disclosuresCache) return Promise.resolve(_disclosuresCache);
+  if (_disclosuresPromise) return _disclosuresPromise;
+  _disclosuresPromise = fetch('data/disclosures.json', { cache: 'force-cache' })
+    .then(r => r.ok ? r.json() : null)
+    .then(j => { _disclosuresCache = j; return j; })
+    .catch(() => null);
+  return _disclosuresPromise;
+}
+
+async function loadDisclosuresForTicker(ticker) {
+  const list = $('disclosures-list');
+  const meta = $('disclosures-count');
+  if (!list || !meta) return;
+  const payload = await loadDisclosuresOnce();
+  const items = payload && payload.disclosures && payload.disclosures[ticker];
+  if (!items || !items.length) {
+    meta.textContent = '0건 · 30일';
+    list.innerHTML = `<div style="padding:20px 0; color:var(--ink-faint); font-family:var(--mono); font-size:11px;">최근 30일 내 공시가 없어요.</div>`;
+    return;
+  }
+  meta.textContent = `${items.length}건 · 최근 30일`;
+  const escapeHtml = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  list.innerHTML = items.map(d => {
+    const link = d.rceptNo ? `https://dart.fss.or.kr/dsaf001/main.do?rcpNo=${encodeURIComponent(d.rceptNo)}` : null;
+    const titleHtml = link
+      ? `<a href="${link}" target="_blank" rel="noopener">${escapeHtml(d.title)}</a>`
+      : escapeHtml(d.title);
+    return `<div class="report-item">
+      <div class="report-meta">
+        ${d.kind ? `<span class="report-house">${escapeHtml(d.kind)}</span>` : ''}
+        <span class="news-time">${escapeHtml(d.date || '')}</span>
+        ${d.filer ? `<span style="color:var(--ink-mid);">${escapeHtml(d.filer)}</span>` : ''}
+      </div>
+      <div class="report-title">${titleHtml}</div>
+    </div>`;
+  }).join('');
+}
+
 async function loadMezzanineForTicker(ticker) {
   const section = $('mezz-section');
   if (!section) return;
@@ -2261,6 +2358,11 @@ async function loadStock(ticker) {
   // Mezzanine card is independent of curation (some curated big caps
   // also have CBs). Always try; the section stays hidden if there's none.
   loadMezzanineForTicker(ticker);
+  // DART ownership replaces curated mock when available — DART is more
+  // authoritative than the year-old hand-tuned numbers.
+  loadOwnershipForTicker(stock, ticker);
+  // Recent disclosures feed (independent of curation).
+  loadDisclosuresForTicker(ticker);
 
   // 5) Fetch chart history
   try {

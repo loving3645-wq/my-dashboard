@@ -1,0 +1,50 @@
+name: DART Ownership
+
+# Largest-shareholder + minority breakdown comes from annual reports
+# (사업보고서). Updates only after Mar/Apr filings, so monthly is plenty.
+# Runs the 1st of each month at 18:30 UTC.
+on:
+  schedule:
+    - cron: '30 18 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-ownership
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install --quiet requests
+
+      - name: Fetch DART ownership
+        env:
+          OPENDART_KEY: ${{ secrets.OPENDART_KEY }}
+        run: python scripts/fetch_dart_ownership.py
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/ownership.json
+          if git diff --cached --quiet; then
+            echo "No changes — nothing to commit"
+          else
+            STAMP=$(date -u +"%Y-%m-%d")
+            COUNT=$(python -c "import json; print(json.load(open('data/ownership.json'))['count'])")
+            git commit -m "👥 DART ownership ${STAMP} (${COUNT} tickers)"
+            git push
+          fi
