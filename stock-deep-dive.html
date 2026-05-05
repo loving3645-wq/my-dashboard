@@ -273,6 +273,19 @@
   @media (max-width: 700px) { .own-grid { grid-template-columns: 1fr; } }
   .own-block { display: flex; flex-direction: column; gap: 10px; }
   .own-pie { position: relative; height: 140px; }
+  .mezz-row-clickable { cursor: pointer; transition: background 0.12s; }
+  .mezz-row-clickable:hover { background: rgba(200, 155, 60, 0.06); }
+  .mezz-chev { display: inline-block; font-size: 9px; color: var(--ink-faint); margin-right: 4px; transition: transform 0.15s; }
+  .mezz-chev-spacer { display: inline-block; width: 13px; }
+  .mezz-row.mezz-open .mezz-chev { transform: rotate(90deg); }
+  .mezz-detail-cell { background: rgba(200, 155, 60, 0.04); padding: 10px 14px !important; }
+  .mezz-event { display: flex; gap: 12px; padding: 4px 0; font-family: var(--mono); font-size: 11px; align-items: baseline; }
+  .mezz-event + .mezz-event { border-top: 1px dashed var(--line); }
+  .mezz-event-date { color: var(--ink-mid); flex: 0 0 90px; }
+  .mezz-event-type { color: var(--accent); flex: 0 0 100px; font-weight: 600; }
+  .mezz-event-title { color: var(--ink); flex: 1; }
+  .mezz-event-title a { color: inherit; text-decoration: none; border-bottom: 1px dotted var(--ink-faint); }
+  .mezz-event-title a:hover { color: var(--accent); border-bottom-color: var(--accent); }
 
   /* ========== Footer ========== */
   .footer { margin-top: 30px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10px; color: var(--ink-faint); letter-spacing: 0.1em; flex-wrap: wrap; gap: 8px; }
@@ -2486,27 +2499,74 @@ async function loadMezzanineForTicker(ticker) {
     .map(r => `<div class="metric-row"><span class="lbl">${r.lbl}</span><span class="val">${r.val}</span></div>`)
     .join('');
   const escapeHtml = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const rows = entry.issuances.map(x => {
+  const rows = entry.issuances.map((x, idx) => {
     const status = mezzStatus(x, today);
     const statusCls = status === '만기 도래' ? 'neg' : (status === '풋 행사 가능' ? 'neg' : (status === '전환 가능' ? 'pos' : ''));
     const badge = mezzEventBadge(x);
-    // Show face amount with current outstanding inline when parsed.
     let faceCell = fmtMezzKRW(x.faceAmount);
     if (x.currentOutstanding != null) {
       const remCls = x.currentOutstanding === 0 ? 'neg' : (x.currentOutstanding < x.faceAmount ? 'pos' : '');
       faceCell += ` <span class="sub ${remCls}">잔 ${fmtMezzKRW(x.currentOutstanding)}</span>`;
     }
-    return `<tr>
-      <td>${escapeHtml(x.rceptDt || '')}</td>
+    const events = (x.events || []).filter(e => e.type !== 'correction');
+    const hasEvents = events.length > 0;
+    const chev = hasEvents
+      ? `<span class="mezz-chev" aria-hidden="true">▶</span> `
+      : '<span class="mezz-chev-spacer">　</span>';
+    const rowClass = hasEvents ? 'mezz-row mezz-row-clickable' : 'mezz-row';
+
+    let detailHtml = '';
+    if (hasEvents) {
+      const items = events.map(e => {
+        const link = e.rceptNo
+          ? `https://dart.fss.or.kr/dsaf001/main.do?rcpNo=${encodeURIComponent(e.rceptNo)}`
+          : null;
+        const titleHtml = link
+          ? `<a href="${link}" target="_blank" rel="noopener">${escapeHtml(e.title)}</a>`
+          : escapeHtml(e.title);
+        return `<div class="mezz-event">
+          <span class="mezz-event-date">${escapeHtml(e.date || '—')}</span>
+          <span class="mezz-event-type">${escapeHtml(MEZZ_EVENT_LABEL[e.type] || e.type)}</span>
+          <span class="mezz-event-title">${titleHtml}</span>
+        </div>`;
+      }).join('');
+      detailHtml = `<tr class="mezz-detail" data-i="${idx}" hidden>
+        <td colspan="7" class="mezz-detail-cell">${items}</td>
+      </tr>`;
+    }
+
+    return `<tr class="${rowClass}" data-i="${idx}">
+      <td>${chev}${escapeHtml(x.rceptDt || '')}</td>
       <td>${escapeHtml(x.type)}</td>
       <td class="num">${faceCell}</td>
       <td>${escapeHtml(x.maturityDate || '—')}</td>
       <td class="num">${x.conversionPrice ? x.conversionPrice.toLocaleString() + '원' : '—'}</td>
       <td>${escapeHtml(x.putStart || '—')}</td>
       <td class="${statusCls}">${status}${badge}</td>
-    </tr>`;
+    </tr>${detailHtml}`;
   }).join('');
   $('mezz-tbl').querySelector('tbody').innerHTML = rows;
+}
+
+const MEZZ_EVENT_LABEL = {
+  conversion: '전환행사',
+  warrant_exercise: '신주인수권행사',
+  exchange: '교환행사',
+  put: '풋(조기상환)',
+  call: '콜',
+  redemption: '만기상환',
+  correction: '정정',
+};
+
+function toggleMezzRow(idx) {
+  const tbody = $('mezz-tbl').querySelector('tbody');
+  const detail = tbody.querySelector(`tr.mezz-detail[data-i="${idx}"]`);
+  const row = tbody.querySelector(`tr.mezz-row[data-i="${idx}"]`);
+  if (!detail || !row) return;
+  const opening = detail.hasAttribute('hidden');
+  if (opening) detail.removeAttribute('hidden');
+  else detail.setAttribute('hidden', '');
+  row.classList.toggle('mezz-open', opening);
 }
 
 async function loadStock(ticker) {
@@ -2698,6 +2758,13 @@ document.addEventListener('click', (e) => {
   if (e.target.closest('#export-word-btn')) {
     e.preventDefault();
     exportWordReport();
+    return;
+  }
+  // Don't toggle when clicking a link inside the detail row
+  if (e.target.closest('#mezz-tbl a')) return;
+  const mezzRow = e.target.closest('#mezz-tbl tr.mezz-row-clickable');
+  if (mezzRow) {
+    toggleMezzRow(mezzRow.dataset.i);
     return;
   }
   const ac = e.target.closest('#ac-list .ac-item');
