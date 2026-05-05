@@ -125,9 +125,9 @@
   .col-tab.routines-tab .icon { background: var(--lime); }
   .col-tab.active.cal-tab .icon, .col-tab.active.todo-tab .icon, .col-tab.active.paused-tab .icon, .col-tab.active.deals-tab .icon, .col-tab.active.done-tab .icon, .col-tab.active.contacts-tab .icon, .col-tab.active.projects-tab .icon, .col-tab.active.stocks-tab .icon, .col-tab.active.journal-tab .icon, .col-tab.active.routines-tab .icon { background: var(--bg); }
   .col-tab .badge { font-family: var(--mono); font-size: 9px; opacity: 0.7; }
-  .board { display: grid; grid-template-columns: 1fr 1fr 0.9fr 1fr 1fr 1fr 1fr 0.9fr 1fr 1fr; gap: 9px; }
-  @media (max-width: 1700px) { .board { grid-template-columns: repeat(3, 1fr); } }
-  @media (max-width: 1000px) { .board { grid-template-columns: 1fr 1fr; } }
+  .board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  @media (max-width: 1300px) { .board { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 900px) { .board { grid-template-columns: 1fr 1fr; } }
   @media (max-width: 700px) {
     .board { grid-template-columns: 1fr; gap: 0; }
     .col-tabs { display: flex; }
@@ -152,7 +152,7 @@
   @media (max-width: 380px) {
     .stat:nth-child(n+5) { display: none; }
   }
-  .col { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; display: flex; flex-direction: column; min-height: 70vh; max-height: 80vh; overflow: hidden; box-shadow: var(--shadow-sm); }
+  .col { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; display: flex; flex-direction: column; min-height: 38vh; max-height: 46vh; overflow: hidden; box-shadow: var(--shadow-sm); }
   @media (max-width: 700px) { .col { min-height: calc(100vh - 280px); max-height: none; } }
   .col.cal { background: var(--surface-2); }
   .col.contacts { background: var(--surface-2); }
@@ -425,11 +425,11 @@
     <div class="header-right">
       <div class="stat" data-stat-jump="cal" title="캘린더로 이동"><div class="num" id="stat-total">0</div><div class="lbl">전체</div></div>
       <div class="stat" data-stat-jump="todo" title="할 일로 이동"><div class="num" id="stat-todo">0</div><div class="lbl">할일</div></div>
-      <div class="stat" data-stat-jump="paused" title="잠시중단으로 이동"><div class="num" id="stat-paused">0</div><div class="lbl">중단</div></div>
       <div class="stat" data-stat-jump="deals" title="검토 딜로 이동"><div class="num" id="stat-deals">0</div><div class="lbl">검토딜</div></div>
       <div class="stat" data-stat-jump="stocks" title="종목으로 이동"><div class="num" id="stat-stocks">0</div><div class="lbl">종목</div></div>
-      <div class="stat" data-stat-jump="contacts" title="연락처로 이동"><div class="num" id="stat-contacts">0</div><div class="lbl">연락처</div></div>
       <div class="stat" data-stat-jump="projects" title="프로젝트로 이동"><div class="num" id="stat-projects">0</div><div class="lbl">프로젝트</div></div>
+      <div class="stat" data-stat-jump="contacts" title="연락처로 이동"><div class="num" id="stat-contacts">0</div><div class="lbl">연락처</div></div>
+      <div class="stat" data-stat-jump="paused" title="잠시중단으로 이동"><div class="num" id="stat-paused">0</div><div class="lbl">중단</div></div>
       <div class="stat" data-stat-jump="done" title="완료로 이동"><div class="num" id="stat-done">0</div><div class="lbl">완료</div></div>
       <div class="stat" data-stat-jump="routines" title="루틴으로 이동"><div class="num" id="stat-routines">0</div><div class="lbl">루틴</div></div>
       <div class="clock" id="clock">--:--</div>
@@ -490,11 +490,11 @@
   <div class="col-tabs" id="col-tabs">
     <button class="col-tab cal-tab active" data-col="cal"><span class="icon"></span>캘린더<span class="badge" id="ct-cal">0</span></button>
     <button class="col-tab todo-tab" data-col="todo"><span class="icon"></span>할 일<span class="badge" id="ct-todo">0</span></button>
-    <button class="col-tab paused-tab" data-col="paused"><span class="icon"></span>잠시중단<span class="badge" id="ct-paused">0</span></button>
     <button class="col-tab deals-tab" data-col="deals"><span class="icon"></span>검토딜<span class="badge" id="ct-deals">0</span></button>
     <button class="col-tab stocks-tab" data-col="stocks"><span class="icon"></span>종목<span class="badge" id="ct-stocks">0</span></button>
-    <button class="col-tab contacts-tab" data-col="contacts"><span class="icon"></span>연락처<span class="badge" id="ct-contacts">0</span></button>
     <button class="col-tab projects-tab" data-col="projects"><span class="icon"></span>프로젝트<span class="badge" id="ct-projects">0</span></button>
+    <button class="col-tab contacts-tab" data-col="contacts"><span class="icon"></span>연락처<span class="badge" id="ct-contacts">0</span></button>
+    <button class="col-tab paused-tab" data-col="paused"><span class="icon"></span>잠시중단<span class="badge" id="ct-paused">0</span></button>
     <button class="col-tab done-tab" data-col="done"><span class="icon"></span>완료<span class="badge" id="ct-done">0</span></button>
     <button class="col-tab journal-tab" data-col="journal"><span class="icon"></span>메모<span class="badge" id="ct-journal">0</span></button>
     <button class="col-tab routines-tab" data-col="routines"><span class="icon"></span>루틴<span class="badge" id="ct-routines">0</span></button>
@@ -515,14 +515,6 @@
       <div class="col-body" id="col-todo" data-drop="todo"></div>
       <div class="col-add"><button class="col-add-btn" data-add="todo">+ 할 일 추가</button></div>
     </div>
-    <div class="col paused" data-col="paused" data-status="paused">
-      <div class="col-header">
-        <div class="col-title"><span class="icon"></span>잠시중단</div>
-        <div class="col-count" id="cnt-paused">0</div>
-      </div>
-      <div class="col-body" id="col-paused" data-drop="paused"></div>
-      <div class="col-add"><button class="col-add-btn" data-add="paused">+ 잠시중단 추가</button></div>
-    </div>
     <div class="col deals" data-col="deals" data-status="deals">
       <div class="col-header">
         <div class="col-title"><span class="icon"></span>검토중인 딜</div>
@@ -539,6 +531,14 @@
       <div class="col-body" id="col-stocks"></div>
       <div class="col-add"><button class="col-add-btn" data-add-stock>+ 종목 추가</button></div>
     </div>
+    <div class="col projects" data-col="projects">
+      <div class="col-header">
+        <div class="col-title"><span class="icon"></span>프로젝트 / 자기개발</div>
+        <div class="col-count" id="cnt-projects">0</div>
+      </div>
+      <div class="col-body" id="col-projects"></div>
+      <div class="col-add"><button class="col-add-btn" data-add-project>+ 프로젝트 추가</button></div>
+    </div>
     <div class="col contacts" data-col="contacts">
       <div class="col-header">
         <div class="col-title"><span class="icon"></span>연락할 사람</div>
@@ -547,13 +547,13 @@
       <div class="col-body" id="col-contacts"></div>
       <div class="col-add"><button class="col-add-btn" data-add-contact>+ 연락처 추가</button></div>
     </div>
-    <div class="col projects" data-col="projects">
+    <div class="col paused" data-col="paused" data-status="paused">
       <div class="col-header">
-        <div class="col-title"><span class="icon"></span>프로젝트 / 자기개발</div>
-        <div class="col-count" id="cnt-projects">0</div>
+        <div class="col-title"><span class="icon"></span>잠시중단</div>
+        <div class="col-count" id="cnt-paused">0</div>
       </div>
-      <div class="col-body" id="col-projects"></div>
-      <div class="col-add"><button class="col-add-btn" data-add-project>+ 프로젝트 추가</button></div>
+      <div class="col-body" id="col-paused" data-drop="paused"></div>
+      <div class="col-add"><button class="col-add-btn" data-add="paused">+ 잠시중단 추가</button></div>
     </div>
     <div class="col done" data-col="done" data-status="done">
       <div class="col-header">
