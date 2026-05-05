@@ -22,6 +22,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 from datetime import datetime, timedelta, timezone
 
 from docx import Document
@@ -30,6 +31,17 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 from docx.shared import Cm, Pt, RGBColor
+
+# matplotlib is optional — when unavailable (local user without it),
+# the chart embedding is skipped silently and the report still ships
+# tables-only. Install in CI via the workflow's pip line.
+try:
+    import matplotlib
+    matplotlib.use("Agg")  # headless
+    import matplotlib.pyplot as plt
+    _HAS_MPL = True
+except ImportError:
+    _HAS_MPL = False
 
 KST = timezone(timedelta(hours=9))
 
@@ -272,6 +284,54 @@ def section_returns(doc, snapshot_entry):
     add_table(doc, headers, [cells], widths_cm=[2.4] * 6)
 
 
+def make_financials_chart(fin_entry):
+    """Render a 3-bar grouped chart (Revenue / Op Income / Net Income)
+    to a temp PNG. Returns the path, or None if mpl missing or no data.
+
+    Labels are English on purpose — embedding Korean fonts in matplotlib
+    requires an extra system package, and the surrounding tables already
+    carry full Korean labels."""
+    if not _HAS_MPL or not fin_entry:
+        return None
+    years = fin_entry.get("years") or []
+    if not years:
+        return None
+    rev = [v if isinstance(v, (int, float)) else 0
+           for v in (fin_entry.get("revenue") or [])]
+    op = [v if isinstance(v, (int, float)) else 0
+          for v in (fin_entry.get("operatingIncome") or [])]
+    net = [v if isinstance(v, (int, float)) else 0
+           for v in (fin_entry.get("netIncome") or [])]
+    n = min(len(years), len(rev), len(op), len(net))
+    if n == 0:
+        return None
+    years, rev, op, net = years[:n], rev[:n], op[:n], net[:n]
+
+    try:
+        fig, ax = plt.subplots(figsize=(7.0, 2.6))
+        x_idx = list(range(n))
+        w = 0.27
+        ax.bar([i - w for i in x_idx], rev, w, label="Revenue", color="#3a6db0")
+        ax.bar(x_idx, op, w, label="Op Income", color="#c89b3c")
+        ax.bar([i + w for i in x_idx], net, w, label="Net Income", color="#1f7a3c")
+        ax.set_xticks(x_idx)
+        ax.set_xticklabels([f"FY{y}" for y in years])
+        ax.set_ylabel("KRW (trillion)")
+        ax.legend(frameon=False, loc="upper left", fontsize=8, ncol=3)
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.tick_params(axis="both", which="both", length=0, labelsize=8)
+        ax.grid(axis="y", linestyle="--", alpha=0.3)
+        plt.tight_layout()
+        tmp = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+        tmp.close()
+        fig.savefig(tmp.name, dpi=150, bbox_inches="tight")
+        plt.close(fig)
+        return tmp.name
+    except Exception:
+        return None
+
+
 def section_financials(doc, fin_entry):
     if not fin_entry:
         return
@@ -279,6 +339,19 @@ def section_financials(doc, fin_entry):
     years = fin_entry.get("years") or []
     if not years:
         return
+
+    chart_path = make_financials_chart(fin_entry)
+    if chart_path:
+        try:
+            doc.add_picture(chart_path, width=Cm(15.5))
+        except Exception:
+            pass
+        finally:
+            try:
+                os.unlink(chart_path)
+            except OSError:
+                pass
+
     headers = ["항목"] + [f"FY{y}" for y in years]
 
     def row(label, key, fmt=fmt_jo):
