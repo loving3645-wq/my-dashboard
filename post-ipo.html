@@ -186,11 +186,13 @@
           <th data-sort="r1y">+1Y <span class="arrow">↕</span></th>
           <th data-sort="peak1y">최고 <span class="arrow">↕</span></th>
           <th data-sort="trough1y">최저 <span class="arrow">↕</span></th>
+          <th data-sort="currentPrice">현재가 <span class="arrow">↕</span></th>
+          <th data-sort="currentReturn">현재 <span class="arrow">↕</span></th>
           <th class="left dart-col" data-sort="dartParValue" style="display:none;">액면가 <span class="arrow">↕</span></th>
           <th class="left dart-col" data-sort="dartStockKind" style="display:none;">주식종류 <span class="arrow">↕</span></th>
         </tr>
       </thead>
-      <tbody id="ipo-body"><tr><td colspan="14" class="empty-state">불러오는 중…</td></tr></tbody>
+      <tbody id="ipo-body"><tr><td colspan="16" class="empty-state">불러오는 중…</td></tr></tbody>
     </table>
   </div>
 
@@ -223,6 +225,12 @@ async function load() {
     const j = await r.json();
     STATE.listings = j.listings || [];
     STATE.generatedAt = j.generatedAt;
+    // 현재가 join: market-snapshot.json[ticker].price (매일 18:00 KST 갱신)
+    let snap = null;
+    try {
+      const sr = await fetch('data/market-snapshot.json?t=' + Date.now(), { cache: 'no-store' });
+      if (sr.ok) snap = (await sr.json()).tickers || null;
+    } catch {}
     // Flatten DART summary into top-level fields for sorting/filtering
     let hasDart = false;
     for (const r of STATE.listings) {
@@ -234,6 +242,15 @@ async function load() {
           r.dartParValue = Number.isFinite(n) ? n : null;
         }
         if (ev.stockKind) r.dartStockKind = ev.stockKind;
+      }
+      if (snap && r.ticker && snap[r.ticker]) {
+        const px = snap[r.ticker].price;
+        if (Number.isFinite(px)) {
+          r.currentPrice = px;
+          if (Number.isFinite(r.ipoPrice) && r.ipoPrice > 0) {
+            r.currentReturn = (px / r.ipoPrice - 1) * 100;
+          }
+        }
       }
     }
     STATE.hasDart = hasDart;
@@ -247,7 +264,7 @@ async function load() {
     buildHouseFilter();
     render();
   } catch (e) {
-    $('ipo-body').innerHTML = `<tr><td colspan="14" class="empty-state">
+    $('ipo-body').innerHTML = `<tr><td colspan="16" class="empty-state">
       IPO 데이터를 불러올 수 없습니다.<br>
       <span style="font-size:10px;">${e.message} — 매주 일요일 cron이 돌면 자동 채워져요. 또는 Actions에서 'Weekly IPO History' 워크플로 수동 실행.</span>
     </td></tr>`;
@@ -329,7 +346,7 @@ function render() {
   updateSummary(list);
   const tbody = $('ipo-body');
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="14" class="empty-state">조건에 맞는 IPO가 없습니다.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="16" class="empty-state">조건에 맞는 IPO가 없습니다.</td></tr>`;
     return;
   }
   const escapeHtml = s => String(s || '').replace(/[&<>"']/g, c => ({
@@ -341,6 +358,9 @@ function render() {
     const cells = ['firstDayReturn', 'r1w', 'r1m', 'r3m', 'r6m', 'r1y', 'peak1y', 'trough1y']
       .map(k => { const p = fmtPct(r[k]); return `<td><span class="pct ${p.cls}">${p.txt}</span></td>`; })
       .join('');
+    const curPriceCell = `<td>${Number.isFinite(r.currentPrice) ? r.currentPrice.toLocaleString() : '<span class="muted">—</span>'}</td>`;
+    const curRet = fmtPct(r.currentReturn);
+    const curRetCell = `<td><span class="pct ${curRet.cls}">${curRet.txt}</span></td>`;
     const dartCells = STATE.hasDart
       ? `<td class="left dart-col">${Number.isFinite(r.dartParValue) ? r.dartParValue.toLocaleString() : '<span class="muted">—</span>'}</td>
          <td class="left dart-col">${escapeHtml(r.dartStockKind || '—')}</td>`
@@ -355,6 +375,8 @@ function render() {
       <td>${fmtNum(r.ipoPrice)}</td>
       <td>${fmtCap(r.marketCapAtListing)}</td>
       ${cells}
+      ${curPriceCell}
+      ${curRetCell}
       ${dartCells}
     </tr>`;
   }).join('');
