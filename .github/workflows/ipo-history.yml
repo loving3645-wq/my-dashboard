@@ -12,6 +12,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/ipo-history.yml'
+      - 'scripts/build_ipo_history.py'
 
 permissions:
   contents: write

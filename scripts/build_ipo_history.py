@@ -243,8 +243,13 @@ def main():
     print(f"Fetching 38.co.kr listings since {START_DATE}...", flush=True)
     sess = make_session()
     listings = fetch_all_listings(sess, START_DATE)
-    # Only keep listings on/after start
-    listings = [r for r in listings if r["listingDate"] >= START_DATE]
+    today_str = datetime.now(KST).strftime("%Y-%m-%d")
+    # 38.co.kr ?o=nw에는 미상장(상장예정) 종목도 같이 나옴 — listingDate가 미래면
+    # 거래 데이터가 없거나 placeholder 값(0%)이 들어가 있어 history에 부적합.
+    # 오늘 이전(또는 오늘) 상장만 keep.
+    before = len(listings)
+    listings = [r for r in listings if START_DATE <= r["listingDate"] <= today_str]
+    print(f"  filtered to listed-on-or-before-today: {len(listings)} (dropped {before - len(listings)} future entries)", flush=True)
     print(f"  collected {len(listings)} listings", flush=True)
     if len(listings) < 50:
         print("ERROR: 38.co.kr returned suspiciously few rows — aborting", file=sys.stderr)
