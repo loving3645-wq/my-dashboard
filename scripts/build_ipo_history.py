@@ -155,6 +155,9 @@ def fetch_all_listings(session, start_date):
 TICKER_RE = re.compile(r"종목코드[^0-9]{0,40}(\d{6})")
 MARKET_RE = re.compile(r"(코스피|코스닥|KOSPI|KOSDAQ)")
 TICKER_MASTER_RE = re.compile(r"'(\d{6})':\s*\{\s*name:\s*'([^']+)',\s*mkt:\s*'([^']+)'")
+LISTED_SHARES_RE = re.compile(r"발행주식수[^\d]{0,40}([\d,]+)")
+INSTITUTIONAL_LOCKUP_RE = re.compile(r"의무보유확약[^\d]{0,30}(\d+(?:\.\d+)?)\s*%")
+EMPLOYEE_SHARES_RE = re.compile(r"우리사주조합[^\d(]{0,40}([\d,]+)\s*주[^()]{0,20}\(\s*(\d+(?:\.\d+)?)\s*%\s*\)")
 
 
 def load_ticker_master():
@@ -178,21 +181,52 @@ def normalize_name(name):
 
 
 def fetch_detail(session, detail_no):
-    """Detail page → (ticker, market). Returns (None, None) on failure."""
+    """Detail page → dict with ticker, market, listedShares, institutionalLockupPct,
+    employeeShares, employeeSharesPct. None values when not found."""
+    out = {
+        "ticker": None, "market": None,
+        "listedShares": None, "institutionalLockupPct": None,
+        "employeeShares": None, "employeeSharesPct": None,
+    }
     try:
         r = session.get(DETAIL_URL, params={"o": "v", "no": detail_no}, timeout=15)
         r.encoding = ENC
         if r.status_code != 200:
-            return (None, None)
-        text = r.text
+            return out
+        raw = r.text
     except Exception:
-        return (None, None)
-    t = TICKER_RE.search(text)
-    m = MARKET_RE.search(text)
-    market = None
+        return out
+    # ticker / market은 raw에서 (anchor 등이 가까이 있어 OK)
+    t = TICKER_RE.search(raw)
+    if t:
+        out["ticker"] = t.group(1)
+    m = MARKET_RE.search(raw)
     if m:
-        market = "KOSDAQ" if m.group(1) in ("코스닥", "KOSDAQ") else "KOSPI"
-    return (t.group(1) if t else None, market)
+        out["market"] = "KOSDAQ" if m.group(1) in ("코스닥", "KOSDAQ") else "KOSPI"
+    # 데이터 필드는 HTML 태그 사이에 끼어있어 strip 후 검색
+    stripped = re.sub(r"<[^>]+>", " ", raw)
+    stripped = re.sub(r"&nbsp;", " ", stripped)
+    stripped = re.sub(r"\s+", " ", stripped)
+    ls = LISTED_SHARES_RE.search(stripped)
+    if ls:
+        try:
+            out["listedShares"] = int(ls.group(1).replace(",", ""))
+        except ValueError:
+            pass
+    il = INSTITUTIONAL_LOCKUP_RE.search(stripped)
+    if il:
+        try:
+            out["institutionalLockupPct"] = float(il.group(1))
+        except ValueError:
+            pass
+    es = EMPLOYEE_SHARES_RE.search(stripped)
+    if es:
+        try:
+            out["employeeShares"] = int(es.group(1).replace(",", ""))
+            out["employeeSharesPct"] = float(es.group(2))
+        except ValueError:
+            pass
+    return out
 
 
 def fetch_history(session, code, start_yyyymmdd, end_yyyymmdd):
@@ -289,7 +323,9 @@ def main():
     fallback_hits = [0]
 
     def enrich_detail(ipo):
-        ticker, market = fetch_detail(sess, ipo["detailNo"])
+        info = fetch_detail(sess, ipo["detailNo"])
+        ticker = info["ticker"]
+        market = info["market"]
         if not ticker:
             # Fallback — name으로 KRX master lookup. 38.co.kr이 SPAC 식별자
             # ('0129K0')나 임시 등록번호('0011T0')만 보여주는 케이스.
@@ -304,6 +340,15 @@ def main():
             ipo["ticker"] = ticker
         if market:
             ipo["market"] = market
+        # 38.co.kr detail에서 추출한 정확 데이터 — 종목별 락업/물량 정보
+        for k in ("listedShares", "institutionalLockupPct",
+                  "employeeShares", "employeeSharesPct"):
+            v = info.get(k)
+            if v is not None:
+                ipo[k] = v
+        # marketCapAtListing이 비어있으면 listedShares × ipoPrice 로 재계산
+        if not ipo.get("marketCapAtListing") and ipo.get("listedShares") and ipo.get("ipoPrice"):
+            ipo["marketCapAtListing"] = ipo["listedShares"] * ipo["ipoPrice"]
         completed[0] += 1
         if completed[0] % 100 == 0:
             print(f"  detail {completed[0]}/{len(listings)} (fallback={fallback_hits[0]})", flush=True)

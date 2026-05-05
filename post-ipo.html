@@ -103,6 +103,7 @@
   .lockup-card li:hover { color: #ff7a4a; }
   .lockup-card li .nm { color: #faf6ed; font-family: var(--sans); font-size: 12px; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .lockup-card li .dd { color: #8a8074; font-size: 10px; white-space: nowrap; }
+  .lockup-card li .pctval { color: #ff7a4a; font-weight: 600; }
   .lockup-card .empty { font-family: var(--mono); font-size: 11px; color: #6a6055; padding: 6px 0; }
 
   .table-wrap { background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; overflow: auto; max-height: calc(100vh - 280px); box-shadow: 0 1px 4px rgba(26,26,26,0.06); }
@@ -453,11 +454,13 @@ function renderLockups() {
   const WINDOW_DAYS = 60;
   // 한국 IPO 평균 의무보유 비율 추정 — DART 증권신고서 기반 정확치 아님,
   // KRX 통계 평균값. 종목별 실제 비율은 다를 수 있음.
+  // 1M/3M/6M = 기관 의무보유확약 (institutionalLockupPct, 종목별 정확치)
+  // 1Y = 최대주주 락업 — 38.co.kr 미공개라 KRX 평균 추정 ~40%
   const PERIODS = [
-    { key: 'm1', label: '+1M', sub: '단기 의무보유', months: 1, tag: 'm1', ratio: 5 },
-    { key: 'm3', label: '+3M', sub: '의무보유',     months: 3, tag: 'm3', ratio: 8 },
-    { key: 'm6', label: '+6M', sub: '기관·우리사주', months: 6, tag: 'm6', ratio: 20 },
-    { key: 'y1', label: '+1Y', sub: '최대주주',     months: 12, tag: 'y1', ratio: 40 },
+    { key: 'm1', label: '+1M', sub: '단기 의무보유',  months: 1,  tag: 'm1', useReal: true,  fallback: 5 },
+    { key: 'm3', label: '+3M', sub: '의무보유',      months: 3,  tag: 'm3', useReal: true,  fallback: 8 },
+    { key: 'm6', label: '+6M', sub: '기관·우리사주',  months: 6,  tag: 'm6', useReal: true,  fallback: 20 },
+    { key: 'y1', label: '+1Y', sub: '최대주주(추정)', months: 12, tag: 'y1', useReal: false, fallback: 40 },
   ];
   const buckets = PERIODS.map(p => ({ ...p, items: [] }));
   for (const r of STATE.listings) {
@@ -469,25 +472,51 @@ function renderLockups() {
       d.setMonth(d.getMonth() + p.months);
       const days = Math.round((d - today) / 86400000);
       if (days >= 0 && days <= WINDOW_DAYS) {
-        buckets[i].items.push({ ticker: r.ticker, name: r.name, expiry: d.toISOString().slice(0,10), days });
+        buckets[i].items.push({
+          ticker: r.ticker, name: r.name, expiry: d.toISOString().slice(0,10), days,
+          instPct: r.institutionalLockupPct,
+          empPct: r.employeeSharesPct,
+          listedShares: r.listedShares,
+        });
       }
     });
   }
+  const fmtShares = n => {
+    if (!Number.isFinite(n)) return '';
+    if (n >= 1e8) return (n/1e8).toFixed(1) + '억주';
+    if (n >= 1e4) return Math.round(n/1e4).toLocaleString() + '만주';
+    return n.toLocaleString() + '주';
+  };
   grid.innerHTML = buckets.map(b => {
     b.items.sort((a, b) => a.days - b.days);
     const top = b.items.slice(0, 5);
+    // 카드 헤더 평균 비율: useReal이면 표시되는 종목들의 instPct 평균
+    let headerRatio;
+    if (b.useReal) {
+      const valid = b.items.map(it => it.instPct).filter(v => Number.isFinite(v));
+      headerRatio = valid.length
+        ? `평균 ${(valid.reduce((a,v)=>a+v,0)/valid.length).toFixed(1)}% 의무보유`
+        : `평균 ~${b.fallback}% 의무보유 (추정)`;
+    } else {
+      headerRatio = `평균 ~${b.fallback}% 풀림 (KRX 추정)`;
+    }
     const liHtml = top.length
-      ? `<ul>${top.map(it => `
-          <li${it.ticker ? ` data-code="${it.ticker}"` : ''}>
-            <span class="nm">${it.name.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}</span>
-            <span class="dd">${it.expiry.slice(5)} · D-${it.days}</span>
-          </li>`).join('')}</ul>`
+      ? `<ul>${top.map(it => {
+          const pct = b.useReal && Number.isFinite(it.instPct)
+            ? `<span class="pctval">${it.instPct.toFixed(1)}%</span>`
+            : '';
+          const escName = it.name.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+          return `<li${it.ticker ? ` data-code="${it.ticker}"` : ''}>
+            <span class="nm">${escName}</span>
+            <span class="dd">${it.expiry.slice(5)} · D-${it.days}${pct ? ' · ' + pct : ''}</span>
+          </li>`;
+        }).join('')}</ul>`
       : '<div class="empty">60일 이내 없음</div>';
     return `<div class="lockup-card">
       <div class="head">
         <div>
           <div><span class="lockup-tag ${b.tag}">${b.label}</span></div>
-          <div class="ratio">${b.sub} · 평균 ~${b.ratio}% 풀림</div>
+          <div class="ratio">${b.sub} · ${headerRatio}</div>
         </div>
         <span class="cnt">${b.items.length}<small>건</small></span>
       </div>
