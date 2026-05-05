@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#fafaf7" />
+<meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="pragma" content="no-cache" />
+<meta http-equiv="expires" content="0" />
+<title>뉴스 크롤링 · 지니의 리서치</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..600,0..100&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #fafaf7;
+    --bg-warm: #f4f1ea;
+    --surface: #ffffff;
+    --surface-2: #f7f5f0;
+    --ink: #1a1a1a;
+    --ink-mid: #555;
+    --ink-soft: #8a8580;
+    --ink-faint: #b8b3ad;
+    --line: #e8e4dc;
+    --line-strong: #d4cfc4;
+    --accent: #b8421f;
+    --accent-bg: #fbeae3;
+    --gold: #b8923f;
+    --gold-bg: #f7eecf;
+    --green: #4a7c4e;
+    --green-bg: #e0ebd9;
+    --red: #c43e3e;
+    --red-bg: #fbe4e4;
+    --blue: #3a5e7e;
+    --blue-bg: #dde6ee;
+    --purple: #6b4a7c;
+    --purple-bg: #ebe0ee;
+    --serif: 'Fraunces', 'Nanum Myeongjo', serif;
+    --sans: 'Pretendard', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  body { min-height: 100vh; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+  button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; background: none; border: none; }
+  a { color: inherit; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  .app { max-width: 1700px; margin: 0 auto; padding: 24px 28px 80px; }
+
+  .topnav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; gap: 12px; }
+  .topnav-left { display: flex; align-items: baseline; gap: 18px; }
+  .brand { font-family: var(--serif); font-weight: 400; font-size: 22px; letter-spacing: -0.02em; }
+  .brand em { font-style: italic; color: var(--accent); font-weight: 500; }
+  .crumbs { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.18em; text-transform: uppercase; }
+  .crumbs a { color: var(--ink-soft); text-decoration: none; transition: color 0.15s; }
+  .crumbs a:hover { color: var(--accent); }
+  .crumbs .sep { margin: 0 8px; color: var(--ink-faint); }
+
+  .page-head { margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+  .page-head h1 { font-family: var(--serif); font-weight: 400; font-size: 28px; letter-spacing: -0.02em; }
+  .page-head h1 em { font-style: italic; color: var(--accent); font-weight: 500; }
+  .page-head .sub { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); letter-spacing: 0.1em; margin-top: 6px; text-transform: uppercase; }
+
+  .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+  .tlabel { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.12em; text-transform: uppercase; }
+  .search { flex: 1; min-width: 220px; padding: 7px 12px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 5px; font-size: 13px; }
+  .search:focus { outline: none; border-color: var(--accent); background: var(--surface); }
+  .select { padding: 6px 10px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 5px; font-size: 12px; font-family: var(--mono); color: var(--ink-mid); cursor: pointer; }
+  .toolbar-divider { width: 1px; height: 22px; background: var(--line); }
+  .ghost-btn { padding: 7px 14px; border: 1px solid var(--line); background: var(--surface); border-radius: 5px; font-size: 12px; font-family: var(--mono); color: var(--ink-mid); transition: all 0.15s; letter-spacing: 0.05em; }
+  .ghost-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .keyword-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; }
+  .keyword-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .keyword-row + .keyword-row { margin-top: 10px; }
+  .kw-chip { padding: 4px 10px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 14px; font-size: 11px; font-family: var(--mono); color: var(--ink-mid); cursor: pointer; transition: all 0.12s; letter-spacing: 0.04em; display: inline-flex; align-items: center; gap: 6px; }
+  .kw-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .kw-chip.active { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .kw-chip .cnt { background: rgba(0,0,0,0.12); padding: 0 5px; border-radius: 8px; font-size: 9px; }
+  .kw-chip.active .cnt { background: rgba(255,255,255,0.25); }
+  .kw-chip.custom { border-style: dashed; }
+  .kw-chip.custom::before { content: '★'; color: var(--gold); font-size: 9px; }
+  .kw-chip.active.custom::before { color: var(--bg); }
+  .kw-remove { color: var(--ink-faint); font-size: 13px; padding: 0 2px; line-height: 1; cursor: pointer; }
+  .kw-remove:hover { color: var(--red); }
+  .kw-chip.active .kw-remove { color: rgba(255,255,255,0.7); }
+  .kw-chip.active .kw-remove:hover { color: var(--bg); }
+
+  .add-form { display: flex; gap: 6px; align-items: center; }
+  .add-form input { padding: 5px 10px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 4px; font-size: 12px; font-family: var(--mono); width: 140px; }
+  .add-form input:focus { outline: none; border-color: var(--accent); background: var(--surface); }
+  .add-form button { padding: 5px 12px; border: 1px solid var(--ink); background: var(--ink); color: var(--bg); border-radius: 4px; font-size: 11px; font-family: var(--mono); letter-spacing: 0.05em; }
+  .add-form button:hover { background: var(--accent); border-color: var(--accent); }
+
+  .status-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; padding: 10px 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; font-family: var(--mono); font-size: 11px; color: var(--ink-mid); flex-wrap: wrap; }
+  .status-bar .seg { display: flex; align-items: center; gap: 6px; }
+  .status-bar .seg .lbl { color: var(--ink-soft); letter-spacing: 0.08em; text-transform: uppercase; font-size: 10px; }
+  .status-bar .seg .val { color: var(--ink); font-weight: 500; }
+
+  .news-list { display: flex; flex-direction: column; gap: 6px; }
+  .news-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; transition: border-color 0.15s, transform 0.1s; }
+  .news-card:hover { border-color: var(--line-strong); }
+  .news-card-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .news-card .src { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.04em; text-transform: uppercase; }
+  .news-card .time { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); }
+  .news-card .ttl { font-size: 14px; line-height: 1.45; color: var(--ink); font-weight: 500; }
+  .news-card .ttl a { text-decoration: none; }
+  .news-card .ttl a:hover { color: var(--accent); }
+  .news-card .ttl mark { background: var(--gold-bg); color: var(--ink); padding: 0 2px; border-radius: 2px; }
+  .news-card .summary { font-size: 12px; color: var(--ink-mid); margin-top: 4px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .news-card .tags { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+  .news-card .tag { font-family: var(--mono); font-size: 9px; padding: 2px 6px; border-radius: 3px; letter-spacing: 0.06em; background: var(--surface-2); color: var(--ink-soft); border: 1px solid var(--line); }
+  .news-card .tag.match { background: var(--accent-bg); color: var(--accent); border-color: var(--accent); }
+  .news-card .tag.custom { background: var(--gold-bg); color: var(--gold); border-color: var(--gold); }
+
+  .empty-state { padding: 48px 20px; text-align: center; color: var(--ink-faint); font-family: var(--mono); font-size: 12px; background: var(--surface); border: 1px dashed var(--line); border-radius: 8px; }
+
+  .summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .summary-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+  .summary-card .lbl { font-family: var(--mono); font-size: 9px; color: var(--ink-soft); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+  .summary-card .val { font-family: var(--serif); font-size: 22px; font-weight: 500; line-height: 1; }
+  .summary-card .sub { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); margin-top: 4px; letter-spacing: 0.05em; }
+
+  .footer-info { margin-top: 14px; font-family: var(--mono); font-size: 10px; color: var(--ink-soft); display: flex; gap: 14px; flex-wrap: wrap; align-items: center; letter-spacing: 0.05em; }
+
+  .hint { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.05em; }
+
+  @media (max-width: 700px) {
+    .app { padding: 18px 14px 60px; }
+    .news-card .ttl { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <nav class="topnav">
+    <div class="topnav-left">
+      <div class="brand">지니<em>.</em></div>
+      <div class="crumbs">
+        <a href="index.html">대시보드</a>
+        <span class="sep">/</span>
+        <span style="color:var(--ink);">뉴스 크롤링</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page-head">
+    <div>
+      <h1>뉴스 <em>크롤링</em></h1>
+      <div class="sub"><span id="article-count">—</span>개 기사 · 최근 <span id="window-days">14</span>일 · 3시간마다 자동 갱신</div>
+    </div>
+  </div>
+
+  <div class="summary-row" id="summary-row">
+    <div class="summary-card"><div class="lbl">총 기사</div><div class="val" id="cnt-total">—</div><div class="sub">중복 제거</div></div>
+    <div class="summary-card"><div class="lbl">활성 키워드</div><div class="val" id="cnt-active">—</div><div class="sub">선택된 필터</div></div>
+    <div class="summary-card"><div class="lbl">기본 키워드</div><div class="val" id="cnt-default">—</div><div class="sub">투자유치/상장 등</div></div>
+    <div class="summary-card"><div class="lbl">내 키워드</div><div class="val" id="cnt-custom" style="color:var(--gold);">—</div><div class="sub">사용자 등록</div></div>
+  </div>
+
+  <div class="toolbar">
+    <span class="tlabel">기간</span>
+    <select class="select" id="window-filter">
+      <option value="1">오늘</option>
+      <option value="3">최근 3일</option>
+      <option value="7" selected>최근 7일</option>
+      <option value="14">최근 14일</option>
+    </select>
+    <div class="toolbar-divider"></div>
+    <span class="tlabel">정렬</span>
+    <select class="select" id="sort-filter">
+      <option value="recent" selected>최신순</option>
+      <option value="source">출처순</option>
+    </select>
+    <div class="toolbar-divider"></div>
+    <input type="text" class="search" id="search" placeholder="제목 / 출처 검색" />
+    <button class="ghost-btn" id="reset-btn" title="필터 초기화">RESET</button>
+  </div>
+
+  <div class="keyword-panel">
+    <div class="keyword-row">
+      <span class="tlabel">키워드</span>
+      <button class="kw-chip" data-kw="__ALL__" id="kw-all">전체</button>
+      <span id="kw-default-list" style="display:contents;"></span>
+    </div>
+    <div class="keyword-row">
+      <span class="tlabel">내 키워드</span>
+      <span id="kw-custom-list" style="display:contents;"></span>
+      <form class="add-form" id="add-form" autocomplete="off">
+        <input type="text" id="add-input" placeholder="키워드 추가…" maxlength="30" />
+        <button type="submit">추가</button>
+      </form>
+      <span class="hint">★ 표시 키워드는 브라우저에 저장됩니다. 서버 크롤링에 반영하려면 <code>data/news-keywords.json</code>의 <code>custom</code> 배열에 추가하세요.</span>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <div class="seg"><span class="lbl">생성</span><span class="val" id="generated-at">—</span></div>
+    <div class="seg"><span class="lbl">필터링됨</span><span class="val" id="filtered-count">0</span></div>
+    <div class="seg"><span class="lbl">소스</span><span class="val">Google News (KR)</span></div>
+  </div>
+
+  <div class="news-list" id="news-list">
+    <div class="empty-state">불러오는 중…</div>
+  </div>
+
+  <div class="footer-info">
+    <span>데이터: Google News RSS · 매 3시간마다 GitHub Actions로 자동 갱신</span>
+    <span>중복은 URL 기준으로 제거</span>
+  </div>
+
+</div>
+
+<script>
+const STATE = {
+  data: null,
+  // selected keyword filter — null means "all"
+  selectedKw: null,
+  // user-saved custom keywords (filter-only; not crawled by the script
+  // unless added to data/news-keywords.json)
+  customKw: [],
+  windowDays: 7,
+  sort: 'recent',
+  search: '',
+};
+
+const LS_KEY = 'news.customKeywords.v1';
+
+function loadCustom() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr.filter(x => typeof x === 'string') : [];
+  } catch (_) {
+    return [];
+  }
+}
+function saveCustom() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(STATE.customKw)); } catch (_) {}
+}
+
+function fmtTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  const now = new Date();
+  const diffMin = Math.round((now - d) / 60000);
+  if (diffMin < 60) return diffMin + '분 전';
+  const diffH = Math.round(diffMin / 60);
+  if (diffH < 24) return diffH + '시간 전';
+  const diffD = Math.round(diffH / 24);
+  if (diffD < 7) return diffD + '일 전';
+  return d.toISOString().slice(5, 10).replace('-', '/');
+}
+
+function escapeHtml(s) {
+  return (s || '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  }[c]));
+}
+
+function highlight(text, terms) {
+  let out = escapeHtml(text);
+  for (const t of terms) {
+    if (!t) continue;
+    const safe = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    out = out.replace(new RegExp(safe, 'gi'), m => `<mark>${m}</mark>`);
+  }
+  return out;
+}
+
+function articleMatchesCustom(art, customList) {
+  if (!customList.length) return null;
+  const hay = (art.title + ' ' + (art.summary || '')).toLowerCase();
+  return customList.filter(k => hay.includes(k.toLowerCase()));
+}
+
+function filterArticles() {
+  if (!STATE.data) return [];
+  let arts = STATE.data.articles.slice();
+
+  // Time window
+  const cutoff = Date.now() - STATE.windowDays * 86400000;
+  arts = arts.filter(a => {
+    if (!a.published) return true;
+    const t = new Date(a.published).getTime();
+    return isNaN(t) || t >= cutoff;
+  });
+
+  // Search
+  const q = STATE.search.trim().toLowerCase();
+  if (q) {
+    arts = arts.filter(a =>
+      (a.title || '').toLowerCase().includes(q) ||
+      (a.source || '').toLowerCase().includes(q) ||
+      (a.summary || '').toLowerCase().includes(q)
+    );
+  }
+
+  // Keyword filter
+  if (STATE.selectedKw) {
+    if (STATE.customKw.includes(STATE.selectedKw)) {
+      const lk = STATE.selectedKw.toLowerCase();
+      arts = arts.filter(a =>
+        ((a.title || '') + ' ' + (a.summary || '')).toLowerCase().includes(lk)
+      );
+    } else {
+      arts = arts.filter(a => (a.keywords || []).includes(STATE.selectedKw));
+    }
+  }
+
+  // Sort
+  if (STATE.sort === 'source') {
+    arts.sort((a, b) => (a.source || '').localeCompare(b.source || '', 'ko'));
+  } else {
+    arts.sort((a, b) => (b.published || '').localeCompare(a.published || ''));
+  }
+  return arts;
+}
+
+function render() {
+  if (!STATE.data) return;
+
+  // Summary cards
+  const defaults = STATE.data.keywords.filter(k => k.origin === 'default');
+  document.getElementById('cnt-total').textContent = STATE.data.total.toLocaleString();
+  document.getElementById('cnt-default').textContent = defaults.length;
+  document.getElementById('cnt-custom').textContent = STATE.customKw.length;
+  document.getElementById('cnt-active').textContent = STATE.selectedKw || '전체';
+  document.getElementById('article-count').textContent = STATE.data.total.toLocaleString();
+  document.getElementById('window-days').textContent = STATE.data.window_days;
+  document.getElementById('generated-at').textContent =
+    (STATE.data.generated_at || '').replace('T', ' ').slice(0, 16);
+
+  // Keyword chips — defaults
+  const defWrap = document.getElementById('kw-default-list');
+  defWrap.innerHTML = '';
+  for (const k of defaults) {
+    const b = document.createElement('button');
+    b.className = 'kw-chip' + (STATE.selectedKw === k.name ? ' active' : '');
+    b.dataset.kw = k.name;
+    b.innerHTML = `${escapeHtml(k.name)}<span class="cnt">${k.count}</span>`;
+    b.addEventListener('click', () => {
+      STATE.selectedKw = STATE.selectedKw === k.name ? null : k.name;
+      render();
+    });
+    defWrap.appendChild(b);
+  }
+
+  // ALL chip state
+  const allBtn = document.getElementById('kw-all');
+  allBtn.classList.toggle('active', !STATE.selectedKw);
+  allBtn.onclick = () => { STATE.selectedKw = null; render(); };
+
+  // Keyword chips — custom (also count locally how many articles match)
+  const cusWrap = document.getElementById('kw-custom-list');
+  cusWrap.innerHTML = '';
+  if (STATE.customKw.length === 0) {
+    const empty = document.createElement('span');
+    empty.className = 'hint';
+    empty.style.color = 'var(--ink-faint)';
+    empty.textContent = '아직 없음';
+    cusWrap.appendChild(empty);
+  } else {
+    for (const name of STATE.customKw) {
+      const lk = name.toLowerCase();
+      const cnt = STATE.data.articles.filter(a =>
+        ((a.title || '') + ' ' + (a.summary || '')).toLowerCase().includes(lk)
+      ).length;
+      const b = document.createElement('button');
+      b.className = 'kw-chip custom' + (STATE.selectedKw === name ? ' active' : '');
+      b.dataset.kw = name;
+      b.innerHTML = `${escapeHtml(name)}<span class="cnt">${cnt}</span><span class="kw-remove" title="삭제">×</span>`;
+      b.addEventListener('click', (e) => {
+        if (e.target.classList.contains('kw-remove')) {
+          STATE.customKw = STATE.customKw.filter(x => x !== name);
+          if (STATE.selectedKw === name) STATE.selectedKw = null;
+          saveCustom();
+          render();
+        } else {
+          STATE.selectedKw = STATE.selectedKw === name ? null : name;
+          render();
+        }
+      });
+      cusWrap.appendChild(b);
+    }
+  }
+
+  // Articles
+  const arts = filterArticles();
+  const list = document.getElementById('news-list');
+  document.getElementById('filtered-count').textContent = arts.length;
+  if (!arts.length) {
+    list.innerHTML = '<div class="empty-state">조건에 맞는 기사가 없어요. 키워드 / 기간 / 검색을 조정해 보세요.</div>';
+    return;
+  }
+
+  const highlightTerms = STATE.selectedKw ? [STATE.selectedKw] : [];
+  const frag = document.createDocumentFragment();
+  for (const a of arts) {
+    const card = document.createElement('article');
+    card.className = 'news-card';
+    const tags = (a.keywords || []).map(k => {
+      const cls = (STATE.selectedKw === k) ? 'tag match' : 'tag';
+      return `<span class="${cls}">${escapeHtml(k)}</span>`;
+    });
+    const matchedCustom = articleMatchesCustom(a, STATE.customKw) || [];
+    for (const k of matchedCustom) {
+      const cls = (STATE.selectedKw === k) ? 'tag custom match' : 'tag custom';
+      tags.push(`<span class="${cls}">★ ${escapeHtml(k)}</span>`);
+    }
+    card.innerHTML = `
+      <div class="news-card-head">
+        <span class="src">${escapeHtml(a.source || '—')}</span>
+        <span class="time">${escapeHtml(fmtTime(a.published))}</span>
+      </div>
+      <div class="ttl"><a href="${escapeHtml(a.url)}" target="_blank" rel="noopener noreferrer">${highlight(a.title, [...highlightTerms, ...matchedCustom])}</a></div>
+      ${a.summary ? `<div class="summary">${highlight(a.summary, [...highlightTerms, ...matchedCustom])}</div>` : ''}
+      <div class="tags">${tags.join('')}</div>
+    `;
+    frag.appendChild(card);
+  }
+  list.innerHTML = '';
+  list.appendChild(frag);
+}
+
+async function load() {
+  try {
+    const r = await fetch('data/news.json?t=' + Date.now(), { cache: 'no-cache' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    STATE.data = await r.json();
+  } catch (e) {
+    document.getElementById('news-list').innerHTML =
+      `<div class="empty-state">데이터 로드 실패: ${escapeHtml(e.message)}<br>아직 GitHub Actions가 실행되지 않았을 수 있어요.</div>`;
+    return;
+  }
+  STATE.customKw = loadCustom();
+  render();
+}
+
+document.getElementById('window-filter').addEventListener('change', e => {
+  STATE.windowDays = parseInt(e.target.value, 10);
+  render();
+});
+document.getElementById('sort-filter').addEventListener('change', e => {
+  STATE.sort = e.target.value;
+  render();
+});
+document.getElementById('search').addEventListener('input', e => {
+  STATE.search = e.target.value;
+  render();
+});
+document.getElementById('reset-btn').addEventListener('click', () => {
+  STATE.selectedKw = null;
+  STATE.windowDays = 7;
+  STATE.sort = 'recent';
+  STATE.search = '';
+  document.getElementById('window-filter').value = '7';
+  document.getElementById('sort-filter').value = 'recent';
+  document.getElementById('search').value = '';
+  render();
+});
+document.getElementById('add-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const inp = document.getElementById('add-input');
+  const v = inp.value.trim();
+  if (!v) return;
+  if (STATE.customKw.includes(v)) { inp.value = ''; return; }
+  // Don't allow duplicates of default keywords
+  if (STATE.data && STATE.data.keywords.some(k => k.name === v)) {
+    alert('이미 기본 키워드에 있어요: ' + v);
+    inp.value = '';
+    return;
+  }
+  STATE.customKw.push(v);
+  saveCustom();
+  inp.value = '';
+  STATE.selectedKw = v;
+  render();
+});
+
+load();
+</script>
+</body>
+</html>

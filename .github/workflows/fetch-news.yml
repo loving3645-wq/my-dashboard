@@ -1,0 +1,47 @@
+name: Fetch News
+
+# Crawl Korean news for default + custom keywords every 3 hours during the
+# Korean working day. Schedule is in UTC; KST = UTC+9.
+on:
+  schedule:
+    - cron: '0 0,3,6,9,12 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-news
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install --quiet requests
+
+      - name: Fetch news
+        run: python scripts/fetch_news.py
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/news.json
+          if git diff --cached --quiet; then
+            echo "No changes — nothing to commit"
+          else
+            STAMP=$(date -u +"%Y-%m-%d %H:%MZ")
+            COUNT=$(python -c "import json; print(json.load(open('data/news.json'))['total'])")
+            git commit -m "📰 News refresh ${STAMP} (${COUNT} articles)"
+            git push
+          fi
