@@ -555,6 +555,7 @@
     <div class="left">
       <span id="data-status">샘플 데이터 · 실시간 아님</span>
       <a href="index.html">← 대시보드로</a>
+      <a href="#" id="export-word-btn" title="현재 종목 데이터를 Word 문서로 내보내기">📄 Word 리포트</a>
     </div>
     <div>지니 RESEARCH · KOREA STOCK DEEP DIVE</div>
   </footer>
@@ -2232,6 +2233,232 @@ async function loadDisclosuresForTicker(ticker) {
   }).join('');
 }
 
+/* ---- Word report export (client-side) ----
+ * Builds a Word-compatible HTML doc from data already cached in this
+ * page (snapshot, financials, mezzanine, ownership, disclosures) and
+ * triggers a .doc download. Word opens it as a Word document via the
+ * application/msword MIME + Office XML namespaces in the root tag.
+ * Fully offline — no GitHub Actions, no API calls. */
+function _wordEsc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
+  );
+}
+
+function _wordKRW(won) {
+  if (won == null || !isFinite(won) || won <= 0) return '—';
+  if (won >= 1e12) return (won / 1e12).toFixed(2) + '조';
+  if (won >= 1e8) return Math.round(won / 1e8).toLocaleString() + '억';
+  return Number(won).toLocaleString() + '원';
+}
+
+function _wordPct(v, dec = 2) {
+  if (v == null || !isFinite(v)) return '—';
+  return (v >= 0 ? '+' : '') + v.toFixed(dec) + '%';
+}
+
+function _wordJo(v) {
+  if (v == null || !isFinite(v)) return '—';
+  return v.toFixed(2) + '조';
+}
+
+function buildWordReportHTML(ticker) {
+  const reg = (window.TICKER_REGISTRY || {})[ticker] || {};
+  const snap = ((_snapshotCache && _snapshotCache.tickers) || {})[ticker];
+  const fin = ((_financialsCache && _financialsCache.financials) || {})[ticker];
+  const mezz = ((_mezzCache && _mezzCache.mezzanine) || {})[ticker];
+  const own = ((_ownershipCache && _ownershipCache.ownership) || {})[ticker];
+  const disc = ((_disclosuresCache && _disclosuresCache.disclosures) || {})[ticker];
+  const now = new Date();
+  const stamp = now.toISOString().slice(0, 16).replace('T', ' ') + ' KST';
+
+  const parts = [];
+  parts.push(`<h1>${_wordEsc(reg.name || ticker)} <span class="code">(${_wordEsc(ticker)})</span></h1>`);
+  const subBits = [];
+  if (reg.mkt) subBits.push(_wordEsc(reg.mkt));
+  if (reg.sector) subBits.push(_wordEsc(reg.sector));
+  subBits.push(stamp);
+  parts.push(`<p class="sub">${subBits.join(' · ')}</p>`);
+
+  if (snap && snap.price) {
+    const r1d = snap.r1d;
+    const sign = (typeof r1d === 'number' && r1d >= 0) ? 'pos' : 'neg';
+    const r1dHtml = (typeof r1d === 'number')
+      ? ` <span class="${sign}">${_wordPct(r1d, 2)} (1D)</span>`
+      : '';
+    parts.push(`<p class="kpi"><b>현재가 ${Number(snap.price).toLocaleString()}원</b>${r1dHtml}</p>`);
+  }
+
+  // Returns
+  if (snap) {
+    parts.push(`<h2>수익률</h2>`);
+    const rk = [['1일','r1d'],['1주','r1w'],['1개월','r1m'],['3개월','r3m'],['6개월','r6m'],['1년','r1y']];
+    parts.push(`<table><thead><tr>${rk.map(([l]) => `<th>${l}</th>`).join('')}</tr></thead><tbody><tr>`);
+    for (const [, k] of rk) {
+      const v = snap[k];
+      if (typeof v === 'number') {
+        const cls = v >= 0 ? 'pos' : 'neg';
+        parts.push(`<td class="num ${cls}">${_wordPct(v, 2)}</td>`);
+      } else {
+        parts.push(`<td class="num">—</td>`);
+      }
+    }
+    parts.push(`</tr></tbody></table>`);
+  }
+
+  // Financials
+  if (fin && fin.years && fin.years.length) {
+    parts.push(`<h2>재무 요약 <span class="meta">DART · 연결우선</span></h2>`);
+    parts.push(`<table><thead><tr><th>항목</th>${fin.years.map(y => `<th>FY${_wordEsc(y)}</th>`).join('')}</tr></thead><tbody>`);
+    const rows = [
+      ['매출액', fin.revenue, _wordJo],
+      ['매출원가', fin.cogs, _wordJo],
+      ['매출총이익', fin.grossProfit, _wordJo],
+      ['영업이익', fin.operatingIncome, _wordJo],
+      ['당기순이익', fin.netIncome, _wordJo],
+      ['매출총이익률', fin.grossMargin, v => v == null ? '—' : v.toFixed(1) + '%'],
+      ['영업이익률', fin.opMargin, v => v == null ? '—' : v.toFixed(1) + '%'],
+      ['순이익률', fin.netMargin, v => v == null ? '—' : v.toFixed(1) + '%'],
+      ['매출성장률', fin.revGrowth, v => v == null ? '—' : (v >= 0 ? '+' : '') + v.toFixed(1) + '%'],
+    ];
+    for (const [label, vals, fmt] of rows) {
+      const cells = (vals || []).map(v => `<td class="num">${fmt(v)}</td>`).join('');
+      parts.push(`<tr><td>${label}</td>${cells}</tr>`);
+    }
+    parts.push(`</tbody></table>`);
+  }
+
+  // Mezzanine
+  if (mezz && mezz.issuances && mezz.issuances.length) {
+    parts.push(`<h2>메자닌 발행이력 · 잔액</h2>`);
+    const s = mezz.summary || {};
+    const outstanding = s.outstanding != null ? s.outstanding : s.outstandingByMaturity;
+    const parsedNote = s.outstandingParsedCount > 0
+      ? `${s.outstandingParsedCount}건 본문 파싱`
+      : '본문 파싱 미적용 — 만기 기준';
+    let line = `발행 ${s.issuanceCount || mezz.issuances.length}건  ·  총 발행 ${_wordKRW(s.totalIssued)}  ·  미상환 잔액 ${_wordKRW(outstanding)} (${_wordEsc(parsedNote)})  ·  행사·상환 ${s.totalEvents || 0}건`;
+    if (s.nextPut && s.nextPut.date) line += `  ·  다음 풋 ${_wordEsc(s.nextPut.date)}`;
+    parts.push(`<p class="meta">${line}</p>`);
+    parts.push(`<table><thead><tr><th>공시일</th><th>종류</th><th>발행액</th><th>만기</th><th>전환가</th><th>풋(시작)</th><th>잔액</th></tr></thead><tbody>`);
+    for (const x of mezz.issuances) {
+      const cur = x.currentOutstanding;
+      let curHtml = '<span class="faint">—</span>';
+      if (cur != null) {
+        const cls = cur === 0 ? 'neg' : (x.faceAmount && cur < x.faceAmount ? 'pos' : '');
+        curHtml = `<span class="${cls}">${_wordKRW(cur)}</span>`;
+      }
+      parts.push(
+        `<tr>
+          <td>${_wordEsc(x.rceptDt || '—')}</td>
+          <td>${_wordEsc(x.type)}</td>
+          <td class="num">${_wordKRW(x.faceAmount)}</td>
+          <td>${_wordEsc(x.maturityDate || '—')}</td>
+          <td class="num">${x.conversionPrice ? Number(x.conversionPrice).toLocaleString() + '원' : '—'}</td>
+          <td>${_wordEsc(x.putStart || '—')}</td>
+          <td class="num">${curHtml}</td>
+        </tr>`
+      );
+    }
+    parts.push(`</tbody></table>`);
+  }
+
+  // Ownership
+  if (own) {
+    parts.push(`<h2>지분 구조 <span class="meta">FY${_wordEsc(own.fiscalYear || '')}</span></h2>`);
+    const major = own.majorBlock || {};
+    const minority = own.minorityBlock || {};
+    let line = `최대주주(특수관계인 포함) ${(major.totalRatio || 0).toFixed(2)}%`;
+    if (minority && minority.ratio != null) {
+      line += `  ·  소액주주 ${minority.ratio.toFixed(2)}%`;
+      if (minority.shareholderCount) line += ` (${Number(minority.shareholderCount).toLocaleString()}명)`;
+    }
+    parts.push(`<p class="meta">${line}</p>`);
+    const items = (major.items || []).slice(0, 5);
+    if (items.length) {
+      parts.push(`<table><thead><tr><th>성명</th><th>관계</th><th>지분율</th><th>보유주식수</th></tr></thead><tbody>`);
+      for (const it of items) {
+        parts.push(
+          `<tr>
+            <td>${_wordEsc(it.name || '—')}</td>
+            <td>${_wordEsc(it.relation || '—')}</td>
+            <td class="num">${it.ratio != null ? it.ratio.toFixed(2) + '%' : '—'}</td>
+            <td class="num">${it.shares != null ? Number(it.shares).toLocaleString() : '—'}</td>
+          </tr>`
+        );
+      }
+      parts.push(`</tbody></table>`);
+    }
+  }
+
+  // Disclosures
+  if (disc && disc.length) {
+    parts.push(`<h2>최근 공시 (30일)</h2>`);
+    parts.push(`<table><thead><tr><th>일자</th><th>구분</th><th>제목</th></tr></thead><tbody>`);
+    for (const d of disc.slice(0, 10)) {
+      parts.push(
+        `<tr>
+          <td>${_wordEsc(d.date || '—')}</td>
+          <td>${_wordEsc(d.kind || '—')}</td>
+          <td>${_wordEsc(d.title || '—')}</td>
+        </tr>`
+      );
+    }
+    parts.push(`</tbody></table>`);
+  }
+
+  parts.push(`<p class="footer">Generated by 지니 Research Dashboard · ${stamp}</p>`);
+
+  return `<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<title>${_wordEsc(reg.name || ticker)} ${_wordEsc(ticker)}</title>
+<style>
+@page { margin: 1.5cm 1.8cm; }
+body { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; font-size: 10pt; color: #1a1a1a; }
+h1 { font-size: 18pt; margin: 0 0 2pt 0; }
+h1 .code { font-size: 12pt; color: #555; font-weight: normal; }
+h2 { font-size: 13pt; color: #C89B3C; border-bottom: 1.5pt solid #C89B3C; padding-bottom: 2pt; margin: 16pt 0 6pt 0; }
+h2 .meta { font-size: 9pt; color: #888; font-weight: normal; }
+p.sub { color: #888; font-size: 9pt; margin: 0 0 8pt 0; }
+p.kpi { margin: 4pt 0 8pt 0; font-size: 14pt; }
+p.meta { color: #555; font-size: 9pt; margin: 0 0 6pt 0; }
+p.footer { margin-top: 16pt; text-align: right; font-size: 8pt; color: #888; }
+table { border-collapse: collapse; width: 100%; font-size: 9pt; margin-bottom: 4pt; }
+th, td { border: 0.5pt solid #ccc; padding: 4pt 6pt; vertical-align: top; }
+th { background: #F4ECDA; font-weight: bold; }
+td.num, th.num { text-align: right; }
+.pos { color: #1F7A3C; }
+.neg { color: #B0352A; }
+.faint { color: #888; }
+</style>
+</head>
+<body>
+${parts.join('\n')}
+</body>
+</html>`;
+}
+
+function exportWordReport() {
+  const ticker = currentTicker;
+  if (!ticker) return;
+  const html = buildWordReportHTML(ticker);
+  // The BOM (﻿) makes Word read the file as UTF-8 even when the
+  // user double-clicks instead of using "Open with → Word".
+  const blob = new Blob(['﻿', html], {
+    type: 'application/msword;charset=utf-8',
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  a.download = `${ticker}_${stamp}.doc`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 async function loadMezzanineForTicker(ticker) {
   const section = $('mezz-section');
   if (!section) return;
@@ -2468,6 +2695,11 @@ function buildAutocomplete(query) {
  * Events
  * ===================================================================== */
 document.addEventListener('click', (e) => {
+  if (e.target.closest('#export-word-btn')) {
+    e.preventDefault();
+    exportWordReport();
+    return;
+  }
   const ac = e.target.closest('#ac-list .ac-item');
   if (ac) {
     $('ticker-input').value = '';
