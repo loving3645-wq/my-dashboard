@@ -1,0 +1,47 @@
+name: Export Word Report
+
+# Manually-triggered: pick a ticker, get a Word doc summarizing
+# everything we have on it (시세 · 재무 · 메자닌 · 지분구조 · 공시).
+# Pulls from existing data/*.json — no API calls, no token cost.
+on:
+  workflow_dispatch:
+    inputs:
+      ticker:
+        description: '6자리 종목코드 (예: 005930)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install --quiet python-docx
+
+      - name: Validate ticker
+        run: |
+          if ! [[ "${{ github.event.inputs.ticker }}" =~ ^[0-9A-Z]{6}$ ]]; then
+            echo "::error::Invalid ticker format: ${{ github.event.inputs.ticker }}"
+            exit 1
+          fi
+
+      - name: Build report
+        run: python scripts/export_report.py "${{ github.event.inputs.ticker }}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: report-${{ github.event.inputs.ticker }}
+          path: reports/*.docx
+          retention-days: 30
