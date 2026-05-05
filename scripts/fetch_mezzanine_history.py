@@ -136,6 +136,22 @@ def load_tickers():
 def download_corp_code_map(sess):
     r = sess.get(CORP_CODE_URL, params={"crtfc_key": DART_KEY}, timeout=30)
     r.raise_for_status()
+    # DART returns a JSON error body (HTTP 200) instead of a zip when the
+    # API key is invalid, expired, or the daily quota is exhausted. Detect
+    # that case explicitly so the failure surfaces an actionable message
+    # instead of an opaque zipfile.BadZipFile traceback.
+    if not r.content.startswith(b"PK"):
+        try:
+            body = r.json()
+            raise RuntimeError(
+                f"corpCode.xml not a zip — DART responded with "
+                f"status={body.get('status')!r} message={body.get('message')!r}"
+            )
+        except ValueError:
+            raise RuntimeError(
+                f"corpCode.xml not a zip — first 200 bytes: "
+                f"{r.content[:200]!r}"
+            )
     zf = zipfile.ZipFile(io.BytesIO(r.content))
     xml_bytes = zf.read(zf.namelist()[0])
     root = ET.fromstring(xml_bytes)
@@ -519,7 +535,11 @@ def main():
 
     sess = make_session()
     print("Fetching DART corp_code master…", flush=True)
-    code_map = download_corp_code_map(sess)
+    try:
+        code_map = download_corp_code_map(sess)
+    except (RuntimeError, requests.RequestException, zipfile.BadZipFile) as e:
+        print(f"ERROR: corp_code download failed — {e}", file=sys.stderr)
+        sys.exit(1)
     print(f"  loaded {len(code_map):,} listed corp_code entries", flush=True)
 
     tickers = load_tickers()
