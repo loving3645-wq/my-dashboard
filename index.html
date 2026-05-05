@@ -281,6 +281,30 @@
   .stock-chip.neg { color: #B0352A; border-color: #B0352A33; background: #B0352A0F; }
   .stock-chip.mezz { color: #8C6D1F; border-color: #C89B3C44; background: #C89B3C14; }
   .stock-chip.disc { color: #2C4A8C; border-color: #3a6db044; background: #3a6db014; }
+  .mezz-alerts-bar { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin: 14px 0; }
+  .mezz-alerts-bar[hidden] { display: none; }
+  .alerts-title { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: var(--ink-mid); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .alerts-title .accent-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .alert-group { margin: 6px 0; }
+  .alert-group + .alert-group { margin-top: 12px; }
+  .alert-group[hidden] { display: none; }
+  .alert-group h3 { font-size: 10px; color: var(--ink-faint); margin: 0 0 6px 0; font-weight: 500; letter-spacing: 0.05em; }
+  .alert-cards { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scroll-snap-type: x proximity; }
+  .alert-cards::-webkit-scrollbar { height: 4px; }
+  .alert-cards::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 2px; }
+  .alert-card { flex: 0 0 auto; min-width: 200px; max-width: 240px; padding: 8px 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; font-size: 11px; text-decoration: none; color: var(--ink); transition: all 0.15s; scroll-snap-align: start; display: block; }
+  .alert-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .alert-card.put { border-left: 3px solid #C89B3C; }
+  .alert-card.put.in-window { border-left-color: #B0352A; background: #B0352A07; }
+  .alert-card.news { border-left: 3px solid #3a6db0; }
+  .ac-line1 { font-weight: 600; font-size: 12px; margin-bottom: 3px; line-height: 1.3; display: flex; align-items: baseline; gap: 6px; }
+  .ac-tk { color: var(--ink-faint); font-family: 'JetBrains Mono', monospace; font-weight: 400; font-size: 10px; }
+  .ac-line2 { color: var(--ink-mid); margin-bottom: 2px; font-size: 11px; }
+  .ac-d { color: var(--accent); font-weight: 600; margin-left: 4px; }
+  .ac-d.urgent { color: #B0352A; }
+  .ac-line3 { color: var(--ink-faint); font-size: 10px; font-family: 'JetBrains Mono', monospace; }
+  .alert-badge { display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 9px; font-weight: 600; margin-left: 4px; }
+  .alert-badge.active { background: #B0352A; color: white; }
 
   .col-add { padding: 10px 12px; border-top: 1px solid var(--line); flex-shrink: 0; background: var(--surface); }
   .col.contacts .col-add { background: var(--surface-2); }
@@ -353,6 +377,18 @@
     <div class="toolbar-spacer"></div>
     <span class="sync-pill" id="sync-pill"><span class="dot"></span><span class="lbl">SYNC</span></span>
   </div>
+  <section class="mezz-alerts-bar" id="mezz-alerts" hidden>
+    <div class="alerts-title"><span class="accent-dot"></span>메자닌 모니터</div>
+    <div class="alert-group" id="mezz-puts-group" hidden>
+      <h3>⚠️ 다가오는 풋 (90일 이내 + 행사창 진행 중)</h3>
+      <div class="alert-cards" id="mezz-puts-cards"></div>
+    </div>
+    <div class="alert-group" id="mezz-news-group" hidden>
+      <h3>🆕 신규 발행 (7일 이내)</h3>
+      <div class="alert-cards" id="mezz-news-cards"></div>
+    </div>
+  </section>
+
   <div class="col-tabs" id="col-tabs">
     <button class="col-tab cal-tab active" data-col="cal"><span class="icon"></span>캘린더<span class="badge" id="ct-cal">0</span></button>
     <button class="col-tab todo-tab" data-col="todo"><span class="icon"></span>할 일<span class="badge" id="ct-todo">0</span></button>
@@ -608,6 +644,106 @@ async function loadDashStockData() {
   _dashStockCache.loading = false;
   // Refresh cards now that enrichment is available.
   if (typeof renderStocks === 'function') renderStocks();
+  if (typeof buildMezzAlerts === 'function') buildMezzAlerts();
+}
+
+/* ---- Mezzanine alerts bar (top of dashboard) ----
+ * Two groups derived from data/mezzanine.json:
+ *   1) 다가오는 풋 — putStart in [today, today+90d] OR currently in
+ *      [putStart, putEnd] window.
+ *   2) 신규 발행 — rceptDt in last 7 days.
+ * Cards link to stock-deep-dive#TICKER. Section auto-hides if empty. */
+function buildMezzAlerts() {
+  const section = document.getElementById('mezz-alerts');
+  if (!section) return;
+  if (!_dashStockCache.loaded || !_dashStockCache.mezz || !_dashStockCache.mezz.mezzanine) {
+    section.hidden = true;
+    return;
+  }
+  const all = _dashStockCache.mezz.mezzanine;
+  const todayMs = Date.now();
+  const today = new Date(todayMs - new Date().getTimezoneOffset() * 60000)
+    .toISOString().slice(0, 10);
+  const in90 = new Date(todayMs + 90 * 86400000).toISOString().slice(0, 10);
+  const last7 = new Date(todayMs - 7 * 86400000).toISOString().slice(0, 10);
+
+  const puts = [];
+  const news = [];
+  for (const ticker in all) {
+    const entry = all[ticker];
+    const name = entry.name || ticker;
+    for (const x of (entry.issuances || [])) {
+      if (x.rceptDt && x.rceptDt >= last7) {
+        news.push({ ticker, name, x });
+      }
+      if (x.putStart) {
+        const inWindow = x.putEnd && x.putStart <= today && today <= x.putEnd;
+        const upcoming = x.putStart > today && x.putStart <= in90;
+        if (inWindow || upcoming) {
+          const startMs = new Date(x.putStart).getTime();
+          const dDays = Math.round((startMs - todayMs) / 86400000);
+          const out = x.currentOutstanding != null
+            ? x.currentOutstanding
+            : (x.faceAmount || 0);
+          puts.push({ ticker, name, x, inWindow, dDays, outstanding: out });
+        }
+      }
+    }
+  }
+  // In-window first, then by putStart asc
+  puts.sort((a, b) => {
+    if (a.inWindow !== b.inWindow) return a.inWindow ? -1 : 1;
+    return a.x.putStart < b.x.putStart ? -1 : (a.x.putStart > b.x.putStart ? 1 : 0);
+  });
+  news.sort((a, b) => (a.x.rceptDt > b.x.rceptDt) ? -1 : 1);
+
+  const putsCapped = puts.slice(0, 30);
+  const newsCapped = news.slice(0, 30);
+
+  document.getElementById('mezz-puts-cards').innerHTML =
+    putsCapped.map(_putCardHTML).join('');
+  document.getElementById('mezz-news-cards').innerHTML =
+    newsCapped.map(_newsCardHTML).join('');
+  document.getElementById('mezz-puts-group').hidden = putsCapped.length === 0;
+  document.getElementById('mezz-news-group').hidden = newsCapped.length === 0;
+  section.hidden = (putsCapped.length === 0 && newsCapped.length === 0);
+}
+function _putCardHTML(p) {
+  const x = p.x;
+  let dStr;
+  let dCls = '';
+  if (p.inWindow) {
+    dStr = '진행 중';
+    dCls = 'urgent';
+  } else if (p.dDays === 0) {
+    dStr = 'D-Day';
+    dCls = 'urgent';
+  } else if (p.dDays <= 7) {
+    dStr = 'D-' + p.dDays;
+    dCls = 'urgent';
+  } else {
+    dStr = 'D-' + p.dDays;
+  }
+  const badge = p.inWindow
+    ? '<span class="alert-badge active">행사 가능</span>'
+    : '';
+  const outStr = p.outstanding > 0 ? '잔액 ' + _fmtKRWchip(p.outstanding) : '잔액 —';
+  const cls = 'alert-card put' + (p.inWindow ? ' in-window' : '');
+  return `<a class="${cls}" href="stock-deep-dive.html#${p.ticker}" target="_blank" rel="noopener">
+    <div class="ac-line1">${escapeHTML(p.name)}<span class="ac-tk">${p.ticker}</span></div>
+    <div class="ac-line2">${escapeHTML(x.type)} · 풋 ${escapeHTML(x.putStart)}<span class="ac-d ${dCls}">${dStr}</span>${badge}</div>
+    <div class="ac-line3">${outStr}</div>
+  </a>`;
+}
+function _newsCardHTML(n) {
+  const x = n.x;
+  const face = x.faceAmount ? '발행 ' + _fmtKRWchip(x.faceAmount) : '';
+  const mat = x.maturityDate ? ' · 만기 ' + escapeHTML(x.maturityDate) : '';
+  return `<a class="alert-card news" href="stock-deep-dive.html#${n.ticker}" target="_blank" rel="noopener">
+    <div class="ac-line1">${escapeHTML(n.name)}<span class="ac-tk">${n.ticker}</span></div>
+    <div class="ac-line2">${escapeHTML(x.type)} · ${escapeHTML(x.rceptDt || '')}</div>
+    <div class="ac-line3">${face}${mat}</div>
+  </a>`;
 }
 function extractTicker(name) {
   const m = String(name || '').match(/(?:^|[^0-9A-Z])([0-9]{6})(?:[^0-9A-Z]|$)/);
