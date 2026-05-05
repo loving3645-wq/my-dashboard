@@ -2027,6 +2027,43 @@ async function loadResearchReportsForTicker(ticker) {
   }
 }
 
+/* ---- DART annual financials (3Y) for current ticker ----
+ * Fed by data/financials.json (weekly cron, scripts/fetch_dart_financials.py).
+ * On hit, replaces the "데이터 준비 중" placeholders in the income table and
+ * the rev/margin charts with real numbers. On miss (financial firms,
+ * recent IPOs without an annual report yet, etc.), leaves placeholders. */
+let _financialsCache = null;
+let _financialsPromise = null;
+function loadFinancialsOnce() {
+  if (_financialsCache) return Promise.resolve(_financialsCache);
+  if (_financialsPromise) return _financialsPromise;
+  _financialsPromise = fetch('data/financials.json', { cache: 'force-cache' })
+    .then(r => r.ok ? r.json() : null)
+    .then(j => { _financialsCache = j; return j; })
+    .catch(() => null);
+  return _financialsPromise;
+}
+
+async function loadFinancialsForTicker(stock, ticker) {
+  const payload = await loadFinancialsOnce();
+  const entry = payload && payload.financials && payload.financials[ticker];
+  if (!entry) return false;
+  // Reshape to the {fin} schema renderIncome / buildRevChart expect.
+  stock.fin = {
+    years: entry.years,
+    revenue: entry.revenue.map(v => v == null ? 0 : v),
+    netIncome: entry.netIncome.map(v => v == null ? 0 : v),
+    grossMargin: entry.grossMargin.map(v => v == null ? 0 : v),
+    opMargin: entry.opMargin.map(v => v == null ? 0 : v),
+    netMargin: entry.netMargin.map(v => v == null ? 0 : v),
+    revGrowth: entry.revGrowth.map(v => v == null ? 0 : v),
+  };
+  renderIncome(stock);
+  buildRevChart(stock.fin);
+  buildMarginChart(stock.fin);
+  return true;
+}
+
 async function loadStock(ticker) {
   ticker = String(ticker).toUpperCase().padStart(6, '0').slice(-6);
   if (!/^\d{6}$/.test(ticker)) {
@@ -2106,6 +2143,8 @@ async function loadStock(ticker) {
     if (stock.own) renderOwn(stock);
     if (stock.peers && stock.peers.length) renderPeers(stock);
     if (stock.news && stock.news.length) renderNews(stock);
+    // Try DART 3Y financials — replaces income table + rev/margin charts on hit.
+    loadFinancialsForTicker(stock, ticker);
   }
 
   // 5) Fetch chart history

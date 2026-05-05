@@ -1,0 +1,50 @@
+name: DART Financials
+
+# Annual reports (사업보고서) are filed by end of March each year for the
+# prior fiscal year. Numbers don't change after that, so weekly is more
+# than enough. Sunday 18:00 UTC = Monday 03:00 KST — quiet hours.
+on:
+  schedule:
+    - cron: '0 18 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-financials
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install --quiet requests
+
+      - name: Fetch DART financials
+        env:
+          OPENDART_KEY: ${{ secrets.OPENDART_KEY }}
+        run: python scripts/fetch_dart_financials.py
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/financials.json
+          if git diff --cached --quiet; then
+            echo "No changes — nothing to commit"
+          else
+            STAMP=$(date -u +"%Y-%m-%d")
+            COUNT=$(python -c "import json; print(json.load(open('data/financials.json'))['count'])")
+            git commit -m "📊 DART financials ${STAMP} (${COUNT} tickers)"
+            git push
+          fi
