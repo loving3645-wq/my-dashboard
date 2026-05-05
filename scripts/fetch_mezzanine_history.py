@@ -41,6 +41,7 @@ OUTPUT_FILE = os.path.join(ROOT, "data", "mezzanine.json")
 DART_KEY = os.environ.get("OPENDART_KEY", "").strip()
 CORP_CODE_URL = "https://opendart.fss.or.kr/api/corpCode.xml"
 LIST_URL = "https://opendart.fss.or.kr/api/list.json"
+DOCUMENT_URL = "https://opendart.fss.or.kr/api/document.xml"
 
 # 7-year lookback covers virtually all live mezzanine — typical CB tenor
 # is 3-5 years; even rare 7-year issues with year-2 puts will be picked up.
@@ -56,6 +57,25 @@ LIST_PAGE_SIZE = 100
 # get it. v2 only captures the event itself; v3 will parse bodies for
 # accurate net outstanding.
 ROUND_RE = re.compile(r"제\s*(\d+(?:[\-–]\d+)?)\s*회")
+
+# Patterns for the "outstanding after exercise" amount in 전환청구권행사
+# / 사채권조기상환 / 만기상환 disclosure bodies. Filers' phrasing varies;
+# we try several. All capture an integer amount in 원. After XML tag
+# stripping, table headers and cell values often appear adjacent.
+OUTSTANDING_PATTERNS = [
+    re.compile(
+        r"(?:행사\s*후|전환\s*후|상환\s*후)\s*(?:미상환\s*)?(?:사채\s*)?"
+        r"(?:잔액|잔여\s*사채\s*총액|액면\s*총액|총액|잔)\s*[:：\s]*"
+        r"([\d,]+)\s*원?"
+    ),
+    re.compile(
+        r"(?:현재|기말|잔여)\s*미상환\s*(?:사채\s*)?"
+        r"(?:잔액|액면\s*금액|총액|액면\s*총액)\s*[:：\s]*([\d,]+)\s*원?"
+    ),
+    re.compile(
+        r"미상환\s*사채\s*(?:액면\s*총액|총액|잔액)\s*[:：\s]*([\d,]+)\s*원?"
+    ),
+]
 EVENT_PATTERNS = [
     (re.compile(r"전환청구권행사"), "conversion"),
     (re.compile(r"신주인수권행사"), "warrant_exercise"),
@@ -262,6 +282,110 @@ def scan_events(sess, corp_code, bgn_de, end_de):
     return events
 
 
+def fetch_disclosure_body(sess, rcept_no):
+    """OpenDART document.xml returns a ZIP with one or more XML files.
+    Strip tags and concatenate the text so regex can run over a single
+    blob. Returns None on any failure — caller falls back to face amount."""
+    if not rcept_no:
+        return None
+    for attempt in range(RETRY_COUNT + 1):
+        try:
+            r = sess.get(
+                DOCUMENT_URL,
+                params={"crtfc_key": DART_KEY, "rcept_no": rcept_no},
+                timeout=TIMEOUT,
+            )
+            if r.status_code != 200:
+                return None
+            try:
+                zf = zipfile.ZipFile(io.BytesIO(r.content))
+            except zipfile.BadZipFile:
+                return None
+            chunks = []
+            for name in zf.namelist():
+                try:
+                    raw = zf.read(name)
+                except KeyError:
+                    continue
+                try:
+                    text = raw.decode("utf-8")
+                except UnicodeDecodeError:
+                    text = raw.decode("cp949", errors="replace")
+                # Collapse XML tags into spaces so adjacent header/value
+                # cells stay separated for regex.
+                text = re.sub(r"<[^>]+>", " ", text)
+                # Decode common XML entities the lazy way.
+                text = (text
+                        .replace("&nbsp;", " ")
+                        .replace("&#160;", " ")
+                        .replace("&amp;", "&"))
+                chunks.append(text)
+            return "\n".join(chunks)
+        except requests.RequestException:
+            time.sleep(0.5 * (attempt + 1))
+            continue
+    return None
+
+
+def parse_outstanding_from_body(text):
+    if not text:
+        return None
+    for pat in OUTSTANDING_PATTERNS:
+        for m in pat.finditer(text):
+            raw = m.group(1).replace(",", "").strip()
+            if not raw:
+                continue
+            try:
+                amount = int(raw)
+            except ValueError:
+                continue
+            # 0 is legitimate (fully converted/redeemed). Otherwise CB
+            # face amounts are at least 1억 — anything smaller is noise
+            # the regex picked up from a column index or a fee figure.
+            if amount == 0 or amount >= 100_000_000:
+                return amount
+    return None
+
+
+def enrich_with_outstanding(sess, issuances):
+    """For each issuance with action events, parse the latest non-correction
+    event's disclosure body to recover the post-exercise outstanding face
+    amount. Sets x['currentOutstanding'] when successful, plus a small
+    provenance dict so the UI can show source."""
+    for x in issuances:
+        events = x.get("events") or []
+        action = next(
+            (e for e in events if e["type"] != "correction" and e.get("rceptNo")),
+            None,
+        )
+        if not action:
+            continue
+        # Maturity / call by maturity → bond is fully redeemed. Skip the
+        # body fetch; outstanding is 0.
+        if action["type"] == "redemption":
+            x["currentOutstanding"] = 0
+            x["outstandingSource"] = {
+                "rceptNo": action["rceptNo"],
+                "date": action["date"],
+                "method": "matured",
+            }
+            continue
+        body = fetch_disclosure_body(sess, action["rceptNo"])
+        amount = parse_outstanding_from_body(body)
+        if amount is None:
+            continue
+        # Sanity: outstanding cannot exceed face amount. If it does,
+        # the regex caught the wrong number — discard.
+        if x.get("faceAmount") and amount > x["faceAmount"]:
+            continue
+        x["currentOutstanding"] = amount
+        x["outstandingSource"] = {
+            "rceptNo": action["rceptNo"],
+            "date": action["date"],
+            "method": "parsed",
+        }
+
+
 def attach_events(issuances, events):
     """Match each event to an issuance by 회차 number when possible.
     Unmatched events stay at ticker level so the UI can still show them."""
@@ -304,18 +428,27 @@ def summarize(issuances, unmatched_events):
     next_put = None
     total_events = sum(len(x.get("events") or []) for x in issuances)
     total_events += len(unmatched_events or [])
+    parsed_count = 0
     for x in issuances:
-        if x["faceAmount"]:
-            total += x["faceAmount"]
-            if x["maturityDate"] and x["maturityDate"] > today:
-                outstanding += x["faceAmount"]
-        ps = x["putStart"]
+        face = x.get("faceAmount") or 0
+        total += face
+        # Prefer the parsed post-event outstanding when available.
+        # Otherwise fall back to face amount when maturity is still in
+        # the future. Matured issuances with no parsed outstanding are
+        # treated as 0 (we know they redeemed at maturity).
+        if "currentOutstanding" in x:
+            outstanding += x["currentOutstanding"]
+            parsed_count += 1
+        elif x.get("maturityDate") and x["maturityDate"] > today:
+            outstanding += face
+        ps = x.get("putStart")
         if ps and ps > today:
             if next_put is None or ps < next_put["date"]:
-                next_put = {"date": ps, "amount": x["faceAmount"] or 0}
+                next_put = {"date": ps, "amount": face}
     return {
         "totalIssued": total,
-        "outstandingByMaturity": outstanding,
+        "outstanding": outstanding,
+        "outstandingParsedCount": parsed_count,
         "issuanceCount": len(issuances),
         "totalEvents": total_events,
         "nextPut": next_put,
@@ -367,6 +500,9 @@ def fetch_one(sess, ticker, name, corp_code, bgn_de, end_de):
     # avoids 2K+ wasted calls per run.
     events = scan_events(sess, corp_code, bgn_de, end_de)
     unmatched = attach_events(issuances, events)
+    # For issuances with action events, fetch + parse the latest event's
+    # body to recover the actual post-exercise outstanding face amount.
+    enrich_with_outstanding(sess, issuances)
     return {
         "name": name,
         "corpCode": corp_code,
@@ -398,6 +534,7 @@ def main():
     skipped_no_corp = 0
     total_issuances = 0
     total_events = 0
+    total_parsed = 0
 
     def task(ticker, name):
         cc = code_map.get(ticker)
@@ -417,13 +554,14 @@ def main():
                 results[ticker] = entry
                 total_issuances += entry["summary"]["issuanceCount"]
                 total_events += entry["summary"]["totalEvents"]
+                total_parsed += entry["summary"]["outstandingParsedCount"]
             elif reason == "no_corp":
                 skipped_no_corp += 1
             if done % 200 == 0:
                 print(
                     f"  {done}/{total} · with_mezz={len(results)} "
                     f"issuances={total_issuances} events={total_events} "
-                    f"no_corp={skipped_no_corp}",
+                    f"parsed={total_parsed} no_corp={skipped_no_corp}",
                     flush=True,
                 )
 
@@ -435,6 +573,7 @@ def main():
         "issuersWithMezzanine": len(results),
         "totalIssuances": total_issuances,
         "totalEvents": total_events,
+        "totalOutstandingParsed": total_parsed,
         "mezzanine": results,
     }
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
@@ -443,7 +582,8 @@ def main():
 
     print(
         f"Wrote {OUTPUT_FILE} · issuers={len(results)} "
-        f"issuances={total_issuances} events={total_events}",
+        f"issuances={total_issuances} events={total_events} "
+        f"parsed_outstanding={total_parsed}",
         flush=True,
     )
 

@@ -493,7 +493,7 @@
     <div class="card">
       <div class="card-head">
         <div class="card-title"><span class="icon"></span>메자닌 <em>발행이력 · 잔량</em></div>
-        <div class="card-meta" id="mezz-meta">DART 주요사항보고서 기준 · 행사/상환 차감 전</div>
+        <div class="card-meta" id="mezz-meta">DART 주요사항보고서 + 최근 행사 공시 본문 파싱</div>
       </div>
       <div class="metric-rows" id="mezz-summary"></div>
       <div style="overflow-x:auto; margin-top:12px;">
@@ -2244,11 +2244,15 @@ async function loadMezzanineForTicker(ticker) {
   section.hidden = false;
   const today = new Date().toISOString().slice(0, 10);
   const s = entry.summary || {};
+  const outstanding = (s.outstanding != null) ? s.outstanding : s.outstandingByMaturity;
+  const parsedNote = s.outstandingParsedCount > 0
+    ? `${s.outstandingParsedCount}건 본문 파싱`
+    : '본문 파싱 미적용';
   const summaryRows = [
     { lbl: '발행 건수', val: (s.issuanceCount || entry.issuances.length) + '건' },
     { lbl: '총 발행원금', val: fmtMezzKRW(s.totalIssued) },
-    { lbl: '미상환 추정 (만기 미도래)', val: fmtMezzKRW(s.outstandingByMaturity) },
-    { lbl: '행사·상환 이벤트', val: (s.totalEvents || 0) + '건 (행사금액 미반영)' },
+    { lbl: '미상환 잔액', val: `${fmtMezzKRW(outstanding)} <span class="sub">(${parsedNote})</span>` },
+    { lbl: '행사·상환 이벤트', val: (s.totalEvents || 0) + '건' },
     { lbl: '다음 풋 도래', val: s.nextPut && s.nextPut.date ? s.nextPut.date : '—' },
   ];
   $('mezz-summary').innerHTML = summaryRows
@@ -2259,10 +2263,16 @@ async function loadMezzanineForTicker(ticker) {
     const status = mezzStatus(x, today);
     const statusCls = status === '만기 도래' ? 'neg' : (status === '풋 행사 가능' ? 'neg' : (status === '전환 가능' ? 'pos' : ''));
     const badge = mezzEventBadge(x);
+    // Show face amount with current outstanding inline when parsed.
+    let faceCell = fmtMezzKRW(x.faceAmount);
+    if (x.currentOutstanding != null) {
+      const remCls = x.currentOutstanding === 0 ? 'neg' : (x.currentOutstanding < x.faceAmount ? 'pos' : '');
+      faceCell += ` <span class="sub ${remCls}">잔 ${fmtMezzKRW(x.currentOutstanding)}</span>`;
+    }
     return `<tr>
       <td>${escapeHtml(x.rceptDt || '')}</td>
       <td>${escapeHtml(x.type)}</td>
-      <td class="num">${fmtMezzKRW(x.faceAmount)}</td>
+      <td class="num">${faceCell}</td>
       <td>${escapeHtml(x.maturityDate || '—')}</td>
       <td class="num">${x.conversionPrice ? x.conversionPrice.toLocaleString() + '원' : '—'}</td>
       <td>${escapeHtml(x.putStart || '—')}</td>
