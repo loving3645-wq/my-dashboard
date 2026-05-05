@@ -46,6 +46,7 @@ jobs:
             STAMP=$(date -u +"%Y-%m-%d")
             ISSUERS=$(python -c "import json; print(json.load(open('data/mezzanine.json'))['issuersWithMezzanine'])")
             ISS=$(python -c "import json; print(json.load(open('data/mezzanine.json'))['totalIssuances'])")
-            git commit -m "💳 Mezzanine ${STAMP} (${ISSUERS} issuers, ${ISS} issuances)"
+            PARSED=$(python -c "import json; d=json.load(open('data/mezzanine.json')); print(d.get('totalOutstandingParsed', 0))")
+            git commit -m "💳 Mezzanine ${STAMP} (${ISSUERS} issuers, ${ISS} issuances, ${PARSED} parsed)"
             git push
           fi
