@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<meta name="theme-color" content="#fff3b0" />
+<meta name="theme-color" content="#fff7d1" />
 <title>지니의 대시보드</title>
 
-<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22%EC%A7%80%EB%8B%88%EB%8C%80%EC%89%AC%EB%B3%B4%EB%93%9C%22%2C%22short_name%22%3A%22Dashboard%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23fff3b0%22%2C%22theme_color%22%3A%22%23fff3b0%22%7D" />
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22%EC%A7%80%EB%8B%88%EB%8C%80%EC%89%AC%EB%B3%B4%EB%93%9C%22%2C%22short_name%22%3A%22Dashboard%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23fff7d1%22%2C%22theme_color%22%3A%22%23fff7d1%22%7D" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,8 +23,8 @@
 
 <style>
   :root {
-    --bg: #fff3b0;
-    --bg-warm: #ffe98a;
+    --bg: #fff7d1;
+    --bg-warm: #ffefa8;
     --surface: #fffdf2;
     --surface-2: #fff7d1;
     --ink: #1f1a0a;
@@ -154,8 +154,6 @@
   }
   .col { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; display: flex; flex-direction: column; min-height: 38vh; max-height: 46vh; overflow: hidden; box-shadow: var(--shadow-sm); }
   @media (max-width: 700px) { .col { min-height: calc(100vh - 280px); max-height: none; } }
-  .col.cal { background: var(--surface-2); }
-  .col.contacts { background: var(--surface-2); }
   .col-header { padding: 14px 16px 10px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
   .col-title { font-family: var(--serif); font-weight: 500; font-size: 14px; color: var(--ink); display: flex; align-items: center; gap: 8px; }
   .col-title .icon { width: 6px; height: 6px; border-radius: 50%; }
@@ -169,8 +167,6 @@
   .col.stocks .col-title .icon { background: var(--indigo); }
   .col.journal .col-title .icon { background: var(--rose); }
   .col.routines .col-title .icon { background: var(--lime); }
-  .col.journal { background: var(--surface-2); }
-  .col.paused { background: var(--surface-2); }
   .col.paused .card { opacity: 0.85; border-style: dashed; }
   .col.paused .card:hover { opacity: 1; }
   .col-count { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); background: var(--bg); padding: 2px 7px; border-radius: 9px; letter-spacing: 0.05em; }
@@ -251,7 +247,6 @@
   .contact-note { font-size: 11px; color: var(--ink-mid); margin-top: 6px; padding: 6px 8px; background: var(--bg-warm); border-radius: 4px; border-left: 2px solid var(--line-strong); white-space: pre-wrap; line-height: 1.4; }
 
   /* Projects */
-  .col.projects { background: var(--surface-2); }
   .project-card { background: var(--surface); border: 1px solid var(--line); border-radius: 7px; padding: 11px 12px 10px; transition: all 0.15s; position: relative; display: flex; flex-direction: column; gap: 7px; }
   .project-card:hover { border-color: var(--line-strong); box-shadow: var(--shadow-sm); }
   .project-card:hover .card-actions { opacity: 1; }
@@ -284,7 +279,6 @@
   .project-note { font-size: 11px; color: var(--ink-mid); padding: 6px 8px; background: var(--bg-warm); border-radius: 4px; border-left: 2px solid var(--line-strong); white-space: pre-wrap; line-height: 1.4; }
 
   /* Stocks (보고있는 / 봐야할 종목) */
-  .col.stocks { background: var(--surface-2); }
   .stock-card { background: var(--surface); border: 1px solid var(--line); border-radius: 7px; padding: 10px 12px 9px; transition: all 0.15s; position: relative; display: flex; flex-direction: column; gap: 6px; }
   .stock-card:hover { border-color: var(--line-strong); box-shadow: var(--shadow-sm); }
   .stock-card:hover .card-actions { opacity: 1; }
@@ -329,7 +323,6 @@
   .alert-badge.active { background: #e63946; color: white; }
 
   /* Journal (메모) */
-  .col.journal .col-add { background: var(--surface-2); }
   .journal-card { background: var(--surface); border: 1px solid var(--line); border-radius: 7px; padding: 10px 12px 9px; transition: all 0.15s; position: relative; cursor: pointer; display: flex; flex-direction: column; gap: 5px; }
   .journal-card:hover { border-color: var(--rose); box-shadow: var(--shadow-sm); }
   .journal-card:hover .card-actions { opacity: 1; }
@@ -338,8 +331,6 @@
   .journal-text { font-size: 12.5px; color: var(--ink); line-height: 1.45; white-space: pre-wrap; word-break: break-word; padding-right: 60px; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
 
   /* Routines (데일리 루틴) */
-  .col.routines { background: var(--surface-2); }
-  .col.routines .col-add { background: var(--surface-2); }
   .routine-card { background: var(--surface); border: 1px solid var(--line); border-radius: 7px; padding: 10px 11px 9px; transition: all 0.15s; position: relative; display: flex; align-items: flex-start; gap: 9px; }
   .routine-card:hover { border-color: var(--lime); box-shadow: var(--shadow-sm); }
   .routine-card:hover .card-actions { opacity: 1; }
@@ -378,9 +369,6 @@
   @media (max-width: 700px) { .retro-body { grid-template-columns: 1fr; } }
 
   .col-add { padding: 10px 12px; border-top: 1px solid var(--line); flex-shrink: 0; background: var(--surface); }
-  .col.contacts .col-add { background: var(--surface-2); }
-  .col.projects .col-add { background: var(--surface-2); }
-  .col.stocks .col-add { background: var(--surface-2); }
   .col-add-btn { width: 100%; padding: 9px; border: 1px dashed var(--line-strong); border-radius: 5px; font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.1em; text-transform: uppercase; transition: all 0.15s; }
   .col-add-btn:hover { border-color: var(--accent); color: var(--accent); border-style: solid; }
   .col-body.drag-over { background: var(--bg-warm); }
