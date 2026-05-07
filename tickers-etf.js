@@ -326,7 +326,7 @@ window.TICKER_ETF_REGISTRY = {
   '181480': { name: 'ACE 미국부동산리츠(합성 H)', mkt: 'ETF', sector: '기타' },
   '182480': { name: 'TIGER 미국MSCI리츠(합성 H)', mkt: 'ETF', sector: '기타' },
   '182490': { name: 'TIGER 단기선진하이일드(합성 H)', mkt: 'ETF', sector: '채권' },
-  '183700': { name: 'RISE 채권혼합', mkt: 'ETF', sector: '기타' },
+  '183700': { name: 'RISE 200채권혼합50', mkt: 'ETF', sector: '기타' },
   '183710': { name: 'RISE 주식혼합', mkt: 'ETF', sector: '기타' },
   '185680': { name: 'KODEX 미국S&P바이오(합성)', mkt: 'ETF', sector: '해외주식' },
   '189400': { name: 'PLUS 글로벌MSCI(합성 H)', mkt: 'ETF', sector: '해외주식' },
