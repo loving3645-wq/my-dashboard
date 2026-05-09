@@ -714,8 +714,8 @@
   <button class="fab" id="fab" aria-label="알람 추가">＋</button>
 
   <p class="footer-note">
-    탭이 백그라운드여도 작동하지만, 브라우저가 완전히 닫히면 안 울려요.<br>
-    홈 화면에 추가 → 알림 허용 → 무음모드 OFF 권장.
+    🔒 <b>잠금화면에서도 확실히 울리려면</b> 각 알람의 📅 버튼으로 아이폰 기본 캘린더에 등록해 주세요.<br>
+    웹 알람은 앱이 살아있을 때만 울려요. 캘린더에 등록하면 시스템이 대신 울려줍니다.
   </p>
 </div>
 
@@ -953,6 +953,7 @@
           <div class="days">${daysText}</div>
           <div class="controls">
             <button class="switch ${a.enabled ? 'on' : ''}" data-act="toggle" aria-label="알람 켜기/끄기"></button>
+            <button class="icon-btn" data-act="ics" aria-label="캘린더에 추가" title="아이폰 캘린더에 등록">📅</button>
             <button class="icon-btn" data-act="edit" aria-label="편집">✎</button>
           </div>
         </div>`;
@@ -981,10 +982,95 @@
       save();
       render();
       ensureAudioUnlocked();
+    } else if (act === 'ics') {
+      exportToCalendar(a);
     } else {
       openEditor(a);
     }
   });
+
+  // ---------- ICS export (system calendar fallback) ----------
+  function pad2(n) { return String(n).padStart(2, '0'); }
+  function icsLocal(d) {
+    return d.getFullYear() + pad2(d.getMonth()+1) + pad2(d.getDate()) + 'T' +
+           pad2(d.getHours()) + pad2(d.getMinutes()) + '00';
+  }
+  function icsUtc(d) {
+    return d.getUTCFullYear() + pad2(d.getUTCMonth()+1) + pad2(d.getUTCDate()) + 'T' +
+           pad2(d.getUTCHours()) + pad2(d.getUTCMinutes()) + pad2(d.getUTCSeconds()) + 'Z';
+  }
+  function icsEscape(s) {
+    return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;')
+                    .replace(/,/g, '\\,').replace(/\n/g, '\\n');
+  }
+  function buildIcs(a) {
+    const ICS_DAYS = ['SU','MO','TU','WE','TH','FR','SA'];
+    const summary = a.label || '알람';
+    const start = nextFireAt({ ...a, enabled: true }) || (() => {
+      const t = new Date(); t.setSeconds(0,0); t.setHours(a.h, a.m, 0, 0);
+      if (t <= new Date()) t.setDate(t.getDate() + 1);
+      return t;
+    })();
+    const end = new Date(start.getTime() + 5 * 60_000);
+    const uid = `alarm-${a.id}-${start.getTime()}@my-dashboard`;
+    const lines = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//my-dashboard//alarm//KO',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'BEGIN:VEVENT',
+      `UID:${uid}`,
+      `DTSTAMP:${icsUtc(new Date())}`,
+      `DTSTART:${icsLocal(start)}`,
+      `DTEND:${icsLocal(end)}`,
+      `SUMMARY:⏰ ${icsEscape(summary)}`,
+      `DESCRIPTION:${icsEscape('알람 (지니 대시보드 알람 앱에서 등록)')}`,
+    ];
+    if (a.days.length > 0 && a.days.length < 7) {
+      const byday = a.days.map(d => ICS_DAYS[d]).join(',');
+      lines.push(`RRULE:FREQ=WEEKLY;BYDAY=${byday}`);
+    } else if (a.days.length === 7) {
+      lines.push('RRULE:FREQ=DAILY');
+    }
+    lines.push(
+      'BEGIN:VALARM',
+      'ACTION:DISPLAY',
+      `DESCRIPTION:⏰ ${icsEscape(summary)}`,
+      'TRIGGER:PT0M',
+      'END:VALARM',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    );
+    return lines.join('\r\n');
+  }
+
+  function exportToCalendar(a) {
+    try {
+      const ics = buildIcs(a);
+      const safeName = (a.label || 'alarm').replace(/[^\w가-힣]+/g, '_').slice(0, 30);
+      const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${safeName}.ics`;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 2000);
+    } catch (e) {
+      // iOS fallback: navigate to data URL
+      try {
+        const ics = buildIcs(a);
+        window.location.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
+      } catch (e2) {
+        alert('캘린더 내보내기 실패: ' + (e2.message || e2));
+      }
+    }
+  }
 
   // Live clock
   function tickClock() {
