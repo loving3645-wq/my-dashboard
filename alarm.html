@@ -9,7 +9,156 @@
 <meta name="apple-mobile-web-app-title" content="알람" />
 <title>알람</title>
 
-<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22%EC%95%8C%EB%9E%8C%22%2C%22short_name%22%3A%22%EC%95%8C%EB%9E%8C%22%2C%22start_url%22%3A%22.%2Falarm.html%22%2C%22scope%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%23fffdf2%22%2C%22theme_color%22%3A%22%23fffdf2%22%7D" />
+<link rel="manifest" id="manifestLink" href="data:application/manifest+json,%7B%22name%22%3A%22%EC%95%8C%EB%9E%8C%22%2C%22short_name%22%3A%22%EC%95%8C%EB%9E%8C%22%2C%22start_url%22%3A%22.%2Falarm.html%22%2C%22scope%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%23fffdf2%22%2C%22theme_color%22%3A%22%23fffdf2%22%7D" />
+<link rel="apple-touch-icon" id="appleIcon" />
+<link rel="icon" type="image/png" id="favIcon" />
+
+<script>
+(() => {
+  function drawAlarmIcon(size, opts) {
+    const c = document.createElement('canvas');
+    c.width = size; c.height = size;
+    const ctx = c.getContext('2d');
+    const r = size;
+    const rad = opts && opts.maskable ? 0 : r * 0.22;
+
+    if (rad > 0) {
+      ctx.beginPath();
+      ctx.moveTo(rad, 0);
+      ctx.lineTo(r - rad, 0);
+      ctx.quadraticCurveTo(r, 0, r, rad);
+      ctx.lineTo(r, r - rad);
+      ctx.quadraticCurveTo(r, r, r - rad, r);
+      ctx.lineTo(rad, r);
+      ctx.quadraticCurveTo(0, r, 0, r - rad);
+      ctx.lineTo(0, rad);
+      ctx.quadraticCurveTo(0, 0, rad, 0);
+      ctx.closePath();
+      ctx.clip();
+    }
+
+    const grad = ctx.createLinearGradient(0, 0, r, r);
+    grad.addColorStop(0, '#e63946');
+    grad.addColorStop(1, '#f77f00');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, r, r);
+
+    const cx = r / 2;
+    const cy = r / 2 + r * 0.04;
+    const body = r * 0.30;
+
+    // Bell ears (top)
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(cx - body * 0.85, cy - body * 1.05, body * 0.32, 0, Math.PI * 2);
+    ctx.arc(cx + body * 0.85, cy - body * 1.05, body * 0.32, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Connector lines from ears to body (small triangles)
+    ctx.beginPath();
+    ctx.moveTo(cx - body * 0.95, cy - body * 0.95);
+    ctx.lineTo(cx - body * 0.55, cy - body * 0.70);
+    ctx.lineTo(cx - body * 0.75, cy - body * 0.55);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx + body * 0.95, cy - body * 0.95);
+    ctx.lineTo(cx + body * 0.55, cy - body * 0.70);
+    ctx.lineTo(cx + body * 0.75, cy - body * 0.55);
+    ctx.closePath();
+    ctx.fill();
+
+    // Feet
+    ctx.beginPath();
+    ctx.moveTo(cx - body * 0.85, cy + body * 0.85);
+    ctx.lineTo(cx - body * 0.45, cy + body * 1.20);
+    ctx.lineTo(cx - body * 0.20, cy + body * 0.95);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx + body * 0.85, cy + body * 0.85);
+    ctx.lineTo(cx + body * 0.45, cy + body * 1.20);
+    ctx.lineTo(cx + body * 0.20, cy + body * 0.95);
+    ctx.closePath();
+    ctx.fill();
+
+    // Clock body (white circle)
+    ctx.beginPath();
+    ctx.arc(cx, cy, body, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Inner ring (red)
+    ctx.fillStyle = '#e63946';
+    ctx.beginPath();
+    ctx.arc(cx, cy, body * 0.86, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Hour ticks
+    ctx.fillStyle = '#fff';
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
+      const isMajor = i % 3 === 0;
+      const r1 = body * (isMajor ? 0.66 : 0.74);
+      const r2 = body * 0.80;
+      ctx.beginPath();
+      ctx.arc(cx + Math.cos(a) * (r1 + r2) / 2, cy + Math.sin(a) * (r1 + r2) / 2, body * (isMajor ? 0.05 : 0.03), 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Hands (pointing roughly to 10:10 — friendly clock pose)
+    ctx.strokeStyle = '#fff';
+    ctx.lineCap = 'round';
+    ctx.lineWidth = body * 0.10;
+    // hour hand → 10
+    const ha = (10 / 12) * Math.PI * 2 - Math.PI / 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(ha) * body * 0.40, cy + Math.sin(ha) * body * 0.40);
+    ctx.stroke();
+    // minute hand → 2
+    ctx.lineWidth = body * 0.07;
+    const ma = (2 / 12) * Math.PI * 2 - Math.PI / 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(ma) * body * 0.55, cy + Math.sin(ma) * body * 0.55);
+    ctx.stroke();
+
+    // Center pin
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(cx, cy, body * 0.07, 0, Math.PI * 2);
+    ctx.fill();
+
+    return c.toDataURL('image/png');
+  }
+
+  try {
+    const icon180 = drawAlarmIcon(180);
+    const icon192 = drawAlarmIcon(192);
+    const icon512 = drawAlarmIcon(512);
+
+    document.getElementById('appleIcon').href = icon180;
+    document.getElementById('favIcon').href = icon192;
+
+    const manifest = {
+      name: '알람',
+      short_name: '알람',
+      start_url: './alarm.html',
+      scope: './',
+      display: 'standalone',
+      orientation: 'portrait',
+      background_color: '#fffdf2',
+      theme_color: '#e63946',
+      icons: [
+        { src: icon192, sizes: '192x192', type: 'image/png', purpose: 'any' },
+        { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'any' },
+      ],
+    };
+    document.getElementById('manifestLink').href =
+      'data:application/manifest+json,' + encodeURIComponent(JSON.stringify(manifest));
+  } catch (e) { /* fall back to no-icon manifest */ }
+})();
+</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
