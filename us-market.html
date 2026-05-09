@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#fafaf7" />
-<title>미국 시장 (NASDAQ $500B+) · 지니의 리서치</title>
+<title>미국 시장 스캐너 (NASDAQ ≥5천억원) · 지니의 리서치</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -58,9 +58,9 @@
   ::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
 
-  .app { max-width: 1700px; margin: 0 auto; padding: 24px 28px 80px; }
+  .app { max-width: 1900px; margin: 0 auto; padding: 24px 28px 80px; }
 
-  /* ========== Top nav ========== */
+  /* Top nav */
   .topnav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; gap: 12px; }
   .topnav-left { display: flex; align-items: baseline; gap: 18px; }
   .brand { font-family: var(--serif); font-weight: 400; font-size: 22px; letter-spacing: -0.02em; }
@@ -72,43 +72,63 @@
   .topnav-right { display: flex; gap: 10px; align-items: center; }
   .clock { font-family: var(--mono); font-size: 11px; color: var(--ink-mid); padding: 6px 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
 
-  /* ========== Heading ========== */
-  .page-head { margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px; }
+  /* Heading */
+  .page-head { margin-bottom: 16px; }
   .page-head h1 { font-family: var(--serif); font-weight: 400; font-size: 28px; letter-spacing: -0.02em; }
   .page-head h1 em { font-style: italic; color: var(--accent); font-weight: 500; }
   .page-head .sub { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); letter-spacing: 0.1em; margin-top: 6px; text-transform: uppercase; }
-  .meta-pill { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 10px; border: 1px solid var(--line); border-radius: 5px; background: var(--surface); }
 
-  /* ========== Period tabs ========== */
-  .period-bar { display: flex; gap: 4px; align-items: center; margin-bottom: 14px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; flex-wrap: wrap; }
-  .period-bar .lbl { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.15em; text-transform: uppercase; margin-right: 8px; }
-  .period-tabs { display: flex; gap: 2px; background: var(--surface-2); padding: 3px; border-radius: 6px; border: 1px solid var(--line); }
-  .ptab { padding: 6px 14px; font-size: 12px; color: var(--ink-soft); border-radius: 4px; transition: all 0.15s; font-weight: 500; font-family: var(--mono); letter-spacing: 0.05em; }
-  .ptab:hover { color: var(--ink); }
-  .ptab.active { background: var(--ink); color: var(--bg); }
-  .period-bar .spacer { flex: 1; }
-  .sort-select { padding: 6px 10px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 5px; font-size: 12px; font-family: var(--mono); color: var(--ink-mid); cursor: pointer; }
+  /* Toolbar */
+  .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+  .tlabel { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.12em; text-transform: uppercase; }
+  .search { flex: 1; min-width: 220px; padding: 7px 12px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 5px; font-size: 13px; }
+  .search:focus { outline: none; border-color: var(--accent); background: var(--surface); }
+  .select { padding: 6px 10px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 5px; font-size: 12px; font-family: var(--mono); color: var(--ink-mid); cursor: pointer; }
+  .select:focus { outline: none; border-color: var(--accent); }
+  .toolbar-divider { width: 1px; height: 22px; background: var(--line); }
 
-  /* ========== Stock grid ========== */
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
-  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; transition: all 0.15s; cursor: pointer; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 8px; position: relative; overflow: hidden; }
-  .card:hover { border-color: var(--line-strong); box-shadow: var(--shadow-md); transform: translateY(-1px); }
-  .card .row1 { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-  .card .ticker { font-family: var(--serif); font-weight: 500; font-size: 22px; letter-spacing: -0.01em; line-height: 1.1; }
-  .card .name { font-size: 11px; color: var(--ink-soft); margin-top: 2px; line-height: 1.3; }
-  .card .pct { font-family: var(--mono); font-size: 14px; font-weight: 600; padding: 4px 8px; border-radius: 4px; white-space: nowrap; }
-  .card .pct.up { background: var(--green-bg); color: var(--green); }
-  .card .pct.down { background: var(--red-bg); color: var(--red); }
-  .card .pct.flat { background: var(--bg-warm); color: var(--ink-mid); }
-  .card .row2 { display: flex; justify-content: space-between; align-items: baseline; }
-  .card .price { font-family: var(--serif); font-size: 22px; font-weight: 500; }
-  .card .price-curr { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); margin-left: 4px; }
-  .card .mcap { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.05em; }
-  .card .row3 { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-  .card .tag { font-family: var(--mono); font-size: 9px; padding: 2px 6px; border-radius: 3px; letter-spacing: 0.08em; background: var(--blue-bg); color: var(--blue); }
-  .card .spark { height: 36px; margin-top: 4px; }
+  /* Status bar */
+  .status-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; padding: 10px 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; font-family: var(--mono); font-size: 11px; color: var(--ink-mid); flex-wrap: wrap; }
+  .status-bar .seg { display: flex; align-items: center; gap: 6px; }
+  .status-bar .seg .lbl { color: var(--ink-soft); letter-spacing: 0.08em; text-transform: uppercase; font-size: 10px; }
+  .status-bar .seg .val { color: var(--ink); font-weight: 500; }
+  .status-bar .seg .val.up { color: var(--green); }
+  .status-bar .seg .val.down { color: var(--red); }
 
-  /* ========== Detail modal ========== */
+  /* Table */
+  .table-wrap { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: auto; max-height: calc(100vh - 260px); position: relative; }
+  table.scan { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .scan thead { position: sticky; top: 0; background: var(--surface-2); z-index: 5; }
+  .scan th { text-align: right; padding: 10px 10px; font-family: var(--mono); font-weight: 500; font-size: 10px; color: var(--ink-soft); letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 1px solid var(--line); cursor: pointer; -webkit-user-select: none; user-select: none; white-space: nowrap; transition: color 0.12s, background 0.12s; }
+  .scan th:hover { color: var(--ink); background: var(--bg-warm); }
+  .scan th.left { text-align: left; }
+  .scan th.center { text-align: center; }
+  .scan th.sorted { color: var(--accent); }
+  .scan th .arrow { display: inline-block; margin-left: 4px; font-size: 9px; opacity: 0.6; }
+  .scan th.sorted .arrow { opacity: 1; }
+  .scan tbody tr { border-bottom: 1px solid var(--line); transition: background 0.1s; cursor: pointer; }
+  .scan tbody tr:hover { background: var(--bg-warm); }
+  .scan tbody tr.empty { color: var(--ink-faint); }
+  .scan td { padding: 8px 10px; text-align: right; font-family: var(--mono); font-size: 12px; color: var(--ink); white-space: nowrap; }
+  .scan td.left { text-align: left; }
+  .scan td.center { text-align: center; }
+
+  .name-cell { display: flex; align-items: center; gap: 10px; min-width: 240px; }
+  .name-cell .code { font-family: var(--mono); font-size: 11px; color: var(--ink); width: 64px; flex-shrink: 0; font-weight: 600; }
+  .name-cell .nm { font-family: var(--sans); font-size: 12.5px; color: var(--ink-mid); font-weight: 400; overflow: hidden; text-overflow: ellipsis; }
+
+  .pct { font-family: var(--mono); font-weight: 500; padding: 2px 6px; border-radius: 3px; display: inline-block; min-width: 56px; text-align: right; }
+  .pct.up { color: var(--green); background: var(--green-bg); }
+  .pct.down { color: var(--red); background: var(--red-bg); }
+  .pct.flat { color: var(--ink-soft); }
+  .pct.empty { color: var(--ink-faint); background: transparent; font-weight: 400; }
+
+  .price { font-weight: 600; font-family: var(--mono); }
+
+  .spark-cell { padding: 4px 6px; }
+  .spark-cell svg { display: block; }
+
+  /* Detail modal */
   .modal-overlay { position: fixed; inset: 0; background: rgba(20,18,12,0.55); backdrop-filter: blur(2px); z-index: 100; display: none; align-items: flex-start; justify-content: center; padding: 40px 16px; overflow-y: auto; }
   .modal-overlay.show { display: flex; }
   .modal { background: var(--bg); border: 1px solid var(--line-strong); border-radius: 12px; max-width: 1000px; width: 100%; box-shadow: var(--shadow-md); display: flex; flex-direction: column; overflow: hidden; }
@@ -119,7 +139,7 @@
   .modal-head .exch { font-family: var(--mono); font-size: 9px; color: var(--ink-soft); letter-spacing: 0.15em; text-transform: uppercase; padding: 3px 6px; border: 1px solid var(--line); border-radius: 3px; }
   .modal-head .name { font-family: var(--serif); font-style: italic; font-size: 14px; color: var(--ink-mid); }
   .modal-head .right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-  .modal-head .price { font-family: var(--serif); font-size: 32px; font-weight: 500; line-height: 1; }
+  .modal-head .price-big { font-family: var(--serif); font-size: 32px; font-weight: 500; line-height: 1; }
   .modal-head .change { font-family: var(--mono); font-size: 13px; font-weight: 500; }
   .modal-head .change.up { color: var(--green); }
   .modal-head .change.down { color: var(--red); }
@@ -128,9 +148,7 @@
 
   .modal-body { padding: 18px 22px; display: flex; flex-direction: column; gap: 18px; }
   .section-title { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid var(--line); }
-  .overview-block { font-family: var(--serif); font-size: 14px; color: var(--ink-mid); line-height: 1.6; padding: 12px 14px; background: var(--bg-warm); border-radius: 6px; border-left: 3px solid var(--accent); }
 
-  /* Period stats */
   .period-stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
   @media (max-width: 700px) { .period-stats { grid-template-columns: repeat(3, 1fr); } }
   .pstat { padding: 10px 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; text-align: center; cursor: pointer; transition: all 0.15s; }
@@ -141,22 +159,20 @@
   .pstat .val.down { color: var(--red); }
   .pstat .val.flat { color: var(--ink-soft); }
 
-  /* Chart */
   .chart-wrap { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px; height: 280px; position: relative; }
 
-  /* Key facts */
   .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
   .fact { padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
   .fact .lbl { font-family: var(--mono); font-size: 9px; color: var(--ink-soft); letter-spacing: 0.15em; text-transform: uppercase; }
   .fact .val { font-family: var(--mono); font-size: 13px; font-weight: 500; margin-top: 3px; color: var(--ink); }
 
-  /* News explanation */
   .news-list { display: flex; flex-direction: column; gap: 8px; }
   .news-item { padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; transition: all 0.15s; }
   .news-item:hover { border-color: var(--line-strong); background: var(--surface-2); }
   .news-item a { color: var(--ink); text-decoration: none; font-size: 13px; line-height: 1.4; display: block; }
   .news-item a:hover { color: var(--accent); }
   .news-meta { font-family: var(--mono); font-size: 9px; color: var(--ink-soft); letter-spacing: 0.1em; margin-top: 4px; text-transform: uppercase; }
+  .news-loading { padding: 16px; text-align: center; color: var(--ink-faint); font-style: italic; font-family: var(--serif); font-size: 13px; }
 
   .move-summary { padding: 12px 14px; background: var(--bg-warm); border: 1px dashed var(--line-strong); border-radius: 6px; font-size: 13px; color: var(--ink-mid); line-height: 1.55; }
   .move-summary strong { color: var(--ink); font-weight: 600; }
@@ -165,20 +181,24 @@
 
   .empty-state { padding: 30px 12px; color: var(--ink-faint); font-style: italic; font-family: var(--serif); font-size: 13px; text-align: center; }
 
-  @media (max-width: 700px) {
-    .app { padding: 16px 12px 60px; }
+  .pager { display: flex; align-items: center; gap: 12px; margin-top: 12px; font-family: var(--mono); font-size: 11px; color: var(--ink-soft); }
+  .pager button { padding: 5px 10px; border: 1px solid var(--line); background: var(--surface); border-radius: 4px; font-size: 11px; color: var(--ink-mid); }
+  .pager button:hover:not(:disabled) { color: var(--ink); border-color: var(--ink-faint); }
+  .pager button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .pager .info { letter-spacing: 0.05em; }
+
+  @media (max-width: 900px) {
+    .app { padding: 18px 14px 60px; }
+    .scan th, .scan td { padding: 6px 6px; font-size: 11px; }
+    .name-cell .code { width: 54px; font-size: 10px; }
+    .name-cell .nm { font-size: 11px; }
+    .scan th.sector-col, .scan td.sector-col { display: none; }
+    .table-wrap { max-height: calc(100vh - 320px); }
+    .modal-head .ticker { font-size: 24px; }
+    .modal-head .price-big { font-size: 24px; }
     .modal-overlay { padding: 12px; }
     .modal-head { padding: 14px 16px; }
     .modal-body { padding: 14px 16px; }
-    .modal-head .ticker { font-size: 24px; }
-    .modal-head .price { font-size: 24px; }
-    .grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-    .card { padding: 10px 12px; }
-    .card .ticker { font-size: 18px; }
-    .card .price { font-size: 18px; }
-  }
-  @media (max-width: 420px) {
-    .grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -193,7 +213,7 @@
         <span class="sep">/</span>
         <a href="market-scan.html">국내 스캐너</a>
         <span class="sep">/</span>
-        <span style="color:var(--ink);">미국 시장</span>
+        <span style="color:var(--ink);">미국 스캐너</span>
         <span class="sep">/</span>
         <a href="stock-deep-dive.html">종목 딥다이브</a>
       </div>
@@ -204,35 +224,64 @@
   </nav>
 
   <div class="page-head">
-    <div>
-      <h1>미국 <em>NASDAQ</em> 메가캡</h1>
-      <div class="sub">시가총액 $500B 이상 · 종목 수 <span id="ticker-count">--</span> · 1D / 1W / 1M / 3M / 6M / 1Y 추이</div>
-    </div>
-    <div class="meta-pill" id="generated-pill">DATA · --</div>
+    <h1>미국 시장 <em>스캐너</em></h1>
+    <div class="sub">NASDAQ · 시총 5,000억 원 이상 <span id="ticker-total">--</span>종목 · 1D / 1W / 1M / 3M / 6M / 1Y 등락</div>
   </div>
 
-  <div class="period-bar">
-    <span class="lbl">기간</span>
-    <div class="period-tabs" id="period-tabs">
-      <button class="ptab" data-p="1d">1D</button>
-      <button class="ptab" data-p="1w">1W</button>
-      <button class="ptab" data-p="1m">1M</button>
-      <button class="ptab" data-p="3m">3M</button>
-      <button class="ptab" data-p="6m">6M</button>
-      <button class="ptab active" data-p="1y">1Y</button>
-    </div>
-    <div class="spacer"></div>
-    <span class="lbl">정렬</span>
-    <select class="sort-select" id="sort-select">
-      <option value="mcap">시가총액 ↓</option>
-      <option value="ret-desc">수익률 ↓</option>
-      <option value="ret-asc">수익률 ↑</option>
-      <option value="ticker">티커 A→Z</option>
+  <div class="toolbar">
+    <input type="text" class="search" id="search" placeholder="🔍 티커 또는 회사명 검색 (e.g. AAPL, NVIDIA)" />
+    <span class="tlabel">기간</span>
+    <select class="select" id="period-select">
+      <option value="r1d">1D</option>
+      <option value="r1w">1W</option>
+      <option value="r1m">1M</option>
+      <option value="r3m">3M</option>
+      <option value="r6m">6M</option>
+      <option value="r1y" selected>1Y</option>
+    </select>
+    <div class="toolbar-divider"></div>
+    <span class="tlabel">통화</span>
+    <select class="select" id="curr-select">
+      <option value="USD" selected>USD</option>
+      <option value="KRW">KRW (원)</option>
     </select>
   </div>
 
-  <div id="grid" class="grid">
-    <div class="empty-state">데이터를 불러오는 중...</div>
+  <div class="status-bar">
+    <div class="seg"><span class="lbl">데이터</span><span class="val" id="status-generated">--</span></div>
+    <div class="seg"><span class="lbl">표시</span><span class="val" id="status-shown">--</span></div>
+    <div class="seg"><span class="lbl">최소 시총</span><span class="val">5,000억 원 (≈ $362M)</span></div>
+    <div class="seg"><span class="lbl">상승</span><span class="val up" id="status-up">--</span></div>
+    <div class="seg"><span class="lbl">하락</span><span class="val down" id="status-down">--</span></div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="scan">
+      <thead>
+        <tr id="thead-row">
+          <th class="left" data-k="symbol">티커 / 종목명 <span class="arrow"></span></th>
+          <th data-k="price">가격 <span class="arrow"></span></th>
+          <th data-k="r1d">1D <span class="arrow"></span></th>
+          <th data-k="r1w">1W <span class="arrow"></span></th>
+          <th data-k="r1m">1M <span class="arrow"></span></th>
+          <th data-k="r3m">3M <span class="arrow"></span></th>
+          <th data-k="r6m">6M <span class="arrow"></span></th>
+          <th data-k="r1y">1Y <span class="arrow"></span></th>
+          <th data-k="marketCap" class="sorted">시총 <span class="arrow">↓</span></th>
+          <th class="center">3M</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr class="empty"><td colspan="10" style="text-align:center; padding:30px; font-style:italic;">데이터 로딩 중...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pager">
+    <button id="prev-btn" disabled>← 이전</button>
+    <span class="info" id="page-info">--</span>
+    <button id="next-btn" disabled>다음 →</button>
+    <span style="margin-left:auto;" class="info">행 클릭 → 상세 보기</span>
   </div>
 
 </div>
@@ -249,24 +298,19 @@
         <div class="name" id="m-name">--</div>
       </div>
       <div class="right">
-        <div class="price" id="m-price">--</div>
+        <div class="price-big" id="m-price">--</div>
         <div class="change" id="m-change">--</div>
       </div>
       <button class="modal-close" id="m-close">닫기 ✕</button>
     </div>
     <div class="modal-body">
       <div>
-        <div class="section-title">개요</div>
-        <div class="overview-block" id="m-overview">--</div>
-      </div>
-
-      <div>
-        <div class="section-title">기간별 수익률</div>
+        <div class="section-title">기간별 수익률 <span style="color:var(--ink-faint); font-size:9px; margin-left:6px;">(클릭으로 차트 동기화)</span></div>
         <div class="period-stats" id="m-period-stats"></div>
       </div>
 
       <div>
-        <div class="section-title">차트 <span style="color:var(--ink-faint); font-size:9px; margin-left:6px;">(클릭한 기간 적용)</span></div>
+        <div class="section-title">차트</div>
         <div class="chart-wrap"><canvas id="m-chart"></canvas></div>
       </div>
 
@@ -278,7 +322,9 @@
       <div>
         <div class="section-title">왜 움직였나 (최근 헤드라인)</div>
         <div class="move-summary" id="m-summary">--</div>
-        <div class="news-list" id="m-news" style="margin-top:10px;"></div>
+        <div class="news-list" id="m-news" style="margin-top:10px;">
+          <div class="news-loading">뉴스를 불러오는 중...</div>
+        </div>
       </div>
     </div>
   </div>
@@ -286,30 +332,46 @@
 
 <script>
 const PERIODS = [
-  { key: '1d', label: '1일', days: 1,   retField: 'r1d' },
-  { key: '1w', label: '1주', days: 5,   retField: 'r1w' },
-  { key: '1m', label: '1개월', days: 21,  retField: 'r1m' },
-  { key: '3m', label: '3개월', days: 63,  retField: 'r3m' },
-  { key: '6m', label: '6개월', days: 126, retField: 'r6m' },
-  { key: '1y', label: '1년',   days: 252, retField: 'r1y' },
+  { key: 'r1d', label: '1일', days: 1 },
+  { key: 'r1w', label: '1주', days: 5 },
+  { key: 'r1m', label: '1개월', days: 21 },
+  { key: 'r3m', label: '3개월', days: 63 },
+  { key: 'r6m', label: '6개월', days: 126 },
+  { key: 'r1y', label: '1년',   days: 252 },
 ];
 
 let DATA = null;
-let SELECTED_PERIOD = '1y';
-let SORT_KEY = 'mcap';
+let SORT_KEY = 'marketCap';
+let SORT_DIR = -1; // -1 desc, 1 asc
+let SEARCH = '';
+let PERIOD = 'r1y';
+let CURRENCY = 'USD';
+let PAGE = 0;
+const PAGE_SIZE = 80;
 let chartInstance = null;
+const newsCache = {};
 
-// ---------- helpers ----------
+// helpers
 function escapeHtml(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
   ));
 }
-function fmtMcap(v) {
+function fmtPrice(v, d = 2) {
   if (v == null) return '--';
-  if (v >= 1e12) return '$' + (v / 1e12).toFixed(2) + 'T';
-  if (v >= 1e9)  return '$' + (v / 1e9).toFixed(1)  + 'B';
-  return '$' + Math.round(v / 1e6) + 'M';
+  return v.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+}
+function fmtMcap(usd, krwPerUsd) {
+  if (usd == null) return '--';
+  if (CURRENCY === 'KRW') {
+    const krw = usd * (krwPerUsd || 1380);
+    if (krw >= 1e12) return (krw / 1e12).toFixed(1) + '조 원';
+    if (krw >= 1e8)  return (krw / 1e8).toFixed(0) + '억 원';
+    return Math.round(krw).toLocaleString() + ' 원';
+  }
+  if (usd >= 1e12) return '$' + (usd / 1e12).toFixed(2) + 'T';
+  if (usd >= 1e9)  return '$' + (usd / 1e9).toFixed(1) + 'B';
+  return '$' + Math.round(usd / 1e6) + 'M';
 }
 function fmtPct(v) {
   if (v == null || isNaN(v)) return '--';
@@ -322,153 +384,212 @@ function pctClass(v) {
   if (v < -0.05) return 'down';
   return 'flat';
 }
-function fmtPrice(v) {
-  if (v == null) return '--';
-  return v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
 function periodMeta(key) { return PERIODS.find(p => p.key === key); }
 
 function tickClock() {
   const d = new Date();
-  const hh = String(d.getHours()).padStart(2, '0');
-  const mm = String(d.getMinutes()).padStart(2, '0');
-  const ss = String(d.getSeconds()).padStart(2, '0');
-  document.getElementById('clock').textContent = `${hh}:${mm}:${ss}`;
+  document.getElementById('clock').textContent =
+    String(d.getHours()).padStart(2,'0') + ':' +
+    String(d.getMinutes()).padStart(2,'0') + ':' +
+    String(d.getSeconds()).padStart(2,'0');
 }
 setInterval(tickClock, 1000); tickClock();
 
-// ---------- loading ----------
+// Sparkline as SVG (much faster than canvas for many rows)
+function sparklineSvg(values, color) {
+  if (!values || values.length < 2) return '';
+  const w = 60, h = 22;
+  const min = Math.min(...values), max = Math.max(...values);
+  const range = (max - min) || 1;
+  const pts = values.map((v, i) => {
+    const x = (i / (values.length - 1)) * (w - 2) + 1;
+    const y = h - 1 - ((v - min) / range) * (h - 2);
+    return x.toFixed(1) + ',' + y.toFixed(1);
+  }).join(' ');
+  return `<svg width="${w}" height="${h}"><polyline fill="none" stroke="${color}" stroke-width="1.2" points="${pts}"/></svg>`;
+}
+
 async function load() {
   try {
-    const r = await fetch('data/us-megacaps.json?_=' + Date.now());
+    const r = await fetch('data/us-market-snapshot.json?_=' + Date.now());
     if (!r.ok) throw new Error('HTTP ' + r.status);
     DATA = await r.json();
   } catch (e) {
-    document.getElementById('grid').innerHTML =
-      `<div class="empty-state">데이터를 불러올 수 없습니다 (${escapeHtml(e.message)}). 먼저 <code>scripts/fetch_us_megacaps.py</code>를 실행해 주세요.</div>`;
+    document.getElementById('tbody').innerHTML =
+      `<tr class="empty"><td colspan="10" style="text-align:center;padding:30px;">데이터를 불러올 수 없습니다 (${escapeHtml(e.message)}).<br>먼저 <code>scripts/snapshot_us_market.py</code>를 실행해 주세요.</td></tr>`;
     return;
   }
-  document.getElementById('ticker-count').textContent = DATA.qualified;
+  document.getElementById('ticker-total').textContent =
+    DATA.qualified.toLocaleString();
   const gen = DATA.generatedAtUtc ? new Date(DATA.generatedAtUtc) : null;
-  if (gen) {
-    document.getElementById('generated-pill').textContent =
-      'DATA · ' + gen.toISOString().slice(0, 16).replace('T', ' ') + ' UTC';
-  }
+  document.getElementById('status-generated').textContent =
+    gen ? gen.toISOString().slice(0, 16).replace('T',' ') + ' UTC' : '--';
   render();
 }
 
-function sortedTickers() {
-  const arr = [...(DATA.tickers || [])];
-  if (SORT_KEY === 'mcap') arr.sort((a, b) => b.marketCap - a.marketCap);
-  else if (SORT_KEY === 'ticker') arr.sort((a, b) => a.symbol.localeCompare(b.symbol));
-  else {
-    const f = periodMeta(SELECTED_PERIOD).retField;
-    const dir = SORT_KEY === 'ret-desc' ? -1 : 1;
-    arr.sort((a, b) => {
-      const va = a[f] == null ? -Infinity * dir : a[f];
-      const vb = b[f] == null ? -Infinity * dir : b[f];
-      return (va - vb) * dir;
-    });
+function filteredTickers() {
+  let arr = (DATA?.tickers || []);
+  if (SEARCH) {
+    const q = SEARCH.toLowerCase();
+    arr = arr.filter(t =>
+      t.symbol.toLowerCase().includes(q) ||
+      (t.name || '').toLowerCase().includes(q)
+    );
   }
+  arr = [...arr];
+  arr.sort((a, b) => {
+    let va = a[SORT_KEY], vb = b[SORT_KEY];
+    if (SORT_KEY === 'symbol') return SORT_DIR * a.symbol.localeCompare(b.symbol);
+    if (va == null) va = -Infinity * SORT_DIR;
+    if (vb == null) vb = -Infinity * SORT_DIR;
+    return SORT_DIR * (va < vb ? -1 : (va > vb ? 1 : 0));
+  });
   return arr;
 }
 
 function render() {
-  const grid = document.getElementById('grid');
-  const tickers = sortedTickers();
-  if (!tickers.length) {
-    grid.innerHTML = '<div class="empty-state">조건을 만족하는 종목이 없습니다.</div>';
-    return;
+  if (!DATA) return;
+  const all = filteredTickers();
+  const total = all.length;
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if (PAGE >= pages) PAGE = pages - 1;
+  const start = PAGE * PAGE_SIZE;
+  const view = all.slice(start, start + PAGE_SIZE);
+
+  // Status counters
+  let up = 0, down = 0;
+  all.forEach(t => {
+    const v = t[PERIOD];
+    if (v != null) {
+      if (v > 0) up++;
+      else if (v < 0) down++;
+    }
+  });
+  document.getElementById('status-up').textContent = up.toLocaleString();
+  document.getElementById('status-down').textContent = down.toLocaleString();
+  document.getElementById('status-shown').textContent =
+    `${total.toLocaleString()} (페이지 ${PAGE + 1}/${pages})`;
+
+  // Header sort indicators
+  document.querySelectorAll('#thead-row th').forEach(th => {
+    th.classList.remove('sorted');
+    const arrow = th.querySelector('.arrow');
+    if (arrow) arrow.textContent = '';
+    if (th.dataset.k === SORT_KEY) {
+      th.classList.add('sorted');
+      if (arrow) arrow.textContent = SORT_DIR === -1 ? '↓' : '↑';
+    }
+  });
+
+  // Body rows
+  const tbody = document.getElementById('tbody');
+  if (!view.length) {
+    tbody.innerHTML = `<tr class="empty"><td colspan="10" style="text-align:center;padding:30px;font-style:italic;">조건을 만족하는 종목이 없습니다.</td></tr>`;
+  } else {
+    tbody.innerHTML = view.map(t => {
+      const cells = PERIODS.map(p => {
+        const v = t[p.key];
+        const cls = pctClass(v);
+        return `<td><span class="pct ${cls}">${fmtPct(v)}</span></td>`;
+      }).join('');
+      const sparkColor = (t.r1m == null || t.r1m === 0) ? '#8a8580'
+                       : (t.r1m > 0 ? '#4a7c4e' : '#c43e3e');
+      const spark = sparklineSvg(t.spark || [], sparkColor);
+      return `<tr data-symbol="${escapeHtml(t.symbol)}">
+        <td class="left">
+          <div class="name-cell">
+            <div class="code">${escapeHtml(t.symbol)}</div>
+            <div class="nm">${escapeHtml((t.name || '').replace(/ - Common Stock.*$/i,'').replace(/ - .*Class.*$/i,''))}</div>
+          </div>
+        </td>
+        <td class="price">$${fmtPrice(t.price)}</td>
+        ${cells}
+        <td><span style="font-weight:500;">${fmtMcap(t.marketCap, DATA.krwPerUsd)}</span></td>
+        <td class="spark-cell center">${spark}</td>
+      </tr>`;
+    }).join('');
+
+    tbody.querySelectorAll('tr[data-symbol]').forEach(tr => {
+      tr.addEventListener('click', () => openDetail(tr.dataset.symbol));
+    });
   }
-  const f = periodMeta(SELECTED_PERIOD).retField;
-  const periodLabel = periodMeta(SELECTED_PERIOD).label;
 
-  grid.innerHTML = tickers.map(t => {
-    const ret = t[f];
-    const cls = pctClass(ret);
-    return `
-    <div class="card" data-symbol="${escapeHtml(t.symbol)}">
-      <div class="row1">
-        <div>
-          <div class="ticker">${escapeHtml(t.symbol)}</div>
-          <div class="name">${escapeHtml(t.name)}</div>
-        </div>
-        <div class="pct ${cls}" title="${escapeHtml(periodLabel)} 수익률">${fmtPct(ret)}</div>
-      </div>
-      <div class="row2">
-        <div class="price">$${fmtPrice(t.price)}<span class="price-curr">${escapeHtml(t.currency || 'USD')}</span></div>
-        <div class="mcap">${fmtMcap(t.marketCap)}</div>
-      </div>
-      <div class="row3">
-        <span class="tag">${escapeHtml(t.sector)}</span>
-      </div>
-      <canvas class="spark" data-spark="${escapeHtml(t.symbol)}"></canvas>
-    </div>`;
-  }).join('');
-
-  // Sparklines
-  tickers.forEach(t => {
-    const canvas = grid.querySelector(`canvas[data-spark="${t.symbol}"]`);
-    if (!canvas || !t.history || !t.history.length) return;
-    const days = periodMeta(SELECTED_PERIOD).days;
-    const slice = t.history.slice(-Math.max(days + 1, 5));
-    const ret = t[periodMeta(SELECTED_PERIOD).retField];
-    const color = ret == null ? '#8a8580' : (ret >= 0 ? '#4a7c4e' : '#c43e3e');
-    drawSparkline(canvas, slice.map(p => p.c), color);
-  });
-
-  // Click handlers
-  grid.querySelectorAll('.card').forEach(el => {
-    el.addEventListener('click', () => openDetail(el.dataset.symbol));
-  });
+  // Pager
+  document.getElementById('page-info').textContent =
+    `${(start + 1).toLocaleString()}–${Math.min(start + PAGE_SIZE, total).toLocaleString()} / ${total.toLocaleString()}`;
+  document.getElementById('prev-btn').disabled = PAGE === 0;
+  document.getElementById('next-btn').disabled = PAGE >= pages - 1;
 }
 
-function drawSparkline(canvas, values, color) {
-  if (!values.length) return;
-  const dpr = window.devicePixelRatio || 1;
-  const w = canvas.clientWidth, h = canvas.clientHeight;
-  canvas.width = w * dpr; canvas.height = h * dpr;
-  const ctx = canvas.getContext('2d');
-  ctx.scale(dpr, dpr);
-  ctx.clearRect(0, 0, w, h);
-  const min = Math.min(...values), max = Math.max(...values);
-  const range = (max - min) || 1;
-  ctx.beginPath();
-  ctx.lineWidth = 1.5;
-  ctx.strokeStyle = color;
-  values.forEach((v, i) => {
-    const x = (i / (values.length - 1)) * (w - 2) + 1;
-    const y = h - 2 - ((v - min) / range) * (h - 4);
-    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+// Sort handlers
+document.querySelectorAll('#thead-row th').forEach(th => {
+  if (!th.dataset.k) return;
+  th.addEventListener('click', () => {
+    const k = th.dataset.k;
+    if (SORT_KEY === k) {
+      SORT_DIR = -SORT_DIR;
+    } else {
+      SORT_KEY = k;
+      SORT_DIR = (k === 'symbol') ? 1 : -1;
+    }
+    PAGE = 0;
+    render();
   });
-  ctx.stroke();
-}
+});
 
-// ---------- detail modal ----------
+// Search
+let searchT = null;
+document.getElementById('search').addEventListener('input', e => {
+  clearTimeout(searchT);
+  searchT = setTimeout(() => {
+    SEARCH = e.target.value.trim();
+    PAGE = 0;
+    render();
+  }, 150);
+});
+
+// Period
+document.getElementById('period-select').addEventListener('change', e => {
+  PERIOD = e.target.value;
+  if (SORT_KEY.startsWith('r')) { SORT_KEY = PERIOD; }
+  PAGE = 0;
+  render();
+});
+// Currency
+document.getElementById('curr-select').addEventListener('change', e => {
+  CURRENCY = e.target.value;
+  render();
+});
+// Pager
+document.getElementById('prev-btn').addEventListener('click', () => { PAGE--; render(); });
+document.getElementById('next-btn').addEventListener('click', () => { PAGE++; render(); });
+
+// ---------- Detail modal ----------
 function openDetail(symbol) {
   const t = DATA.tickers.find(x => x.symbol === symbol);
   if (!t) return;
 
   document.getElementById('m-ticker').textContent = t.symbol;
   document.getElementById('m-exch').textContent = t.exchange || 'NASDAQ';
-  document.getElementById('m-name').textContent = t.name;
+  document.getElementById('m-name').textContent =
+    (t.name || '').replace(/ - Common Stock.*$/i, '').replace(/ - .*Class.*$/i, '');
   document.getElementById('m-price').textContent =
     '$' + fmtPrice(t.price) + ' ' + (t.currency || 'USD');
-  const cd = t.change1d, rd = t.r1d;
+
+  const cd = (t.price != null && t.prevClose != null) ? (t.price - t.prevClose) : null;
+  const rd = t.r1d;
   const chgEl = document.getElementById('m-change');
   chgEl.className = 'change ' + pctClass(rd);
   chgEl.textContent =
-    (cd >= 0 ? '+' : '') + (cd == null ? '--' : cd.toFixed(2)) +
+    (cd == null ? '--' : (cd >= 0 ? '+' : '') + cd.toFixed(2)) +
     ' (' + fmtPct(rd) + ') · 1D';
-
-  document.getElementById('m-overview').textContent = t.overview || '--';
 
   // Period stats
   const stats = document.getElementById('m-period-stats');
   stats.innerHTML = PERIODS.map(p => {
-    const v = t[p.retField];
+    const v = t[p.key];
     const cls = pctClass(v);
-    const active = p.key === SELECTED_PERIOD ? ' active' : '';
+    const active = p.key === PERIOD ? ' active' : '';
     return `<button class="pstat${active}" data-p="${p.key}">
       <div class="lbl">${p.label}</div>
       <div class="val ${cls}">${fmtPct(v)}</div>
@@ -484,34 +605,75 @@ function openDetail(symbol) {
   });
 
   // Facts
-  const facts = document.getElementById('m-facts');
-  facts.innerHTML = `
-    <div class="fact"><div class="lbl">시가총액</div><div class="val">${fmtMcap(t.marketCap)}</div></div>
+  const sharesStr = t.sharesOutstanding != null
+    ? (t.sharesOutstanding / 1e9).toFixed(2) + 'B'
+    : '--';
+  document.getElementById('m-facts').innerHTML = `
+    <div class="fact"><div class="lbl">시가총액 (USD)</div><div class="val">${fmtMcapAlways(t.marketCap, 'USD')}</div></div>
+    <div class="fact"><div class="lbl">시가총액 (원)</div><div class="val">${fmtMcapAlways(t.marketCap, 'KRW', DATA.krwPerUsd)}</div></div>
     <div class="fact"><div class="lbl">52주 최고</div><div class="val">$${fmtPrice(t.high52w)}</div></div>
     <div class="fact"><div class="lbl">52주 최저</div><div class="val">$${fmtPrice(t.low52w)}</div></div>
     <div class="fact"><div class="lbl">전일종가</div><div class="val">$${fmtPrice(t.prevClose)}</div></div>
-    <div class="fact"><div class="lbl">상장 거래소</div><div class="val">${escapeHtml(t.exchange || 'NASDAQ')}</div></div>
-    <div class="fact"><div class="lbl">발행주식수</div><div class="val">${(t.sharesOutstanding / 1e9).toFixed(2)}B</div></div>
+    <div class="fact"><div class="lbl">발행주식수</div><div class="val">${sharesStr}</div></div>
   `;
 
-  // News
-  renderNews(t);
-  updateMoveSummary(t, SELECTED_PERIOD);
+  // Chart + summary
+  drawDetailChart(t, PERIOD);
+  updateMoveSummary(t, PERIOD);
 
-  // Chart
-  drawDetailChart(t, SELECTED_PERIOD);
+  // News (lazy fetch from Yahoo via search endpoint)
+  fetchAndRenderNews(t.symbol);
 
   document.getElementById('modal-overlay').classList.add('show');
   document.body.style.overflow = 'hidden';
 }
 
-function renderNews(t) {
+function fmtMcapAlways(usd, currency, krwPerUsd) {
+  if (usd == null) return '--';
+  if (currency === 'KRW') {
+    const krw = usd * (krwPerUsd || 1380);
+    if (krw >= 1e12) return (krw / 1e12).toFixed(1) + '조 원';
+    if (krw >= 1e8)  return (krw / 1e8).toFixed(0) + '억 원';
+    return Math.round(krw).toLocaleString() + ' 원';
+  }
+  if (usd >= 1e12) return '$' + (usd / 1e12).toFixed(2) + 'T';
+  if (usd >= 1e9)  return '$' + (usd / 1e9).toFixed(1) + 'B';
+  return '$' + Math.round(usd / 1e6) + 'M';
+}
+
+async function fetchAndRenderNews(symbol) {
   const list = document.getElementById('m-news');
-  if (!t.news || !t.news.length) {
-    list.innerHTML = '<div class="empty-state">최근 뉴스가 없습니다.</div>';
+  if (newsCache[symbol]) {
+    renderNews(symbol, newsCache[symbol]);
     return;
   }
-  list.innerHTML = t.news.slice(0, 6).map(n => {
+  list.innerHTML = '<div class="news-loading">뉴스를 불러오는 중...</div>';
+  try {
+    // Yahoo public search endpoint — works from browser without auth
+    const url = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(symbol)}&newsCount=8&quotesCount=0`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json();
+    const items = (j.news || []).slice(0, 8).map(n => ({
+      title: n.title,
+      publisher: n.publisher,
+      link: n.link,
+      time: n.providerPublishTime || 0,
+    }));
+    newsCache[symbol] = items;
+    renderNews(symbol, items);
+  } catch (e) {
+    list.innerHTML = `<div class="news-loading">뉴스를 불러올 수 없습니다 (${escapeHtml(e.message)}).<br>외부 검색: <a href="https://finance.yahoo.com/quote/${encodeURIComponent(symbol)}/news" target="_blank" rel="noopener" style="color:var(--accent);">Yahoo Finance</a></div>`;
+  }
+}
+
+function renderNews(symbol, items) {
+  const list = document.getElementById('m-news');
+  if (!items || !items.length) {
+    list.innerHTML = '<div class="news-loading">최근 뉴스가 없습니다.</div>';
+    return;
+  }
+  list.innerHTML = items.slice(0, 6).map(n => {
     const dt = n.time ? new Date(n.time * 1000) : null;
     const dtStr = dt ? dt.toISOString().slice(0, 10) : '';
     return `<div class="news-item">
@@ -519,17 +681,21 @@ function renderNews(t) {
       <div class="news-meta">${escapeHtml(n.publisher || '')} · ${dtStr}</div>
     </div>`;
   }).join('');
+  // Update move summary with these headlines
+  const t = DATA.tickers.find(x => x.symbol === symbol);
+  if (t) updateMoveSummary(t, document.querySelector('#m-period-stats .pstat.active')?.dataset.p || PERIOD, items);
 }
 
-function updateMoveSummary(t, periodKey) {
+function updateMoveSummary(t, periodKey, news) {
   const p = periodMeta(periodKey);
-  const ret = t[p.retField];
+  const ret = t[p.key];
   const el = document.getElementById('m-summary');
   let direction = '보합', cls = 'flat';
   if (ret != null && ret > 0.05) { direction = '상승'; cls = 'up'; }
   else if (ret != null && ret < -0.05) { direction = '하락'; cls = 'down'; }
 
-  const newsLines = (t.news || []).slice(0, 3).map((n, i) =>
+  const useNews = news || newsCache[t.symbol] || [];
+  const newsLines = useNews.slice(0, 3).map((n, i) =>
     `${i + 1}. ${escapeHtml(n.title)}`
   ).join('<br>');
 
@@ -538,7 +704,7 @@ function updateMoveSummary(t, periodKey) {
     `<strong>${escapeHtml(t.symbol)}</strong>는 최근 ${escapeHtml(p.label)} 동안 ` +
     `<strong>${fmtPct(ret)} (${direction})</strong>. ` +
     `같은 기간 주요 헤드라인을 통해 동인을 추정해 보세요:<br><br>` +
-    (newsLines || '<em style="color:var(--ink-faint);">최근 뉴스 없음</em>');
+    (newsLines || '<em style="color:var(--ink-faint);">뉴스 로딩 중...</em>');
 }
 
 function drawDetailChart(t, periodKey) {
@@ -546,7 +712,7 @@ function drawDetailChart(t, periodKey) {
   const slice = (t.history || []).slice(-Math.max(p.days + 1, 5));
   const labels = slice.map(d => new Date(d.t * 1000).toISOString().slice(0, 10));
   const values = slice.map(d => d.c);
-  const ret = t[p.retField];
+  const ret = t[p.key];
   const color = ret == null ? '#8a8580' : (ret >= 0 ? '#4a7c4e' : '#c43e3e');
   const bg = ret == null ? 'rgba(138,133,128,0.1)'
                           : (ret >= 0 ? 'rgba(74,124,78,0.12)' : 'rgba(196,62,62,0.12)');
@@ -557,40 +723,21 @@ function drawDetailChart(t, periodKey) {
     type: 'line',
     data: {
       labels,
-      datasets: [{
-        data: values,
-        borderColor: color,
-        backgroundColor: bg,
-        borderWidth: 1.6,
-        fill: true,
-        tension: 0.15,
-        pointRadius: 0,
-        pointHoverRadius: 4,
-      }]
+      datasets: [{ data: values, borderColor: color, backgroundColor: bg,
+        borderWidth: 1.6, fill: true, tension: 0.15, pointRadius: 0, pointHoverRadius: 4 }]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: {
-          mode: 'index', intersect: false,
-          callbacks: {
-            label: (c) => '$' + fmtPrice(c.parsed.y),
-          }
-        },
+        tooltip: { mode: 'index', intersect: false,
+          callbacks: { label: c => '$' + fmtPrice(c.parsed.y) } },
       },
       scales: {
-        x: {
-          ticks: { font: { size: 9, family: 'JetBrains Mono' }, color: '#8a8580',
-                   maxTicksLimit: 6, maxRotation: 0 },
-          grid: { display: false },
-        },
-        y: {
-          ticks: { font: { size: 9, family: 'JetBrains Mono' }, color: '#8a8580',
-                   callback: (v) => '$' + Math.round(v) },
-          grid: { color: '#f0eee9' },
-        },
+        x: { ticks: { font: { size: 9, family: 'JetBrains Mono' }, color: '#8a8580',
+              maxTicksLimit: 6, maxRotation: 0 }, grid: { display: false } },
+        y: { ticks: { font: { size: 9, family: 'JetBrains Mono' }, color: '#8a8580',
+              callback: v => '$' + Math.round(v) }, grid: { color: '#f0eee9' } },
       },
       interaction: { mode: 'index', intersect: false },
     }
@@ -602,28 +749,11 @@ function closeDetail() {
   document.body.style.overflow = '';
   if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
 }
-
 document.getElementById('m-close').addEventListener('click', closeDetail);
-document.getElementById('modal-overlay').addEventListener('click', (e) => {
+document.getElementById('modal-overlay').addEventListener('click', e => {
   if (e.target.id === 'modal-overlay') closeDetail();
 });
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closeDetail();
-});
-
-// Period bar
-document.querySelectorAll('#period-tabs .ptab').forEach(b => {
-  b.addEventListener('click', () => {
-    document.querySelectorAll('#period-tabs .ptab').forEach(x => x.classList.remove('active'));
-    b.classList.add('active');
-    SELECTED_PERIOD = b.dataset.p;
-    if (DATA) render();
-  });
-});
-document.getElementById('sort-select').addEventListener('change', (e) => {
-  SORT_KEY = e.target.value;
-  if (DATA) render();
-});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetail(); });
 
 load();
 </script>
