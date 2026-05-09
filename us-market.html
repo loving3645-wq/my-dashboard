@@ -95,6 +95,29 @@
   .status-bar .seg .val.up { color: var(--green); }
   .status-bar .seg .val.down { color: var(--red); }
 
+  /* Top widgets */
+  .top-panel { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+  @media (max-width: 1100px) { .top-panel { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px)  { .top-panel { grid-template-columns: 1fr; } }
+  .tp-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 6px; }
+  .tp-card .tp-title { font-family: var(--mono); font-size: 9.5px; color: var(--ink-soft); letter-spacing: 0.16em; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+  .tp-card .tp-title .ico { width: 5px; height: 5px; border-radius: 50%; display: inline-block; margin-right: 5px; vertical-align: middle; }
+  .tp-card.megacap .tp-title .ico { background: var(--blue); }
+  .tp-card.gain-1d .tp-title .ico { background: var(--accent); }
+  .tp-card.gain-1w .tp-title .ico { background: var(--gold); }
+  .tp-card.gain-1m .tp-title .ico { background: #6b4a7c; }
+  .tp-list { display: flex; flex-direction: column; gap: 2px; }
+  .tp-row { display: flex; align-items: center; gap: 6px; padding: 4px 4px; border-radius: 4px; cursor: pointer; transition: background 0.12s; min-width: 0; }
+  .tp-row:hover { background: var(--bg-warm); }
+  .tp-row .rk { font-family: var(--mono); font-size: 9px; color: var(--ink-faint); width: 14px; flex-shrink: 0; text-align: right; }
+  .tp-row .sm { font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--ink); width: 56px; flex-shrink: 0; }
+  .tp-row .nm { font-size: 10.5px; color: var(--ink-soft); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tp-row .v { font-family: var(--mono); font-size: 11px; font-weight: 600; flex-shrink: 0; padding: 1px 5px; border-radius: 3px; }
+  .tp-row .v.up { color: var(--green); background: var(--green-bg); }
+  .tp-row .v.down { color: var(--red); background: var(--red-bg); }
+  .tp-row .v.mcap { background: var(--blue-bg); color: var(--blue); }
+  .tp-empty { font-family: var(--serif); font-size: 11px; color: var(--ink-faint); font-style: italic; text-align: center; padding: 10px 4px; }
+
   /* Table */
   .table-wrap { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: auto; max-height: calc(100vh - 260px); position: relative; }
   table.scan { width: 100%; border-collapse: collapse; font-size: 12.5px; }
@@ -253,6 +276,25 @@
     <div class="seg"><span class="lbl">최소 시총</span><span class="val">5,000억 원 (≈ $362M)</span></div>
     <div class="seg"><span class="lbl">상승</span><span class="val up" id="status-up">--</span></div>
     <div class="seg"><span class="lbl">하락</span><span class="val down" id="status-down">--</span></div>
+  </div>
+
+  <div class="top-panel">
+    <div class="tp-card megacap">
+      <div class="tp-title"><span><span class="ico"></span>🇺🇸 메가캡 TOP 5</span><span style="font-size:9px;">시총 ↓</span></div>
+      <div class="tp-list" id="tp-megacap"><div class="tp-empty">로딩 중...</div></div>
+    </div>
+    <div class="tp-card gain-1d">
+      <div class="tp-title"><span><span class="ico"></span>🚀 1일 급등 TOP 5</span><span style="font-size:9px;">1D</span></div>
+      <div class="tp-list" id="tp-1d"><div class="tp-empty">로딩 중...</div></div>
+    </div>
+    <div class="tp-card gain-1w">
+      <div class="tp-title"><span><span class="ico"></span>🚀 1주 급등 TOP 5</span><span style="font-size:9px;">1W</span></div>
+      <div class="tp-list" id="tp-1w"><div class="tp-empty">로딩 중...</div></div>
+    </div>
+    <div class="tp-card gain-1m">
+      <div class="tp-title"><span><span class="ico"></span>🚀 1달 급등 TOP 5</span><span style="font-size:9px;">1M</span></div>
+      <div class="tp-list" id="tp-1m"><div class="tp-empty">로딩 중...</div></div>
+    </div>
   </div>
 
   <div class="table-wrap">
@@ -424,7 +466,56 @@ async function load() {
   const gen = DATA.generatedAtUtc ? new Date(DATA.generatedAtUtc) : null;
   document.getElementById('status-generated').textContent =
     gen ? gen.toISOString().slice(0, 16).replace('T',' ') + ' UTC' : '--';
+  renderTopPanels();
   render();
+}
+
+function renderTopPanels() {
+  const tickers = DATA?.tickers || [];
+  const cleanName = n => (n || '').replace(/ - Common Stock.*$/i, '')
+                                   .replace(/ - .*Class.*$/i, '');
+  const top5 = (sortFn, filterFn) => {
+    let arr = tickers;
+    if (filterFn) arr = arr.filter(filterFn);
+    return [...arr].sort(sortFn).slice(0, 5);
+  };
+  const fmtMcapShort = v => {
+    if (v == null) return '--';
+    if (v >= 1e12) return '$' + (v / 1e12).toFixed(2) + 'T';
+    if (v >= 1e9)  return '$' + (v / 1e9).toFixed(0) + 'B';
+    return '$' + Math.round(v / 1e6) + 'M';
+  };
+  const renderRows = (id, items, valFn, valCls) => {
+    const el = document.getElementById(id);
+    if (!items.length) { el.innerHTML = '<div class="tp-empty">데이터 없음</div>'; return; }
+    el.innerHTML = items.map((t, i) =>
+      `<div class="tp-row" data-symbol="${escapeHtml(t.symbol)}">
+        <span class="rk">${i + 1}.</span>
+        <span class="sm">${escapeHtml(t.symbol)}</span>
+        <span class="nm">${escapeHtml(cleanName(t.name))}</span>
+        <span class="v ${valCls(t)}">${valFn(t)}</span>
+      </div>`
+    ).join('');
+    el.querySelectorAll('.tp-row').forEach(r => {
+      r.addEventListener('click', () => openDetail(r.dataset.symbol));
+    });
+  };
+  renderRows(
+    'tp-megacap',
+    top5((a, b) => b.marketCap - a.marketCap),
+    t => fmtMcapShort(t.marketCap),
+    () => 'mcap'
+  );
+  const cls = key => t => (t[key] > 0 ? 'up' : t[key] < 0 ? 'down' : 'flat');
+  ['1d', '1w', '1m'].forEach(p => {
+    const key = 'r' + p;
+    renderRows(
+      'tp-' + p,
+      top5((a, b) => b[key] - a[key], t => t[key] != null),
+      t => fmtPct(t[key]),
+      cls(key)
+    );
+  });
 }
 
 function filteredTickers() {
