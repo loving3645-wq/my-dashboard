@@ -702,6 +702,13 @@
     <br><button id="permBtn">알림 허용</button>
   </div>
 
+  <div class="banner" id="installBanner">
+    <b>홈 화면에 알람 아이콘 만들기</b><br>
+    지금은 다른 앱 안에서 열려 있어서 공유 버튼이 안 보여요.<br>
+    아래 버튼 → 사파리에서 다시 열기 → 아래 <b>📤 공유</b> → <b>"홈 화면에 추가"</b>
+    <br><button id="openSafariBtn">사파리에서 열기</button>
+  </div>
+
   <div class="alarm-list" id="alarmList"></div>
 
   <button class="fab" id="fab" aria-label="알람 추가">＋</button>
@@ -1256,6 +1263,32 @@
     ensureAudioUnlocked();
   });
   updateBanner();
+
+  // Show "open in Safari" banner when running inside another standalone PWA
+  // (e.g., the dashboard PWA). In that case there's no Safari toolbar so the user
+  // can't tap the share button to add this alarm to home screen.
+  function isStandalone() {
+    return window.navigator.standalone === true ||
+           window.matchMedia?.('(display-mode: standalone)').matches;
+  }
+  const installDismissedKey = 'alarmInstallBannerDismissed.v1';
+  const installBanner = $('#installBanner');
+  if (isStandalone() && !localStorage.getItem(installDismissedKey)) {
+    installBanner.classList.add('show');
+  }
+  $('#openSafariBtn').addEventListener('click', () => {
+    const w = window.open(location.href, '_blank');
+    if (!w) {
+      try {
+        navigator.clipboard?.writeText(location.href);
+        alert('사파리가 자동으로 열리지 않아 주소를 복사했어요. 사파리 앱을 열고 주소창에 붙여넣어 주세요.');
+      } catch {
+        alert('주소: ' + location.href + '\n사파리 앱 주소창에 직접 입력해 주세요.');
+      }
+    }
+    localStorage.setItem(installDismissedKey, '1');
+    installBanner.classList.remove('show');
+  });
 
   function fireNotification(a) {
     if (!('Notification' in window)) return;
