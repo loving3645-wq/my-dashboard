@@ -406,6 +406,34 @@
     .top-nav { gap: 4px; padding: 4px; overflow-x: auto; flex-wrap: nowrap; }
     .top-nav a { padding: 6px 10px; font-size: 11px; }
   }
+  /* ========== US market panel ========== */
+  .us-panel { margin: 0 0 14px; }
+  .us-panel-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  @media (max-width: 1100px) { .us-panel-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px)  { .us-panel-grid { grid-template-columns: 1fr; } }
+  .us-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 6px; }
+  .us-card .us-title { font-family: var(--mono); font-size: 9px; color: var(--ink-soft); letter-spacing: 0.16em; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+  .us-card .us-title .ico { width: 5px; height: 5px; border-radius: 50%; display: inline-block; margin-right: 5px; vertical-align: middle; }
+  .us-card.megacap .us-title .ico { background: var(--blue); }
+  .us-card.gain-1d .us-title .ico { background: var(--accent); }
+  .us-card.gain-1w .us-title .ico { background: var(--gold); }
+  .us-card.gain-1m .us-title .ico { background: var(--purple); }
+  .us-card .us-list { display: flex; flex-direction: column; gap: 2px; }
+  .us-row { display: flex; align-items: center; gap: 6px; padding: 4px 4px; border-radius: 4px; cursor: pointer; transition: background 0.12s; min-width: 0; }
+  .us-row:hover { background: var(--bg-warm); }
+  .us-row .rank { font-family: var(--mono); font-size: 9px; color: var(--ink-faint); width: 14px; flex-shrink: 0; text-align: right; }
+  .us-row .sym { font-family: var(--mono); font-size: 11px; font-weight: 600; color: var(--ink); width: 56px; flex-shrink: 0; }
+  .us-row .nm { font-size: 10.5px; color: var(--ink-soft); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .us-row .v { font-family: var(--mono); font-size: 11px; font-weight: 600; flex-shrink: 0; padding: 1px 5px; border-radius: 3px; }
+  .us-row .v.up { color: var(--green); background: var(--green-bg); }
+  .us-row .v.down { color: var(--accent); background: var(--accent-bg); }
+  .us-row .v.flat { color: var(--ink-soft); }
+  .us-row .v.mcap { background: var(--blue-bg); color: var(--blue); }
+  .us-empty { font-family: var(--serif); font-size: 11px; color: var(--ink-faint); font-style: italic; text-align: center; padding: 10px 4px; }
+
+  .stat .num.up { color: var(--green); }
+  .stat .num.down { color: var(--accent); }
+
   .stagger { opacity: 0; transform: translateY(4px); animation: stagger 0.5s ease-out forwards; }
   @keyframes stagger { to { opacity: 1; transform: translateY(0); } }
 </style>
@@ -427,6 +455,8 @@
       <div class="stat" data-stat-jump="paused" title="잠시중단으로 이동"><div class="num" id="stat-paused">0</div><div class="lbl">중단</div></div>
       <div class="stat" data-stat-jump="done" title="완료로 이동"><div class="num" id="stat-done">0</div><div class="lbl">완료</div></div>
       <div class="stat" data-stat-jump="routines" title="루틴으로 이동"><div class="num" id="stat-routines">0</div><div class="lbl">루틴</div></div>
+      <a class="stat" href="us-market.html" title="미국 스캐너로 이동" style="text-decoration:none;color:inherit;"><div class="num up" id="stat-us-up">--</div><div class="lbl">🇺🇸 상승</div></a>
+      <a class="stat" href="us-market.html" title="미국 스캐너로 이동" style="text-decoration:none;color:inherit;"><div class="num down" id="stat-us-down">--</div><div class="lbl">🇺🇸 하락</div></a>
       <div class="clock" id="clock">--:--</div>
     </div>
   </header>
@@ -455,6 +485,27 @@
     <button class="notif-pill" id="notif-pill" type="button" title="알림 권한 / 켤 때는 한 번 클릭"><span>🔔</span><span class="lbl">OFF</span></button>
     <span class="sync-pill" id="sync-pill"><span class="dot"></span><span class="lbl">SYNC</span></span>
   </div>
+  <section class="us-panel stagger" id="us-panel" style="animation-delay:0.06s;">
+    <div class="us-panel-grid">
+      <div class="us-card megacap">
+        <div class="us-title"><span><span class="ico"></span>🇺🇸 미국 메가캡 TOP 5</span><span id="us-meta">--</span></div>
+        <div class="us-list" id="us-megacap-list"><div class="us-empty">로딩 중...</div></div>
+      </div>
+      <div class="us-card gain-1d">
+        <div class="us-title"><span><span class="ico"></span>🚀 1일 급등 TOP 5</span><span style="font-size:9px;">1D</span></div>
+        <div class="us-list" id="us-gain-1d"><div class="us-empty">로딩 중...</div></div>
+      </div>
+      <div class="us-card gain-1w">
+        <div class="us-title"><span><span class="ico"></span>🚀 1주 급등 TOP 5</span><span style="font-size:9px;">1W</span></div>
+        <div class="us-list" id="us-gain-1w"><div class="us-empty">로딩 중...</div></div>
+      </div>
+      <div class="us-card gain-1m">
+        <div class="us-title"><span><span class="ico"></span>🚀 1달 급등 TOP 5</span><span style="font-size:9px;">1M</span></div>
+        <div class="us-list" id="us-gain-1m"><div class="us-empty">로딩 중...</div></div>
+      </div>
+    </div>
+  </section>
+
   <section class="mezz-alerts-bar" id="mezz-alerts" hidden>
     <div class="alerts-title"><span class="accent-dot"></span>메자닌 모니터</div>
     <div class="alert-group" id="mezz-puts-group" hidden>
@@ -2187,6 +2238,83 @@ async function bootstrap() {
   setTimeout(checkAlerts, 3000);
 }
 bootstrap();
+
+// ========== US market widgets ==========
+(function loadUsMarket() {
+  const fmtPct = v => (v == null || isNaN(v)) ? '--' :
+    (v > 0 ? '+' : '') + v.toFixed(2) + '%';
+  const fmtMcap = v => {
+    if (v == null) return '--';
+    if (v >= 1e12) return '$' + (v / 1e12).toFixed(2) + 'T';
+    if (v >= 1e9)  return '$' + (v / 1e9).toFixed(0) + 'B';
+    return '$' + Math.round(v / 1e6) + 'M';
+  };
+  const cleanName = n => (n || '').replace(/ - Common Stock.*$/i, '')
+                                   .replace(/ - .*Class.*$/i, '');
+  const escapeHtml = s => String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  function renderRows(elId, items, valueFn, valueClass) {
+    const el = document.getElementById(elId);
+    if (!items.length) {
+      el.innerHTML = '<div class="us-empty">데이터 없음</div>';
+      return;
+    }
+    el.innerHTML = items.map((t, i) =>
+      `<a class="us-row" href="us-market.html#${escapeHtml(t.symbol)}">
+        <span class="rank">${i + 1}.</span>
+        <span class="sym">${escapeHtml(t.symbol)}</span>
+        <span class="nm">${escapeHtml(cleanName(t.name))}</span>
+        <span class="v ${valueClass(t)}">${valueFn(t)}</span>
+      </a>`
+    ).join('');
+  }
+
+  fetch('data/us-market-snapshot.json?_=' + Date.now())
+    .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
+    .then(data => {
+      const tickers = data.tickers || [];
+      // Top 5 by market cap
+      const byMcap = [...tickers].sort((a, b) => b.marketCap - a.marketCap).slice(0, 5);
+      renderRows('us-megacap-list', byMcap, t => fmtMcap(t.marketCap), () => 'mcap');
+
+      // Top 5 gainers per period (drop nulls)
+      const top5 = key => [...tickers]
+        .filter(t => t[key] != null)
+        .sort((a, b) => b[key] - a[key])
+        .slice(0, 5);
+      const cls = key => t => (t[key] > 0 ? 'up' : t[key] < 0 ? 'down' : 'flat');
+      const valFn = key => t => fmtPct(t[key]);
+      renderRows('us-gain-1d', top5('r1d'), valFn('r1d'), cls('r1d'));
+      renderRows('us-gain-1w', top5('r1w'), valFn('r1w'), cls('r1w'));
+      renderRows('us-gain-1m', top5('r1m'), valFn('r1m'), cls('r1m'));
+
+      // Header stats: count up/down by 1D return
+      let up = 0, down = 0;
+      tickers.forEach(t => {
+        if (t.r1d == null) return;
+        if (t.r1d > 0) up++;
+        else if (t.r1d < 0) down++;
+      });
+      document.getElementById('stat-us-up').textContent = up;
+      document.getElementById('stat-us-down').textContent = down;
+
+      // Generated time pill
+      const meta = document.getElementById('us-meta');
+      if (data.generatedAtUtc) {
+        const dt = new Date(data.generatedAtUtc);
+        meta.textContent = dt.toISOString().slice(5, 10) + ' · ' + tickers.length + '종목';
+      }
+    })
+    .catch(err => {
+      ['us-megacap-list','us-gain-1d','us-gain-1w','us-gain-1m'].forEach(id => {
+        document.getElementById(id).innerHTML =
+          '<div class="us-empty">데이터 없음 (' + err.message + ')</div>';
+      });
+      document.getElementById('stat-us-up').textContent = '--';
+      document.getElementById('stat-us-down').textContent = '--';
+    });
+})();
 </script>
 </body>
 </html>
