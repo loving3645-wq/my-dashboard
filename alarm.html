@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+<meta name="theme-color" content="#fffdf2" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="알람" />
+<title>알람</title>
+
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22%EC%95%8C%EB%9E%8C%22%2C%22short_name%22%3A%22%EC%95%8C%EB%9E%8C%22%2C%22start_url%22%3A%22.%2Falarm.html%22%2C%22scope%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%23fffdf2%22%2C%22theme_color%22%3A%22%23fffdf2%22%7D" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #fffdf2;
+    --bg-warm: #fff7d1;
+    --surface: #ffffff;
+    --surface-2: #fff7d1;
+    --ink: #1f1a0a;
+    --ink-mid: #4a4232;
+    --ink-soft: #7a6f54;
+    --ink-faint: #b0a279;
+    --line: #f0d97a;
+    --line-strong: #d9b94a;
+    --accent: #e63946;
+    --accent-bg: #ffd9dd;
+    --gold: #f77f00;
+    --gold-bg: #ffe2b8;
+    --green: #2a9d8f;
+    --green-bg: #c8efe9;
+    --serif: 'Jua', 'Gowun Dodum', 'Pretendard', sans-serif;
+    --sans: 'Gowun Dodum', -apple-system, BlinkMacSystemFont, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.18);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
+  }
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    background:
+      radial-gradient(ellipse 70% 40% at 100% 0%, rgba(230,57,70,0.07), transparent),
+      radial-gradient(ellipse 60% 50% at 0% 100%, rgba(247,127,0,0.06), transparent),
+      var(--bg);
+    background-attachment: fixed;
+    padding:
+      env(safe-area-inset-top)
+      env(safe-area-inset-right)
+      env(safe-area-inset-bottom)
+      env(safe-area-inset-left);
+  }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; background: none; border: none; }
+  input, select { outline: none; }
+
+  .app {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 20px 18px 120px;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 4px 18px;
+  }
+  .title {
+    font-family: var(--serif);
+    font-size: 32px;
+    color: var(--ink);
+    letter-spacing: -0.5px;
+  }
+  .now {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--ink-soft);
+    font-weight: 500;
+    text-align: right;
+    line-height: 1.3;
+  }
+  .now .now-time { font-size: 18px; color: var(--ink-mid); display: block; }
+
+  .banner {
+    background: var(--gold-bg);
+    border: 1px solid var(--line-strong);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    color: var(--ink-mid);
+    display: none;
+    line-height: 1.55;
+  }
+  .banner.show { display: block; }
+  .banner b { color: var(--accent); }
+  .banner button {
+    margin-top: 8px;
+    background: var(--ink);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .alarm-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .alarm-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 14px 16px;
+    box-shadow: var(--shadow-sm);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px 14px;
+    align-items: center;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .alarm-card.disabled { opacity: 0.45; }
+  .alarm-card .label {
+    grid-column: 1 / 2;
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+  .alarm-card .label .next {
+    margin-left: 8px;
+    color: var(--ink-faint);
+    font-size: 12px;
+  }
+  .alarm-card .time {
+    grid-column: 1 / 2;
+    font-family: var(--mono);
+    font-size: 38px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+  .alarm-card .time .ampm {
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin-right: 6px;
+    font-weight: 700;
+  }
+  .alarm-card .days {
+    grid-column: 1 / 2;
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+  }
+  .day-pill {
+    font-size: 11px;
+    color: var(--ink-faint);
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: transparent;
+  }
+  .day-pill.on {
+    color: var(--accent);
+    background: var(--accent-bg);
+  }
+  .alarm-card .controls {
+    grid-column: 2 / 3;
+    grid-row: 1 / 4;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    justify-content: space-between;
+    align-self: stretch;
+  }
+
+  .switch {
+    position: relative;
+    width: 48px;
+    height: 28px;
+    border-radius: 999px;
+    background: #e8e0c8;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .switch::after {
+    content: '';
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    top: 3px;
+    left: 3px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: left 0.2s;
+  }
+  .switch.on { background: var(--green); }
+  .switch.on::after { left: 23px; }
+
+  .icon-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    color: var(--ink-faint);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .icon-btn:active { background: var(--bg-warm); }
+
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--ink-faint);
+    font-size: 14px;
+  }
+  .empty .big { font-size: 56px; margin-bottom: 12px; opacity: 0.4; }
+
+  .fab {
+    position: fixed;
+    right: max(20px, env(safe-area-inset-right));
+    bottom: calc(24px + env(safe-area-inset-bottom));
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 30px;
+    font-weight: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(230,57,70,0.4);
+    z-index: 50;
+    transition: transform 0.15s;
+  }
+  .fab:active { transform: scale(0.92); }
+
+  /* ===== Editor sheet ===== */
+  .scrim {
+    position: fixed; inset: 0;
+    background: rgba(31,26,10,0.45);
+    backdrop-filter: blur(2px);
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .scrim.show { opacity: 1; pointer-events: auto; }
+
+  .sheet {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    background: var(--surface);
+    border-radius: 24px 24px 0 0;
+    box-shadow: var(--shadow-lg);
+    z-index: 101;
+    transform: translateY(100%);
+    transition: transform 0.25s ease-out;
+    max-height: 92dvh;
+    overflow-y: auto;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+  .sheet.show { transform: translateY(0); }
+
+  .sheet-head {
+    position: sticky; top: 0;
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .sheet-head .grab {
+    position: absolute;
+    top: 6px; left: 50%;
+    width: 36px; height: 4px;
+    border-radius: 2px;
+    background: var(--ink-faint);
+    transform: translateX(-50%);
+    opacity: 0.5;
+  }
+  .sheet-head h2 {
+    font-family: var(--serif);
+    font-size: 20px;
+    color: var(--ink);
+  }
+  .sheet-head .btn {
+    font-size: 15px;
+    font-weight: 700;
+    padding: 6px 8px;
+  }
+  .sheet-head .btn.cancel { color: var(--ink-soft); }
+  .sheet-head .btn.save { color: var(--accent); }
+
+  .sheet-body { padding: 16px; }
+
+  .time-picker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 24px 0 28px;
+  }
+  .time-roll {
+    height: 180px;
+    width: 80px;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    text-align: center;
+    position: relative;
+    mask-image: linear-gradient(to bottom, transparent 0, #000 25%, #000 75%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 25%, #000 75%, transparent 100%);
+  }
+  .time-roll::-webkit-scrollbar { display: none; }
+  .time-roll .roll-item {
+    height: 60px;
+    line-height: 60px;
+    font-family: var(--mono);
+    font-size: 32px;
+    font-weight: 500;
+    color: var(--ink);
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+  }
+  .time-roll .roll-pad { height: 60px; }
+  .time-colon {
+    font-family: var(--mono);
+    font-size: 32px;
+    font-weight: 500;
+    color: var(--ink-soft);
+  }
+  .time-picker-hilite {
+    pointer-events: none;
+    position: absolute;
+    left: 0; right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 60px;
+    border-top: 1px solid var(--line-strong);
+    border-bottom: 1px solid var(--line-strong);
+    background: rgba(247,127,0,0.06);
+  }
+  .time-picker-wrap { position: relative; }
+
+  .field {
+    margin-bottom: 14px;
+  }
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+  }
+  .field input[type="text"] {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg);
+    font-size: 15px;
+  }
+  .field input[type="text"]:focus { border-color: var(--line-strong); }
+
+  .day-row {
+    display: flex;
+    gap: 6px;
+    justify-content: space-between;
+  }
+  .day-btn {
+    flex: 1;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--ink-soft);
+    font-weight: 700;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  .day-btn.on {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .preset-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .preset-btn {
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--ink-soft);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .preset-btn:active { background: var(--bg-warm); }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
+  }
+  .toggle-row:first-of-type { border-top: none; }
+  .toggle-row .meta { font-size: 12px; color: var(--ink-faint); margin-top: 2px; }
+
+  select {
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .delete-btn {
+    width: 100%;
+    padding: 14px;
+    margin-top: 14px;
+    background: var(--accent-bg);
+    color: var(--accent);
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .delete-btn:active { background: #ffc4ca; }
+
+  /* ===== Ringing overlay ===== */
+  .ring-overlay {
+    position: fixed; inset: 0;
+    background: linear-gradient(160deg, var(--accent), var(--gold));
+    color: #fff;
+    z-index: 200;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 60px 30px max(40px, env(safe-area-inset-bottom));
+    text-align: center;
+    animation: ringPulse 1.4s ease-in-out infinite;
+  }
+  .ring-overlay.show { display: flex; }
+  @keyframes ringPulse {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.15); }
+  }
+  .ring-bell {
+    font-size: 80px;
+    animation: shake 0.6s ease-in-out infinite;
+  }
+  @keyframes shake {
+    0%, 100% { transform: rotate(-12deg); }
+    50% { transform: rotate(12deg); }
+  }
+  .ring-time {
+    font-family: var(--mono);
+    font-size: 76px;
+    font-weight: 500;
+    letter-spacing: -2px;
+    line-height: 1;
+  }
+  .ring-label {
+    font-family: var(--serif);
+    font-size: 26px;
+    margin-top: 8px;
+    opacity: 0.95;
+  }
+  .ring-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 360px;
+  }
+  .ring-btn {
+    width: 100%;
+    padding: 18px;
+    border-radius: 16px;
+    font-size: 17px;
+    font-weight: 700;
+    border: 2px solid rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    backdrop-filter: blur(4px);
+  }
+  .ring-btn.stop {
+    background: #fff;
+    color: var(--accent);
+    border-color: #fff;
+  }
+  .ring-btn:active { transform: scale(0.97); }
+
+  .footer-note {
+    margin-top: 24px;
+    font-size: 11px;
+    color: var(--ink-faint);
+    text-align: center;
+    line-height: 1.6;
+  }
+  .footer-note a { color: var(--ink-soft); }
+
+  @media (max-width: 380px) {
+    .alarm-card .time { font-size: 32px; }
+    .title { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <div class="title">알람</div>
+    <div class="now">
+      <span class="now-time" id="nowTime">--:--</span>
+      <span id="nowDate">--월 --일</span>
+    </div>
+  </header>
+
+  <div class="banner" id="permBanner">
+    <b>알림 권한이 꺼져 있어요.</b> 화면이 꺼져 있을 때 알람이 더 잘 울리도록 권한을 허용해 주세요. 또한 사파리/크롬 모두 <b>탭이 열려 있어야</b> 알람이 작동해요. 홈화면에 추가하면 더 안정적이에요.
+    <br><button id="permBtn">알림 허용</button>
+  </div>
+
+  <div class="alarm-list" id="alarmList"></div>
+
+  <button class="fab" id="fab" aria-label="알람 추가">＋</button>
+
+  <p class="footer-note">
+    탭이 백그라운드여도 작동하지만, 브라우저가 완전히 닫히면 안 울려요.<br>
+    홈 화면에 추가 → 알림 허용 → 무음모드 OFF 권장.
+  </p>
+</div>
+
+<!-- Editor sheet -->
+<div class="scrim" id="scrim"></div>
+<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="sheet-head">
+    <div class="grab"></div>
+    <button class="btn cancel" id="cancelBtn">취소</button>
+    <h2 id="sheetTitle">새 알람</h2>
+    <button class="btn save" id="saveBtn">저장</button>
+  </div>
+  <div class="sheet-body">
+    <div class="time-picker-wrap">
+      <div class="time-picker">
+        <div class="time-roll" id="hourRoll" aria-label="시"></div>
+        <div class="time-colon">:</div>
+        <div class="time-roll" id="minRoll" aria-label="분"></div>
+      </div>
+      <div class="time-picker-hilite"></div>
+    </div>
+
+    <div class="field">
+      <label>이름</label>
+      <input type="text" id="labelInput" placeholder="예: 일어나기" maxlength="40" />
+    </div>
+
+    <div class="field">
+      <label>요일 반복</label>
+      <div class="day-row" id="dayRow">
+        <button class="day-btn" data-d="0">일</button>
+        <button class="day-btn" data-d="1">월</button>
+        <button class="day-btn" data-d="2">화</button>
+        <button class="day-btn" data-d="3">수</button>
+        <button class="day-btn" data-d="4">목</button>
+        <button class="day-btn" data-d="5">금</button>
+        <button class="day-btn" data-d="6">토</button>
+      </div>
+      <div class="preset-row">
+        <button class="preset-btn" data-preset="weekday">평일</button>
+        <button class="preset-btn" data-preset="weekend">주말</button>
+        <button class="preset-btn" data-preset="all">매일</button>
+        <button class="preset-btn" data-preset="none">한 번만</button>
+      </div>
+    </div>
+
+    <div class="toggle-row">
+      <div>
+        소리
+        <div class="meta">알람음 종류</div>
+      </div>
+      <select id="soundSel">
+        <option value="beep">삐삐</option>
+        <option value="chime">차임</option>
+        <option value="bell">벨</option>
+        <option value="rooster">기상나팔</option>
+        <option value="silent">무음</option>
+      </select>
+    </div>
+
+    <div class="toggle-row">
+      <div>
+        진동
+        <div class="meta">지원 기기에서만</div>
+      </div>
+      <button class="switch" id="vibSwitch" aria-label="진동"></button>
+    </div>
+
+    <div class="toggle-row">
+      <div>
+        스누즈
+        <div class="meta">다시 울리기 간격</div>
+      </div>
+      <select id="snoozeSel">
+        <option value="0">사용 안 함</option>
+        <option value="3">3분</option>
+        <option value="5" selected>5분</option>
+        <option value="10">10분</option>
+      </select>
+    </div>
+
+    <button class="delete-btn" id="deleteBtn" style="display:none">삭제</button>
+  </div>
+</aside>
+
+<!-- Ringing overlay -->
+<div class="ring-overlay" id="ringOverlay">
+  <div class="ring-bell">🔔</div>
+  <div>
+    <div class="ring-time" id="ringTime">07:00</div>
+    <div class="ring-label" id="ringLabel">알람</div>
+  </div>
+  <div class="ring-actions">
+    <button class="ring-btn" id="snoozeBtn">스누즈 (5분)</button>
+    <button class="ring-btn stop" id="stopBtn">정지</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const STORAGE_KEY = 'mobileAlarms.v1';
+  const DAY_KO = ['일','월','화','수','목','금','토'];
+
+  /** @typedef {{id:string,h:number,m:number,label:string,days:number[],enabled:boolean,sound:string,vibrate:boolean,snooze:number,oneShotDate?:string}} Alarm */
+
+  const $ = (s, root=document) => root.querySelector(s);
+  const $$ = (s, root=document) => Array.from(root.querySelectorAll(s));
+
+  const state = {
+    alarms: load(),
+    editing: null,
+    ringing: null,
+    ringTimer: null,
+    ringStop: null,
+    audioCtx: null,
+    audioUnlocked: false,
+    wakeLock: null,
+  };
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed.map(normalizeAlarm).filter(Boolean);
+    } catch { return []; }
+  }
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.alarms));
+  }
+  function normalizeAlarm(a) {
+    if (!a || typeof a !== 'object') return null;
+    return {
+      id: String(a.id || uid()),
+      h: clamp(parseInt(a.h, 10) || 0, 0, 23),
+      m: clamp(parseInt(a.m, 10) || 0, 0, 59),
+      label: typeof a.label === 'string' ? a.label : '',
+      days: Array.isArray(a.days) ? a.days.filter(d => Number.isInteger(d) && d>=0 && d<=6) : [],
+      enabled: a.enabled !== false,
+      sound: typeof a.sound === 'string' ? a.sound : 'beep',
+      vibrate: a.vibrate !== false,
+      snooze: clamp(parseInt(a.snooze, 10) || 5, 0, 60),
+      oneShotDate: typeof a.oneShotDate === 'string' ? a.oneShotDate : undefined,
+    };
+  }
+  function uid() { return Math.random().toString(36).slice(2, 10) + Date.now().toString(36); }
+  function clamp(n, lo, hi) { return Math.max(lo, Math.min(hi, n)); }
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  // ---------- Time helpers ----------
+  function formatTime12(h, m) {
+    const ampm = h < 12 ? '오전' : '오후';
+    const hh = h % 12 === 0 ? 12 : h % 12;
+    return { ampm, time: `${pad(hh)}:${pad(m)}` };
+  }
+
+  function nextFireAt(a, from = new Date()) {
+    if (!a.enabled) return null;
+    const base = new Date(from);
+    base.setSeconds(0, 0);
+
+    // One-shot
+    if (a.days.length === 0) {
+      if (a.oneShotDate) {
+        const target = new Date(a.oneShotDate);
+        if (target > from) return target;
+        return null;
+      }
+      const today = new Date(base);
+      today.setHours(a.h, a.m, 0, 0);
+      if (today > from) return today;
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      return tomorrow;
+    }
+
+    // Recurring
+    for (let i = 0; i < 8; i++) {
+      const cand = new Date(base);
+      cand.setDate(cand.getDate() + i);
+      cand.setHours(a.h, a.m, 0, 0);
+      if (a.days.includes(cand.getDay()) && cand > from) return cand;
+    }
+    return null;
+  }
+
+  function describeNext(a) {
+    const next = nextFireAt(a);
+    if (!next) return a.enabled ? '' : '꺼짐';
+    const now = new Date();
+    const diffMs = next - now;
+    const diffMin = Math.round(diffMs / 60000);
+    if (diffMin < 60) return `${diffMin}분 뒤`;
+    const diffH = Math.round(diffMin / 60);
+    if (diffH < 24) return `${diffH}시간 뒤`;
+    const diffD = Math.round(diffH / 24);
+    return `${diffD}일 뒤`;
+  }
+
+  // ---------- Render ----------
+  function render() {
+    const list = $('#alarmList');
+    if (state.alarms.length === 0) {
+      list.innerHTML = `
+        <div class="empty">
+          <div class="big">🔔</div>
+          <div>아직 알람이 없어요.</div>
+          <div>오른쪽 아래 + 버튼을 눌러 추가해 보세요.</div>
+        </div>`;
+      return;
+    }
+    const sorted = [...state.alarms].sort((a, b) => a.h * 60 + a.m - (b.h * 60 + b.m));
+    list.innerHTML = sorted.map(a => {
+      const t = formatTime12(a.h, a.m);
+      const dayPills = DAY_KO.map((d, i) => {
+        const on = a.days.includes(i);
+        return `<span class="day-pill ${on ? 'on' : ''}">${d}</span>`;
+      }).join('');
+      const daysText = a.days.length === 0
+        ? `<span class="day-pill">한 번만</span>`
+        : a.days.length === 7
+          ? `<span class="day-pill on">매일</span>`
+          : dayPills;
+      const next = a.enabled ? describeNext(a) : '';
+      return `
+        <div class="alarm-card ${a.enabled ? '' : 'disabled'}" data-id="${a.id}">
+          <div class="label">
+            ${escapeHtml(a.label || '알람')}
+            ${next ? `<span class="next">· ${next}</span>` : ''}
+          </div>
+          <div class="time"><span class="ampm">${t.ampm}</span>${t.time}</div>
+          <div class="days">${daysText}</div>
+          <div class="controls">
+            <button class="switch ${a.enabled ? 'on' : ''}" data-act="toggle" aria-label="알람 켜기/끄기"></button>
+            <button class="icon-btn" data-act="edit" aria-label="편집">✎</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // Click handlers via delegation
+  $('#alarmList').addEventListener('click', (e) => {
+    const card = e.target.closest('.alarm-card');
+    if (!card) return;
+    const id = card.dataset.id;
+    const a = state.alarms.find(x => x.id === id);
+    if (!a) return;
+    const act = e.target.closest('[data-act]')?.dataset.act;
+    if (act === 'toggle') {
+      a.enabled = !a.enabled;
+      // Toggling re-arms; clear one-shot date if it was in the past
+      if (a.enabled && a.days.length === 0 && a.oneShotDate) {
+        const t = new Date(a.oneShotDate);
+        if (t <= new Date()) a.oneShotDate = undefined;
+      }
+      save();
+      render();
+      ensureAudioUnlocked();
+    } else {
+      openEditor(a);
+    }
+  });
+
+  // Live clock
+  function tickClock() {
+    const now = new Date();
+    $('#nowTime').textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    $('#nowDate').textContent = `${now.getMonth()+1}월 ${now.getDate()}일 (${DAY_KO[now.getDay()]})`;
+  }
+  setInterval(tickClock, 1000);
+  tickClock();
+
+  // ---------- Editor ----------
+  const sheet = $('#sheet');
+  const scrim = $('#scrim');
+  const hourRoll = $('#hourRoll');
+  const minRoll = $('#minRoll');
+
+  function buildRoll(roll, count) {
+    const items = [`<div class="roll-pad"></div>`];
+    for (let i = 0; i < count; i++) items.push(`<div class="roll-item" data-v="${i}">${pad(i)}</div>`);
+    items.push(`<div class="roll-pad"></div>`);
+    roll.innerHTML = items.join('');
+  }
+  buildRoll(hourRoll, 24);
+  buildRoll(minRoll, 60);
+
+  function setRoll(roll, value) {
+    // each item is 60px tall; first pad is 60px, item at index value sits at top = 60 + value*60 - 60 = value*60
+    roll.scrollTop = value * 60;
+  }
+  function getRoll(roll) {
+    return Math.round(roll.scrollTop / 60);
+  }
+
+  function openEditor(alarm) {
+    const isNew = !alarm;
+    const a = alarm || defaultNewAlarm();
+    state.editing = { original: alarm ? alarm.id : null, draft: { ...a, days: [...a.days] } };
+    $('#sheetTitle').textContent = isNew ? '새 알람' : '알람 편집';
+    $('#labelInput').value = a.label || '';
+    $('#soundSel').value = a.sound;
+    $('#snoozeSel').value = String(a.snooze);
+    $('#vibSwitch').classList.toggle('on', !!a.vibrate);
+    $$('#dayRow .day-btn').forEach(btn => {
+      const d = parseInt(btn.dataset.d, 10);
+      btn.classList.toggle('on', a.days.includes(d));
+    });
+    $('#deleteBtn').style.display = isNew ? 'none' : 'block';
+
+    scrim.classList.add('show');
+    sheet.classList.add('show');
+
+    // Roll values must be set after sheet is visible (scroll requires layout)
+    requestAnimationFrame(() => {
+      setRoll(hourRoll, a.h);
+      setRoll(minRoll, a.m);
+    });
+
+    ensureAudioUnlocked();
+  }
+
+  function defaultNewAlarm() {
+    const now = new Date();
+    let h = now.getHours();
+    let m = now.getMinutes() + 5;
+    if (m >= 60) { m -= 60; h = (h + 1) % 24; }
+    return {
+      id: uid(),
+      h, m,
+      label: '',
+      days: [],
+      enabled: true,
+      sound: 'beep',
+      vibrate: true,
+      snooze: 5,
+    };
+  }
+
+  function closeEditor() {
+    scrim.classList.remove('show');
+    sheet.classList.remove('show');
+    state.editing = null;
+  }
+
+  $('#cancelBtn').addEventListener('click', closeEditor);
+  scrim.addEventListener('click', closeEditor);
+
+  $('#saveBtn').addEventListener('click', () => {
+    if (!state.editing) return;
+    const d = state.editing.draft;
+    d.h = clamp(getRoll(hourRoll), 0, 23);
+    d.m = clamp(getRoll(minRoll), 0, 59);
+    d.label = $('#labelInput').value.trim();
+    d.sound = $('#soundSel').value;
+    d.snooze = parseInt($('#snoozeSel').value, 10) || 0;
+    d.vibrate = $('#vibSwitch').classList.contains('on');
+    d.days = $$('#dayRow .day-btn').filter(b => b.classList.contains('on')).map(b => parseInt(b.dataset.d, 10)).sort();
+    d.enabled = true;
+    if (d.days.length === 0) {
+      // one-shot: compute the next occurrence and lock to that exact moment
+      const target = new Date();
+      target.setSeconds(0, 0);
+      target.setHours(d.h, d.m, 0, 0);
+      if (target <= new Date()) target.setDate(target.getDate() + 1);
+      d.oneShotDate = target.toISOString();
+    } else {
+      delete d.oneShotDate;
+    }
+
+    if (state.editing.original) {
+      const idx = state.alarms.findIndex(x => x.id === state.editing.original);
+      if (idx >= 0) state.alarms[idx] = d;
+    } else {
+      state.alarms.push(d);
+    }
+    save();
+    render();
+    closeEditor();
+    ensureAudioUnlocked();
+    requestNotifPermissionIfNeeded();
+  });
+
+  $('#deleteBtn').addEventListener('click', () => {
+    if (!state.editing || !state.editing.original) return;
+    if (!confirm('이 알람을 삭제할까요?')) return;
+    state.alarms = state.alarms.filter(x => x.id !== state.editing.original);
+    save();
+    render();
+    closeEditor();
+  });
+
+  $('#dayRow').addEventListener('click', (e) => {
+    const btn = e.target.closest('.day-btn');
+    if (!btn) return;
+    btn.classList.toggle('on');
+  });
+
+  $$('.preset-btn').forEach(btn => btn.addEventListener('click', () => {
+    const p = btn.dataset.preset;
+    const set = new Set();
+    if (p === 'weekday') [1,2,3,4,5].forEach(d => set.add(d));
+    else if (p === 'weekend') [0,6].forEach(d => set.add(d));
+    else if (p === 'all') [0,1,2,3,4,5,6].forEach(d => set.add(d));
+    $$('#dayRow .day-btn').forEach(b => {
+      b.classList.toggle('on', set.has(parseInt(b.dataset.d, 10)));
+    });
+  }));
+
+  $('#vibSwitch').addEventListener('click', (e) => e.currentTarget.classList.toggle('on'));
+
+  $('#fab').addEventListener('click', () => openEditor(null));
+
+  // ---------- Audio ----------
+  function ensureAudioUnlocked() {
+    if (state.audioUnlocked) return;
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      if (!state.audioCtx) state.audioCtx = new Ctx();
+      if (state.audioCtx.state === 'suspended') state.audioCtx.resume();
+      // play near-silent blip to unlock on iOS
+      const osc = state.audioCtx.createOscillator();
+      const g = state.audioCtx.createGain();
+      g.gain.value = 0.0001;
+      osc.connect(g); g.connect(state.audioCtx.destination);
+      osc.start();
+      osc.stop(state.audioCtx.currentTime + 0.02);
+      state.audioUnlocked = true;
+    } catch {}
+  }
+  document.addEventListener('touchstart', ensureAudioUnlocked, { once: false, passive: true });
+  document.addEventListener('click', ensureAudioUnlocked, { once: false });
+
+  function playTone(kind, t0, dur, freq, type='sine', vol=0.4) {
+    const ctx = state.audioCtx;
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(vol, t0 + 0.02);
+    g.gain.linearRampToValueAtTime(0, t0 + dur);
+    osc.connect(g); g.connect(ctx.destination);
+    osc.start(t0); osc.stop(t0 + dur + 0.05);
+  }
+
+  function startSound(kind) {
+    if (!state.audioCtx) {
+      try { state.audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch { return () => {}; }
+    }
+    const ctx = state.audioCtx;
+    if (ctx.state === 'suspended') ctx.resume();
+    if (kind === 'silent') return () => {};
+
+    let stopped = false;
+    const stop = () => { stopped = true; };
+
+    const loop = () => {
+      if (stopped) return;
+      const t = ctx.currentTime;
+      if (kind === 'beep') {
+        playTone(kind, t,        0.15, 880, 'square', 0.35);
+        playTone(kind, t + 0.25, 0.15, 880, 'square', 0.35);
+        playTone(kind, t + 0.50, 0.15, 880, 'square', 0.35);
+        setTimeout(loop, 1500);
+      } else if (kind === 'chime') {
+        playTone(kind, t,        0.5, 880,  'sine', 0.4);
+        playTone(kind, t + 0.25, 0.5, 1108, 'sine', 0.4);
+        playTone(kind, t + 0.50, 0.7, 1318, 'sine', 0.4);
+        setTimeout(loop, 1800);
+      } else if (kind === 'bell') {
+        playTone(kind, t,        0.9, 660,  'triangle', 0.35);
+        playTone(kind, t,        0.9, 990,  'sine',     0.2);
+        setTimeout(loop, 1100);
+      } else if (kind === 'rooster') {
+        playTone(kind, t,        0.18, 700, 'sawtooth', 0.35);
+        playTone(kind, t + 0.20, 0.18, 900, 'sawtooth', 0.35);
+        playTone(kind, t + 0.40, 0.35, 1100,'sawtooth', 0.35);
+        setTimeout(loop, 1400);
+      } else {
+        setTimeout(loop, 1000);
+      }
+    };
+    loop();
+    return stop;
+  }
+
+  // ---------- Vibration ----------
+  let vibInterval = null;
+  function startVibration() {
+    if (!('vibrate' in navigator)) return;
+    try { navigator.vibrate([600, 300, 600, 300, 600]); } catch {}
+    vibInterval = setInterval(() => {
+      try { navigator.vibrate([600, 300, 600, 300, 600]); } catch {}
+    }, 2400);
+  }
+  function stopVibration() {
+    if (vibInterval) { clearInterval(vibInterval); vibInterval = null; }
+    try { navigator.vibrate(0); } catch {}
+  }
+
+  // ---------- Wake Lock ----------
+  async function acquireWakeLock() {
+    try {
+      if ('wakeLock' in navigator) {
+        state.wakeLock = await navigator.wakeLock.request('screen');
+      }
+    } catch {}
+  }
+  function releaseWakeLock() {
+    try { state.wakeLock?.release?.(); } catch {}
+    state.wakeLock = null;
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && state.ringing) acquireWakeLock();
+  });
+
+  // ---------- Notification ----------
+  function requestNotifPermissionIfNeeded() {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'default') {
+      Notification.requestPermission().then(updateBanner).catch(()=>{});
+    }
+    updateBanner();
+  }
+  function updateBanner() {
+    const banner = $('#permBanner');
+    if (!('Notification' in window)) { banner.classList.remove('show'); return; }
+    if (Notification.permission === 'granted') banner.classList.remove('show');
+    else banner.classList.add('show');
+  }
+  $('#permBtn').addEventListener('click', () => {
+    if ('Notification' in window) {
+      Notification.requestPermission().then(updateBanner);
+    }
+    ensureAudioUnlocked();
+  });
+  updateBanner();
+
+  function fireNotification(a) {
+    if (!('Notification' in window)) return;
+    if (Notification.permission !== 'granted') return;
+    try {
+      const t = formatTime12(a.h, a.m);
+      const n = new Notification(`⏰ ${a.label || '알람'}`, {
+        body: `${t.ampm} ${t.time}`,
+        tag: `alarm-${a.id}`,
+        requireInteraction: true,
+        silent: false,
+      });
+      n.onclick = () => { window.focus(); n.close(); };
+    } catch {}
+  }
+
+  // ---------- Scheduler ----------
+  // We scan every 15s. When an enabled alarm's nextFireAt is in [now-30s, now], fire it (and dedupe via lastFired).
+  const lastFired = new Map(); // alarmId -> ISOString of fire time
+  function checkAlarms() {
+    if (state.ringing) return; // don't queue overlap
+    const now = new Date();
+    for (const a of state.alarms) {
+      if (!a.enabled) continue;
+      const next = nextFireAt(a, new Date(now.getTime() - 60_000));
+      if (!next) continue;
+      const diff = now - next;
+      if (diff >= -1000 && diff <= 60_000) {
+        const key = next.toISOString();
+        if (lastFired.get(a.id) === key) continue;
+        lastFired.set(a.id, key);
+        ringAlarm(a, next);
+        return;
+      }
+    }
+  }
+  setInterval(checkAlarms, 15_000);
+  checkAlarms();
+
+  // ---------- Ringing ----------
+  function ringAlarm(a, when) {
+    state.ringing = a;
+    const t = formatTime12(when.getHours(), when.getMinutes());
+    $('#ringTime').textContent = `${t.ampm} ${t.time}`;
+    $('#ringLabel').textContent = a.label || '알람';
+    $('#snoozeBtn').textContent = a.snooze > 0 ? `스누즈 (${a.snooze}분)` : '스누즈 끔';
+    $('#snoozeBtn').disabled = a.snooze <= 0;
+    $('#snoozeBtn').style.opacity = a.snooze <= 0 ? '0.5' : '1';
+
+    $('#ringOverlay').classList.add('show');
+
+    state.ringStop = startSound(a.sound);
+    if (a.vibrate) startVibration();
+    acquireWakeLock();
+    fireNotification(a);
+
+    // Auto-stop after 5 minutes if no interaction
+    state.ringTimer = setTimeout(() => stopRing(false), 5 * 60_000);
+  }
+
+  function stopRing(snooze) {
+    if (!state.ringing) return;
+    const a = state.ringing;
+    try { state.ringStop?.(); } catch {}
+    stopVibration();
+    releaseWakeLock();
+    if (state.ringTimer) { clearTimeout(state.ringTimer); state.ringTimer = null; }
+    $('#ringOverlay').classList.remove('show');
+
+    if (snooze && a.snooze > 0) {
+      // Push a one-shot snooze ~ a.snooze minutes from now
+      const target = new Date(Date.now() + a.snooze * 60_000);
+      target.setSeconds(0, 0);
+      const snoozeAlarm = {
+        ...a,
+        id: uid(),
+        h: target.getHours(),
+        m: target.getMinutes(),
+        days: [],
+        oneShotDate: new Date(target.getTime() + 60_000).toISOString().replace(/\.\d+Z$/, 'Z'), // ensure > now even if rounded
+        label: (a.label || '알람') + ' (스누즈)',
+        enabled: true,
+      };
+      // Use exact target time
+      snoozeAlarm.oneShotDate = target.toISOString();
+      state.alarms.push(snoozeAlarm);
+      save();
+      render();
+    } else {
+      // For non-recurring alarms, disable after firing
+      if (a.days.length === 0) {
+        const real = state.alarms.find(x => x.id === a.id);
+        if (real) {
+          real.enabled = false;
+          save();
+          render();
+        }
+      }
+    }
+    state.ringing = null;
+  }
+
+  $('#stopBtn').addEventListener('click', () => stopRing(false));
+  $('#snoozeBtn').addEventListener('click', () => stopRing(true));
+
+  // ---------- Boot ----------
+  render();
+
+  // Re-check on visibility change (catch missed fires when tab was hidden but alive)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') checkAlarms();
+  });
+  window.addEventListener('focus', checkAlarms);
+
+  // Catch storage edits across tabs
+  window.addEventListener('storage', (e) => {
+    if (e.key === STORAGE_KEY) {
+      state.alarms = load();
+      render();
+    }
+  });
+})();
+</script>
+</body>
+</html>
