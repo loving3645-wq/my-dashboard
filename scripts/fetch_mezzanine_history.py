@@ -24,6 +24,7 @@ import json
 import os
 import re
 import sys
+import threading
 import time
 import zipfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -33,6 +34,18 @@ from xml.etree import ElementTree as ET
 import requests
 
 KST = timezone(timedelta(hours=9))
+
+# One sample raw row per endpoint, captured on first non-empty response.
+# Dumped at the end of main() if any normalized field has < 5% fill rate
+# (i.e. a likely DART key drift) so the actual response keys are visible
+# in CI logs for the next round of fixing.
+_SAMPLE_ROWS = {}
+_SAMPLE_LOCK = threading.Lock()
+
+
+def _record_sample(kind, row):
+    with _SAMPLE_LOCK:
+        _SAMPLE_ROWS.setdefault(kind, dict(row))
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TICKERS_FILE = os.path.join(ROOT, "tickers-full.js")
@@ -518,6 +531,8 @@ def fetch_kind(sess, corp_code, kind, bgn_de, end_de):
                     continue
                 return []
             rows = body.get("list") or []
+            if rows:
+                _record_sample(kind, rows[0])
             return [normalize_issuance(row, kind) for row in rows]
         except requests.RequestException:
             time.sleep(0.5 * (attempt + 1))
@@ -647,13 +662,30 @@ def main():
                     counts[k] += 1
     if sample_total:
         print("Field fill rates:", flush=True)
+        suspect = []
         for k in sorted(counts):
             pct = 100.0 * counts[k] / sample_total
             warn = "  <-- SUSPECT" if pct < 5 else ""
+            if pct < 5:
+                suspect.append(k)
             print(
                 f"  {k:<22} {counts[k]:>6}/{sample_total:<6} ({pct:5.1f}%){warn}",
                 flush=True,
             )
+        # Auto-dump raw response samples when something looks broken so the
+        # next debugging round can update FIELDS without another probe run.
+        if suspect and _SAMPLE_ROWS:
+            print(
+                f"\nSUSPECT fields ({len(suspect)}): {', '.join(suspect)}",
+                flush=True,
+            )
+            print("Raw response samples (first row per endpoint):", flush=True)
+            for kind in sorted(_SAMPLE_ROWS):
+                row = _SAMPLE_ROWS[kind]
+                print(f"  --- {kind} (keys={len(row)}) ---", flush=True)
+                for k in sorted(row):
+                    v = str(row[k]).replace("\n", " ")[:80]
+                    print(f"    {k}: {v}", flush=True)
 
 
 if __name__ == "__main__":
