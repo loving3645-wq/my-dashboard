@@ -185,10 +185,10 @@
     <div class="seg"><span class="lbl">소스</span><span class="val">OpenDART</span></div>
   </div>
 
-  <!-- 다가오는 풋옵션 -->
+  <!-- 다가오는 만기·전환청구 -->
   <div class="section">
-    <h2>다가오는 <em>풋옵션</em></h2>
-    <div class="desc">조기상환청구권 행사 가능일 도래 임박 발행건 (잔량 미상환 추정 기준)</div>
+    <h2>다가오는 <em>만기 · 전환청구</em></h2>
+    <div class="desc">미상환 발행건의 만기 도래 또는 전환청구기간 시작 임박. 풋·콜 행사일은 DART 구조 응답에 없어 본문 파싱 필요 (별도 작업)</div>
 
     <div class="toolbar-mini">
       <span class="tlabel">기간</span>
@@ -198,6 +198,12 @@
         <option value="180">앞으로 180일</option>
         <option value="365">앞으로 1년</option>
         <option value="all">전체 (만기까지)</option>
+      </select>
+      <span class="tlabel" style="margin-left:8px;">이벤트</span>
+      <select class="select" id="put-event">
+        <option value="">전체</option>
+        <option value="maturity">만기만</option>
+        <option value="convert">전환청구만</option>
       </select>
       <span class="tlabel" style="margin-left:8px;">유형</span>
       <select class="select" id="put-type">
@@ -212,7 +218,8 @@
       <thead>
         <tr>
           <th class="left">D-day</th>
-          <th class="left">풋 행사일</th>
+          <th class="left">일자</th>
+          <th class="left">이벤트</th>
           <th class="left">종목</th>
           <th class="left">유형</th>
           <th class="left">회차</th>
@@ -222,7 +229,7 @@
           <th class="left">만기</th>
         </tr>
       </thead>
-      <tbody id="put-body"><tr><td colspan="9" class="empty-state">불러오는 중…</td></tr></tbody>
+      <tbody id="put-body"><tr><td colspan="10" class="empty-state">불러오는 중…</td></tr></tbody>
     </table>
   </div>
 
@@ -245,11 +252,11 @@
       <select class="select" id="filter-status">
         <option value="">전체</option>
         <option value="live">미상환만</option>
-        <option value="put-soon">풋옵션 임박</option>
+        <option value="put-soon">만기·전환 임박</option>
       </select>
       <span class="tlabel" style="margin-left:8px;">정렬</span>
       <select class="select" id="sort-by">
-        <option value="put">풋옵션 가까운 순</option>
+        <option value="put">다음 일정 가까운 순</option>
         <option value="outstanding">미상환액 큰 순</option>
         <option value="recent">최근 발행순</option>
         <option value="name">가나다순</option>
@@ -265,6 +272,7 @@
     <span>데이터: OpenDART 주요사항보고서 (cvbdIsDecsn / bdwtIsDecsn / exbdIsDecsn)</span>
     <span>잔량 추정: 행사·상환 공시 본문 정규식 파싱 (parsed) / 부재 시 만기 기준 face 값 (face)</span>
     <span>주 1회 자동 갱신 (월요일 19:00 UTC)</span>
+    <span>풋·콜 옵션 일정은 DART 구조 응답에 없어 표시 불가 (공시 본문 파싱 추후 작업)</span>
   </div>
 </div>
 
@@ -275,6 +283,7 @@ const STATE = {
   data: null,
   putWindow: 90,
   putType: '',
+  putEvent: '',
   search: '',
   filterType: '',
   filterStatus: '',
@@ -338,18 +347,18 @@ function isLive(iss) {
   return effectiveOutstanding(iss) > 0;
 }
 
-function nextPutDate(iss) {
-  // The earliest put start in the future. putEnd is ignored (range start
-  // is what matters for "도래"). If parsed outstanding is 0, no put left.
+function nextEventDate(iss) {
+  // Earliest upcoming actionable date for a live issuance — soonest of
+  // maturity and convertStart. (Put/call dates aren't in the structured
+  // DART response; they'd need disclosure-body parsing.)
   if (effectiveOutstanding(iss) <= 0) return null;
-  const ps = iss.putStart;
-  if (!ps) return null;
-  if (ps <= TODAY_ISO) {
-    // Already inside the put window — still actionable until putEnd.
-    if (iss.putEnd && iss.putEnd < TODAY_ISO) return null;
-    return ps;
+  const candidates = [iss.maturityDate, iss.convertStart].filter(Boolean);
+  let best = null;
+  for (const d of candidates) {
+    if (d < TODAY_ISO) continue;
+    if (!best || d < best) best = d;
   }
-  return ps;
+  return best;
 }
 
 async function loadData() {
@@ -393,11 +402,36 @@ function flatIssuances() {
   return rows;
 }
 
+function upcomingEvents(iss) {
+  // Returns 0..2 events: maturity (if live + future) and convertStart
+  // (if live + future). Past dates within 30 days kept so user can
+  // still see "just opened" / "just matured" context.
+  const out = [];
+  if (effectiveOutstanding(iss) <= 0) return out;
+  if (iss.maturityDate) {
+    const dd = daysFrom(iss.maturityDate);
+    if (dd !== null && dd >= -30) {
+      out.push({ kind: 'maturity', date: iss.maturityDate, days: dd });
+    }
+  }
+  if (iss.convertStart) {
+    const dd = daysFrom(iss.convertStart);
+    if (dd !== null && dd >= -30) {
+      out.push({ kind: 'convert', date: iss.convertStart, days: dd });
+    }
+  }
+  return out;
+}
+
+function eventLabel(kind) {
+  return kind === 'maturity' ? '만기' : kind === 'convert' ? '전환청구 시작' : kind;
+}
+
 function renderPuts() {
   const tbody = $('put-body');
   const flat = flatIssuances();
   if (!flat.length) {
-    tbody.innerHTML = `<tr><td colspan="9" class="empty-state">
+    tbody.innerHTML = `<tr><td colspan="10" class="empty-state">
       메자닌 데이터가 없습니다.<br>
       <span style="font-size:10px;">data/mezzanine.json 미생성 — Actions의 'DART Mezzanine' 워크플로 수동 실행 필요</span>
     </td></tr>`;
@@ -408,30 +442,32 @@ function renderPuts() {
   const items = [];
   for (const row of flat) {
     if (STATE.putType && row.iss.type !== STATE.putType) continue;
-    const ps = nextPutDate(row.iss);
-    if (!ps) continue;
-    const days = daysFrom(ps);
-    if (days === null) continue;
-    if (days < -30) continue; // ignore long-past puts
-    if (days > winDays) continue;
-    items.push({ ...row, putDate: ps, days });
+    for (const ev of upcomingEvents(row.iss)) {
+      if (STATE.putEvent && ev.kind !== STATE.putEvent) continue;
+      if (ev.days > winDays) continue;
+      items.push({ ...row, ev });
+    }
   }
-  items.sort((a, b) => a.days - b.days);
+  items.sort((a, b) => a.ev.days - b.ev.days);
 
   if (!items.length) {
-    tbody.innerHTML = `<tr><td colspan="9" class="empty-state">선택한 기간 내 풋옵션 도래 발행건이 없습니다.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10" class="empty-state">선택한 기간 내 만기/전환청구 도래 발행건이 없습니다.</td></tr>`;
     return;
   }
-  tbody.innerHTML = items.map(({ ticker, name, iss, putDate, days }) => {
+  tbody.innerHTML = items.map(({ ticker, name, iss, ev }) => {
     const out = effectiveOutstanding(iss);
     const outBadge = Number.isFinite(iss.currentOutstanding)
       ? '<span class="status-pill parsed">parsed</span>'
       : (out > 0 ? '<span class="status-pill face">face</span>' : '');
     const cv = Number.isFinite(iss.conversionPrice)
       ? iss.conversionPrice.toLocaleString() + '원' : '—';
+    const evBadge = ev.kind === 'maturity'
+      ? '<span class="status-pill matured" style="background:var(--accent-bg);color:var(--accent);">만기</span>'
+      : '<span class="status-pill parsed">전환청구</span>';
     return `<tr class="clickable" data-ticker="${escapeHtml(ticker)}">
-      <td class="left">${dayPill(days)}</td>
-      <td class="left">${escapeHtml(putDate)}</td>
+      <td class="left">${dayPill(ev.days)}</td>
+      <td class="left">${escapeHtml(ev.date)}</td>
+      <td class="left">${evBadge}</td>
       <td class="left">
         <a href="stock-deep-dive.html#${escapeHtml(ticker)}" target="_blank" rel="noopener" style="text-decoration:none;font-weight:500;">
           ${escapeHtml(name)}
@@ -458,7 +494,7 @@ function issuerCardHtml(ticker, entry) {
   const nextPut = (() => {
     let best = null;
     for (const iss of issuances) {
-      const ps = nextPutDate(iss);
+      const ps = nextEventDate(iss);
       if (!ps) continue;
       if (!best || ps < best.date) best = { date: ps, amount: effectiveOutstanding(iss) };
     }
@@ -485,7 +521,7 @@ function issuerCardHtml(ticker, entry) {
       <span class="summary">
         <span><span class="lbl">발행</span><span class="val">${issuances.length}건</span></span>
         <span><span class="lbl">미상환</span><span class="val">${liveCount}건 · ${fmtKRW(totalOut)}</span></span>
-        ${nextPut ? `<span><span class="lbl">다음 풋</span><span class="val put">${escapeHtml(nextPut.date)}</span></span>` : ''}
+        ${nextPut ? `<span><span class="lbl">다음 일정</span><span class="val put">${escapeHtml(nextPut.date)}</span></span>` : ''}
         ${summary.totalEvents ? `<span><span class="lbl">이벤트</span><span class="val">${summary.totalEvents}건</span></span>` : ''}
       </span>
     </div>
@@ -497,7 +533,7 @@ function issuanceHtml(iss) {
   const out = effectiveOutstanding(iss);
   const live = out > 0;
   const matured = !live && iss.maturityDate && iss.maturityDate <= TODAY_ISO;
-  const ps = nextPutDate(iss);
+  const ps = nextEventDate(iss);
   const psDays = ps ? daysFrom(ps) : null;
   const putSoon = live && psDays !== null && psDays >= -30 && psDays <= 90;
   const cls = matured ? 'matured' : (putSoon ? 'put-soon' : (live ? 'live' : ''));
@@ -527,9 +563,8 @@ function issuanceHtml(iss) {
       <div class="kv"><span class="k">YTM</span><span class="v">${fmtPct(iss.ytmRate)}</span></div>
       <div class="kv"><span class="k">전환가</span><span class="v">${Number.isFinite(iss.conversionPrice) ? iss.conversionPrice.toLocaleString() + '원' : '—'}</span></div>
       <div class="kv"><span class="k">전환비율</span><span class="v">${fmtPct(iss.conversionRatio)}</span></div>
-      <div class="kv"><span class="k">전환청구</span><span class="v faint">${escapeHtml(iss.convertStart || '?')} ~ ${escapeHtml(iss.convertEnd || '?')}</span></div>
-      <div class="kv"><span class="k">풋옵션</span><span class="v ${putSoon ? 'accent' : 'faint'}">${escapeHtml(iss.putStart || '—')}${iss.putEnd ? ' ~ ' + iss.putEnd.slice(5) : ''}</span></div>
-      ${iss.callStart ? `<div class="kv"><span class="k">콜옵션</span><span class="v faint">${escapeHtml(iss.callStart)}${iss.callEnd ? ' ~ ' + iss.callEnd.slice(5) : ''}</span></div>` : ''}
+      <div class="kv"><span class="k">전환청구</span><span class="v ${putSoon ? 'accent' : 'faint'}">${escapeHtml(iss.convertStart || '?')} ~ ${escapeHtml(iss.convertEnd || '?')}</span></div>
+      <div class="kv"><span class="k">풋·콜</span><span class="v faint">DART 본문 파싱 필요</span></div>
     </div>
     ${evHtml}
   </div>`;
@@ -573,7 +608,7 @@ function renderIssuers() {
       const out = effectiveOutstanding(iss);
       if (out > 0) liveCount++;
       totalOut += out;
-      const ps = nextPutDate(iss);
+      const ps = nextEventDate(iss);
       if (ps && (!nextPut || ps < nextPut)) nextPut = ps;
       if (iss.rceptDt && iss.rceptDt > recent) recent = iss.rceptDt;
     }
@@ -617,6 +652,7 @@ function renderIssuers() {
 function bind() {
   $('put-window').addEventListener('change', e => { STATE.putWindow = e.target.value; renderPuts(); });
   $('put-type').addEventListener('change', e => { STATE.putType = e.target.value; renderPuts(); });
+  $('put-event').addEventListener('change', e => { STATE.putEvent = e.target.value; renderPuts(); });
   $('search').addEventListener('input', e => { STATE.search = e.target.value; renderIssuers(); });
   $('filter-type').addEventListener('change', e => { STATE.filterType = e.target.value; renderIssuers(); });
   $('filter-status').addEventListener('change', e => { STATE.filterStatus = e.target.value; renderIssuers(); });

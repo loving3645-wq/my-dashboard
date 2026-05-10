@@ -24,7 +24,6 @@ import json
 import os
 import re
 import sys
-import threading
 import time
 import zipfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -34,18 +33,6 @@ from xml.etree import ElementTree as ET
 import requests
 
 KST = timezone(timedelta(hours=9))
-
-# One sample raw row per endpoint, captured on first non-empty response.
-# Dumped at the end of main() if any normalized field has < 5% fill rate
-# (i.e. a likely DART key drift) so the actual response keys are visible
-# in CI logs for the next round of fixing.
-_SAMPLE_ROWS = {}
-_SAMPLE_LOCK = threading.Lock()
-
-
-def _record_sample(kind, row):
-    with _SAMPLE_LOCK:
-        _SAMPLE_ROWS.setdefault(kind, dict(row))
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TICKERS_FILE = os.path.join(ROOT, "tickers-full.js")
@@ -110,42 +97,44 @@ TIMEOUT = 15
 RETRY_COUNT = 2
 
 # Field aliases — DART's response key naming varies across the three
-# endpoints (CB / BW / EB) and across legacy filings. We try each alias
-# in order and take the first non-empty value.
+# endpoints (CB / BW / EB). Verified against actual response samples
+# captured by the in-script probe (commit 6c72131).
 #
-# Source: OpenDART API guide (cvbdIsDecsn / bdwtIsDecsn / exbdIsDecsn).
-# Earlier mapping had typos (bd_int_ex vs the real bd_intr_ex) and was
-# missing BW/EB-specific price/ratio/exercise-period keys, which caused
-# all date / rate fields to come back null in production.
+# What's confirmed in the structured response:
+#   - 발행조건 (face, coupon, ytm, maturity, issue date, conversion price/ratio)
+#   - 전환청구·행사기간 (cvrqpd_* for CB, expd_* for BW, exrqpd_* for EB)
+# What's NOT in the structured response (would need disclosure body parsing):
+#   - 사채매수청구권(풋) 행사 기간
+#   - 매도청구권(콜) 행사 기간
+#   - 공시 접수일자 (rcept_dt) — derive from rcept_no's YYYYMMDD prefix instead
 FIELDS = {
     "round": ["bd_tm", "bd_knd", "bd_kind", "kind", "tm"],
     "face_amount": ["bd_fta", "bd_isu_amt", "isu_amt", "bdfta"],
     "currency": ["fdrm_crncy", "ovis_fdrm_crncy", "crncy"],
-    # 납입일 (CB/BW/EB 공통).
     "issue_date": ["pymd", "pay_dt", "pymd_dt", "bd_isu_dt", "isu_dt"],
-    # 만기일 — DART 실제 응답 키는 bd_mtd. 과거 자체 추측이었던
-    # mtrt_dt / bd_mtrt_dt / mty_dt는 실데이터에서 한 번도 안 채워졌음.
     "maturity": ["bd_mtd", "mtrt_dt", "bd_mtrt_dt", "mty_dt"],
-    # 표면이자율 / 만기이자율 — 실제 키는 bd_intr_ex / bd_intr_sf.
     "coupon_rate": ["bd_intr_ex", "bd_int_ex", "sl_intr_rt", "cpn_rt"],
     "ytm_rate": ["bd_intr_sf", "bd_int_sf", "mtrt_intr_rt", "ytm_rt"],
-    # 가격 / 비율: CB는 cv_prc / cv_rt, BW는 wt_prc / wt_rt (신주인수권
-    # 행사가액·비율), EB는 ex_prc / ex_rt (교환가액·비율).
     "conversion_price": ["cv_prc", "wt_prc", "ex_prc", "cnv_prc", "exrc_prc"],
     "conversion_ratio": ["cv_rt", "wt_rt", "ex_rt", "cnv_rt", "exrc_rt"],
-    # 청구·행사기간: CB cv_rqsr_*, BW wt_exrc_pd_*, EB ex_rqsr_*.
+    # 청구·행사기간:
+    #   CB cvrqpd_*  (전환청구기간)
+    #   BW expd_*    (신주인수권 행사기간)
+    #   EB exrqpd_*  (교환청구기간 — symmetric guess; verify if 0% next run)
     "convert_start": [
+        "cvrqpd_bgd", "expd_bgd", "exrqpd_bgd",
+        # legacy / undocumented aliases kept as safety fallback:
         "cv_rqsr_bgd", "wt_exrc_pd_bgn", "ex_rqsr_bgd",
-        "cnv_pd_bgn", "exrc_pd_bgn",
     ],
     "convert_end": [
+        "cvrqpd_edd", "expd_edd", "exrqpd_edd",
         "cv_rqsr_edd", "wt_exrc_pd_edd", "ex_rqsr_edd",
-        "cnv_pd_end", "exrc_pd_end",
     ],
-    # 사채매수청구권(풋) 행사가능 기간 — CB/BW/EB 공통.
+    # NOTE: put_*/call_* aliases below cover the rare older filing formats
+    # that did embed exercise periods in the structured response. Modern
+    # CB/BW/EB filings keep these in narrative-only — body parsing TODO.
     "put_start": ["pthbd_rcsr_bgd", "pt_pd_bgn", "ery_rdmpt_pd_bgn"],
     "put_end": ["pthbd_rcsr_edd", "pt_pd_end", "ery_rdmpt_pd_end"],
-    # 매도청구권(콜) 행사가능 기간.
     "call_start": ["clbd_rcsr_bgd", "cl_pd_bgn"],
     "call_end": ["clbd_rcsr_edd", "cl_pd_end"],
 }
@@ -249,10 +238,16 @@ def _to_iso_date(s):
 
 
 def normalize_issuance(row, kind):
+    rcept_no = (row.get("rcept_no") or "").strip() or None
+    rcept_dt = _to_iso_date(row.get("rcept_dt") or "")
+    # Disclosure detail endpoints (cvbdIsDecsn etc.) don't return rcept_dt;
+    # DART encodes the receipt date as the first 8 chars of rcept_no.
+    if not rcept_dt and rcept_no and len(rcept_no) >= 8 and rcept_no[:8].isdigit():
+        rcept_dt = _to_iso_date(rcept_no[:8])
     n = {
         "type": kind,
-        "rceptNo": (row.get("rcept_no") or "").strip() or None,
-        "rceptDt": _to_iso_date(row.get("rcept_dt") or ""),
+        "rceptNo": rcept_no,
+        "rceptDt": rcept_dt,
         "round": _pick(row, FIELDS["round"]),
         "issueDate": _to_iso_date(_pick(row, FIELDS["issue_date"]) or ""),
         "maturityDate": _to_iso_date(_pick(row, FIELDS["maturity"]) or ""),
@@ -531,8 +526,6 @@ def fetch_kind(sess, corp_code, kind, bgn_de, end_de):
                     continue
                 return []
             rows = body.get("list") or []
-            if rows:
-                _record_sample(kind, rows[0])
             return [normalize_issuance(row, kind) for row in rows]
         except requests.RequestException:
             time.sleep(0.5 * (attempt + 1))
@@ -661,31 +654,18 @@ def main():
                 if v not in (None, "", []):
                     counts[k] += 1
     if sample_total:
+        # put_*/call_* are intentionally absent from the structured DART
+        # response (narrative-only) — exclude from the SUSPECT warning so
+        # the legitimately broken fields stand out.
+        always_empty = {"putStart", "putEnd", "callStart", "callEnd"}
         print("Field fill rates:", flush=True)
-        suspect = []
         for k in sorted(counts):
             pct = 100.0 * counts[k] / sample_total
-            warn = "  <-- SUSPECT" if pct < 5 else ""
-            if pct < 5:
-                suspect.append(k)
+            warn = "  <-- SUSPECT" if pct < 5 and k not in always_empty else ""
             print(
                 f"  {k:<22} {counts[k]:>6}/{sample_total:<6} ({pct:5.1f}%){warn}",
                 flush=True,
             )
-        # Auto-dump raw response samples when something looks broken so the
-        # next debugging round can update FIELDS without another probe run.
-        if suspect and _SAMPLE_ROWS:
-            print(
-                f"\nSUSPECT fields ({len(suspect)}): {', '.join(suspect)}",
-                flush=True,
-            )
-            print("Raw response samples (first row per endpoint):", flush=True)
-            for kind in sorted(_SAMPLE_ROWS):
-                row = _SAMPLE_ROWS[kind]
-                print(f"  --- {kind} (keys={len(row)}) ---", flush=True)
-                for k in sorted(row):
-                    v = str(row[k]).replace("\n", " ")[:80]
-                    print(f"    {k}: {v}", flush=True)
 
 
 if __name__ == "__main__":
