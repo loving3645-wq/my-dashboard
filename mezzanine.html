@@ -221,16 +221,17 @@
           <th>표면이율</th>
           <th>YTM</th>
           <th class="left">만기</th>
+          <th class="left">공시</th>
         </tr>
       </thead>
-      <tbody id="recent-body"><tr><td colspan="10" class="empty-state">불러오는 중…</td></tr></tbody>
+      <tbody id="recent-body"><tr><td colspan="11" class="empty-state">불러오는 중…</td></tr></tbody>
     </table>
   </div>
 
-  <!-- 다가오는 만기·전환청구·풋(추정) -->
+  <!-- 다가오는 만기·전환청구 -->
   <div class="section">
-    <h2>다가오는 <em>만기 · 전환청구 · 풋(추정)</em></h2>
-    <div class="desc">미상환 발행건의 만기 / 전환청구 시작 / 풋옵션 첫 행사 가능일(추정: 발행일 +1년, 한국 CB 관행). 정확한 풋 일정은 증권신고서 본문 확인 필요</div>
+    <h2>다가오는 <em>만기 · 전환청구</em></h2>
+    <div class="desc">미상환 발행건의 만기 / 전환청구 시작 임박. 풋·콜 일정은 DART 구조 응답에 없음 → 우측 "📄 공시" 링크로 증권신고서 본문 확인</div>
 
     <div class="toolbar-mini">
       <span class="tlabel">기간</span>
@@ -246,7 +247,6 @@
         <option value="">전체</option>
         <option value="maturity">만기만</option>
         <option value="convert">전환청구만</option>
-        <option value="put_est">풋(추정)만</option>
       </select>
       <span class="tlabel" style="margin-left:8px;">유형</span>
       <select class="select" id="put-type">
@@ -271,9 +271,10 @@
           <th>잔량 (추정)</th>
           <th>전환가</th>
           <th class="left">만기</th>
+          <th class="left">공시</th>
         </tr>
       </thead>
-      <tbody id="put-body"><tr><td colspan="11" class="empty-state">불러오는 중…</td></tr></tbody>
+      <tbody id="put-body"><tr><td colspan="12" class="empty-state">불러오는 중…</td></tr></tbody>
     </table>
   </div>
 
@@ -395,13 +396,10 @@ function isLive(iss) {
 
 function nextEventDate(iss) {
   // Earliest upcoming actionable date for a live issuance — soonest of
-  // maturity, convertStart, and the estimated first put (issueDate +1y).
+  // maturity and convertStart. (Put/call dates aren't in the structured
+  // DART response.)
   if (effectiveOutstanding(iss) <= 0) return null;
-  const candidates = [
-    iss.maturityDate,
-    iss.convertStart,
-    estimatedPutDate(iss),
-  ].filter(Boolean);
+  const candidates = [iss.maturityDate, iss.convertStart].filter(Boolean);
   let best = null;
   for (const d of candidates) {
     if (d < TODAY_ISO) continue;
@@ -451,28 +449,18 @@ function flatIssuances() {
   return rows;
 }
 
-function addYears(iso, years) {
-  if (!iso) return null;
-  const d = new Date(iso + 'T00:00:00');
-  if (isNaN(d)) return null;
-  d.setFullYear(d.getFullYear() + years);
-  return d.toISOString().slice(0, 10);
-}
-
-function estimatedPutDate(iss) {
-  // Korean CB convention: first put exercise window typically opens
-  // 1 year after issuance. Some issuances have no put or use 18/24
-  // months — flagged as 추정 in UI. Returns null if estimate would
-  // fall after maturity (no put possible).
-  if (!iss.issueDate) return null;
-  const est = addYears(iss.issueDate, 1);
-  if (iss.maturityDate && est >= iss.maturityDate) return null;
-  return est;
+function dartLink(rceptNo) {
+  // DART disclosure viewer URL — opens the original 주요사항보고서 with
+  // full body (put/call schedules, pledged collateral, etc.).
+  if (!rceptNo) return '';
+  const url = `https://dart.fss.or.kr/dsaf001/main.do?rcpNo=${encodeURIComponent(rceptNo)}`;
+  return `<a href="${url}" target="_blank" rel="noopener" title="DART 공시 본문 열기" style="text-decoration:none;font-size:11px;">📄 공시</a>`;
 }
 
 function upcomingEvents(iss) {
-  // Returns 0..3 events for live issuances: maturity, convertStart,
-  // estimated first put. Past dates within 30 days kept for context.
+  // Returns 0..2 events for live issuances: maturity and convertStart.
+  // Put/call schedules aren't in DART's structured response — users
+  // verify via the disclosure deep link rather than us guessing.
   const out = [];
   if (effectiveOutstanding(iss) <= 0) return out;
   const push = (kind, date) => {
@@ -482,14 +470,12 @@ function upcomingEvents(iss) {
   };
   push('maturity', iss.maturityDate);
   push('convert', iss.convertStart);
-  push('put_est', estimatedPutDate(iss));
   return out;
 }
 
 function eventLabel(kind) {
   if (kind === 'maturity') return '만기';
   if (kind === 'convert') return '전환청구 시작';
-  if (kind === 'put_est') return '풋(추정)';
   return kind;
 }
 
@@ -500,9 +486,6 @@ function eventBadgeHtml(kind) {
   if (kind === 'convert') {
     return '<span class="status-pill parsed">전환청구</span>';
   }
-  if (kind === 'put_est') {
-    return '<span class="status-pill" style="background:var(--gold-bg);color:var(--gold);">풋(추정)</span>';
-  }
   return `<span class="status-pill">${escapeHtml(kind)}</span>`;
 }
 
@@ -510,7 +493,7 @@ function renderPuts() {
   const tbody = $('put-body');
   const flat = flatIssuances();
   if (!flat.length) {
-    tbody.innerHTML = `<tr><td colspan="11" class="empty-state">
+    tbody.innerHTML = `<tr><td colspan="12" class="empty-state">
       메자닌 데이터가 없습니다.<br>
       <span style="font-size:10px;">data/mezzanine.json 미생성 — Actions의 'DART Mezzanine' 워크플로 수동 실행 필요</span>
     </td></tr>`;
@@ -530,7 +513,7 @@ function renderPuts() {
   items.sort((a, b) => a.ev.days - b.ev.days);
 
   if (!items.length) {
-    tbody.innerHTML = `<tr><td colspan="11" class="empty-state">선택한 기간 내 만기/전환청구/풋(추정) 도래 발행건이 없습니다.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="12" class="empty-state">선택한 기간 내 만기/전환청구 도래 발행건이 없습니다.</td></tr>`;
     return;
   }
   tbody.innerHTML = items.map(({ ticker, name, iss, ev }) => {
@@ -557,6 +540,7 @@ function renderPuts() {
       <td class="num">${fmtKRW(out)} ${outBadge}</td>
       <td class="num">${cv}</td>
       <td class="left muted">${escapeHtml(iss.maturityDate || '—')}</td>
+      <td class="left">${dartLink(iss.rceptNo)}</td>
     </tr>`;
   }).join('');
 }
@@ -565,7 +549,7 @@ function renderRecent() {
   const tbody = $('recent-body');
   const flat = flatIssuances();
   if (!flat.length) {
-    tbody.innerHTML = `<tr><td colspan="10" class="empty-state">
+    tbody.innerHTML = `<tr><td colspan="11" class="empty-state">
       메자닌 데이터가 없습니다.
     </td></tr>`;
     return;
@@ -585,7 +569,7 @@ function renderRecent() {
   items.sort((a, b) => b.refDate.localeCompare(a.refDate));
 
   if (!items.length) {
-    tbody.innerHTML = `<tr><td colspan="10" class="empty-state">선택한 기간 내 신규 발행건이 없습니다.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11" class="empty-state">선택한 기간 내 신규 발행건이 없습니다.</td></tr>`;
     return;
   }
   tbody.innerHTML = items.map(({ ticker, name, iss, refDate, days }) => {
@@ -607,6 +591,7 @@ function renderRecent() {
       <td class="num">${fmtPct(iss.couponRate)}</td>
       <td class="num">${fmtPct(iss.ytmRate)}</td>
       <td class="left muted">${escapeHtml(iss.maturityDate || '—')}</td>
+      <td class="left">${dartLink(iss.rceptNo)}</td>
     </tr>`;
   }).join('');
 }
@@ -682,6 +667,7 @@ function issuanceHtml(iss) {
       <span class="round">${typePill(iss.type)} 제 ${escapeHtml(iss.round || '?')}회</span>
       ${statusBadge}
       <span class="dates">${escapeHtml(iss.issueDate || '?')} → ${escapeHtml(iss.maturityDate || '?')}</span>
+      ${dartLink(iss.rceptNo)}
     </div>
     <div class="iss-grid">
       <div class="kv"><span class="k">발행액</span><span class="v">${fmtKRW(iss.faceAmount)}</span></div>
@@ -691,7 +677,7 @@ function issuanceHtml(iss) {
       <div class="kv"><span class="k">전환가</span><span class="v">${Number.isFinite(iss.conversionPrice) ? iss.conversionPrice.toLocaleString() + '원' : '—'}</span></div>
       <div class="kv"><span class="k">전환비율</span><span class="v">${fmtPct(iss.conversionRatio)}</span></div>
       <div class="kv"><span class="k">전환청구</span><span class="v ${putSoon ? 'accent' : 'faint'}">${escapeHtml(iss.convertStart || '?')} ~ ${escapeHtml(iss.convertEnd || '?')}</span></div>
-      <div class="kv"><span class="k">풋·콜</span><span class="v faint">DART 본문 파싱 필요</span></div>
+      <div class="kv"><span class="k">풋·콜</span><span class="v faint">📄 공시 본문 확인</span></div>
     </div>
     ${evHtml}
   </div>`;
