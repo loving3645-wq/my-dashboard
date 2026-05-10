@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#fafaf7" />
+<meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="pragma" content="no-cache" />
+<meta http-equiv="expires" content="0" />
+<title>메자닌 · 지니의 리서치</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..600,0..100&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #ffffff; --bg-warm: #f5f5f5; --surface: #ffffff; --surface-2: #ffffff;
+    --ink: #000000; --ink-mid: #000000; --ink-soft: #1a1a1a; --ink-faint: #999999;
+    --line: #d0d0d0; --line-strong: #a0a0a0;
+    --accent: #b8421f; --accent-bg: #fbeae3;
+    --gold: #b8923f; --gold-bg: #f7eecf;
+    --green: #2f6b35; --green-bg: #d6e8d2;
+    --red: #b02828; --red-bg: #f9d8d8;
+    --blue: #2e527a; --blue-bg: #d6e2ee;
+    --purple: #5e3e7c; --purple-bg: #e6d8ee;
+    --serif: 'Fraunces','Nanum Myeongjo',serif;
+    --sans: 'Pretendard',-apple-system,sans-serif;
+    --mono: 'JetBrains Mono',ui-monospace,monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  body { min-height: 100vh; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+  button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; background: none; border: none; }
+  a { color: inherit; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  .app { max-width: 1900px; margin: 0 auto; padding: 24px 28px 80px; }
+
+  .topnav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; gap: 12px; }
+  .brand { font-family: var(--serif); font-weight: 400; font-size: 22px; letter-spacing: -0.02em; }
+  .brand em { font-style: italic; color: var(--accent); font-weight: 500; }
+  .crumbs { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.18em; text-transform: uppercase; }
+  .crumbs a { color: var(--ink-soft); text-decoration: none; }
+  .crumbs a:hover { color: var(--accent); }
+  .crumbs .sep { margin: 0 8px; color: var(--ink-faint); }
+
+  .page-head { margin-bottom: 16px; }
+  .page-head h1 { font-family: var(--serif); font-weight: 400; font-size: 28px; letter-spacing: -0.02em; }
+  .page-head h1 em { font-style: italic; color: var(--accent); font-weight: 500; }
+  .page-head .sub { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); letter-spacing: 0.1em; margin-top: 6px; text-transform: uppercase; }
+
+  .status-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; padding: 10px 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; font-family: var(--mono); font-size: 11px; color: var(--ink-mid); flex-wrap: wrap; }
+  .status-bar .seg { display: flex; align-items: center; gap: 6px; }
+  .status-bar .lbl { color: var(--ink-soft); letter-spacing: 0.08em; text-transform: uppercase; font-size: 10px; }
+  .status-bar .val { color: var(--ink); font-weight: 500; }
+
+  .section { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; margin-bottom: 18px; }
+  .section h2 { font-family: var(--serif); font-weight: 500; font-size: 18px; letter-spacing: -0.01em; margin-bottom: 4px; }
+  .section h2 em { font-style: italic; color: var(--accent); font-weight: 500; }
+  .section .desc { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 14px; }
+
+  .toolbar-mini { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+  .tlabel { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.12em; text-transform: uppercase; }
+  .select, .input { padding: 5px 10px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 5px; font-size: 11px; font-family: var(--mono); color: var(--ink-mid); }
+  .select { cursor: pointer; }
+  .input { min-width: 180px; }
+  .input:focus { outline: none; border-color: var(--accent); }
+
+  table.tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .tbl thead { background: var(--surface-2); }
+  .tbl th { text-align: right; padding: 9px 10px; font-family: var(--mono); font-weight: 500; font-size: 10px; color: var(--ink-soft); letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .tbl th.left { text-align: left; }
+  .tbl tbody tr { border-bottom: 1px solid var(--line); transition: background 0.1s; }
+  .tbl tbody tr:hover { background: var(--bg-warm); }
+  .tbl tbody tr.clickable { cursor: pointer; }
+  .tbl td { padding: 9px 10px; text-align: right; font-family: var(--mono); font-size: 12px; color: var(--ink); white-space: nowrap; }
+  .tbl td.left { text-align: left; }
+  .tbl td.muted, .muted { color: var(--ink-faint); }
+  .tbl td.num { font-variant-numeric: tabular-nums; }
+
+  .name-cell { display: flex; align-items: center; gap: 8px; min-width: 200px; }
+  .name-cell .code { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); width: 50px; flex-shrink: 0; }
+  .name-cell .nm { font-family: var(--sans); font-size: 13px; font-weight: 500; }
+  .name-cell .nm a { text-decoration: none; }
+  .name-cell .nm a:hover { color: var(--accent); }
+
+  .type-pill { font-family: var(--mono); font-size: 9px; padding: 2px 6px; border-radius: 2px; letter-spacing: 0.08em; font-weight: 600; }
+  .type-pill.cb { background: var(--accent-bg); color: var(--accent); }
+  .type-pill.bw { background: var(--gold-bg); color: var(--gold); }
+  .type-pill.eb { background: var(--purple-bg); color: var(--purple); }
+
+  .day-pill { font-family: var(--mono); font-size: 10px; padding: 2px 6px; border-radius: 3px; display: inline-block; min-width: 56px; text-align: center; letter-spacing: 0.04em; }
+  .day-pill.today { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
+  .day-pill.soon { background: var(--gold-bg); color: var(--gold); }
+  .day-pill.later { background: var(--surface-2); color: var(--ink-mid); border: 1px solid var(--line); }
+  .day-pill.past { background: transparent; color: var(--ink-faint); }
+
+  .status-pill { font-family: var(--mono); font-size: 9px; padding: 2px 6px; border-radius: 2px; letter-spacing: 0.06em; }
+  .status-pill.live { background: var(--green-bg); color: var(--green); }
+  .status-pill.matured { background: var(--surface-2); color: var(--ink-faint); border: 1px solid var(--line); }
+  .status-pill.parsed { background: var(--blue-bg); color: var(--blue); }
+  .status-pill.face { background: var(--surface-2); color: var(--ink-soft); border: 1px solid var(--line); }
+
+  .empty-state { padding: 36px 20px; text-align: center; color: var(--ink-faint); font-family: var(--mono); font-size: 12px; }
+
+  /* Issuer card grid */
+  .issuer-card { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; background: var(--surface); }
+  .issuer-card.collapsed .issuances { display: none; }
+  .issuer-head { display: flex; align-items: center; gap: 12px; cursor: pointer; flex-wrap: wrap; }
+  .issuer-head .toggle { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); width: 14px; }
+  .issuer-head .nm { font-family: var(--sans); font-weight: 600; font-size: 14px; flex-shrink: 0; }
+  .issuer-head .ticker { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); }
+  .issuer-head .summary { display: flex; gap: 14px; margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--ink-mid); flex-wrap: wrap; }
+  .issuer-head .summary .lbl { color: var(--ink-soft); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; margin-right: 4px; }
+  .issuer-head .summary .val { font-weight: 500; }
+  .issuer-head .summary .val.put { color: var(--accent); }
+
+  .issuances { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line); display: grid; gap: 10px; }
+  .iss { border-left: 3px solid var(--line); padding: 8px 12px; background: var(--bg-warm); border-radius: 0 6px 6px 0; }
+  .iss-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+  .iss-head .round { font-family: var(--mono); font-size: 12px; font-weight: 600; }
+  .iss-head .dates { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); }
+  .iss-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 6px 14px; font-family: var(--mono); font-size: 11px; }
+  .iss-grid .kv { display: flex; flex-direction: column; gap: 1px; }
+  .iss-grid .kv .k { color: var(--ink-soft); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .iss-grid .kv .v { color: var(--ink); font-weight: 500; }
+  .iss-grid .kv .v.accent { color: var(--accent); }
+  .iss-grid .kv .v.faint { color: var(--ink-faint); }
+  .iss.live { border-left-color: var(--green); }
+  .iss.matured { border-left-color: var(--ink-faint); opacity: 0.75; }
+  .iss.put-soon { border-left-color: var(--accent); }
+
+  .events { margin-top: 8px; padding-top: 6px; border-top: 1px dotted var(--line); display: flex; flex-wrap: wrap; gap: 6px; }
+  .ev-pill { font-family: var(--mono); font-size: 10px; padding: 2px 6px; border-radius: 3px; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink-soft); }
+  .ev-pill .d { color: var(--ink-faint); margin-right: 4px; }
+  .ev-pill.conversion { background: var(--blue-bg); color: var(--blue); border-color: transparent; }
+  .ev-pill.warrant_exercise { background: var(--gold-bg); color: var(--gold); border-color: transparent; }
+  .ev-pill.exchange { background: var(--purple-bg); color: var(--purple); border-color: transparent; }
+  .ev-pill.put { background: var(--accent-bg); color: var(--accent); border-color: transparent; }
+  .ev-pill.call { background: var(--accent-bg); color: var(--accent); border-color: transparent; }
+  .ev-pill.redemption { background: var(--surface-2); color: var(--ink-soft); }
+  .ev-pill.correction { background: var(--surface-2); color: var(--ink-faint); font-style: italic; }
+
+  .footer-info { margin-top: 14px; font-family: var(--mono); font-size: 10px; color: var(--ink-soft); display: flex; gap: 14px; flex-wrap: wrap; align-items: center; letter-spacing: 0.05em; }
+
+  @media (max-width: 900px) {
+    .app { padding: 18px 14px 60px; }
+    .tbl th, .tbl td { padding: 6px 6px; font-size: 11px; }
+    .section { padding: 14px 14px; }
+    .issuer-head .summary { width: 100%; margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <nav class="topnav">
+    <div>
+      <div class="brand">지니<em>.</em></div>
+      <div class="crumbs">
+        <a href="index.html">대시보드</a><span class="sep">/</span>
+        <a href="market-scan.html">시장 스캐너</a><span class="sep">/</span>
+        <a href="research.html">리서치</a><span class="sep">/</span>
+        <a href="ipo-calendar.html">IPO 캘린더</a><span class="sep">/</span>
+        <span style="color:var(--ink);">메자닌</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page-head">
+    <h1>메자닌 <em>발행이력</em></h1>
+    <div class="sub">DART 주요사항보고서 · CB / BW / EB · 7년 룩백 · 풋옵션 캘린더</div>
+  </div>
+
+  <div class="status-bar">
+    <div class="seg"><span class="lbl">As of</span><span class="val" id="meta-asof">—</span></div>
+    <div class="seg"><span class="lbl">발행기업</span><span class="val" id="meta-issuers">—</span></div>
+    <div class="seg"><span class="lbl">건수</span><span class="val" id="meta-issuances">—</span></div>
+    <div class="seg"><span class="lbl">미상환 (parsed)</span><span class="val" id="meta-parsed">—</span></div>
+    <div class="seg"><span class="lbl">소스</span><span class="val">OpenDART</span></div>
+  </div>
+
+  <!-- 다가오는 풋옵션 -->
+  <div class="section">
+    <h2>다가오는 <em>풋옵션</em></h2>
+    <div class="desc">조기상환청구권 행사 가능일 도래 임박 발행건 (잔량 미상환 추정 기준)</div>
+
+    <div class="toolbar-mini">
+      <span class="tlabel">기간</span>
+      <select class="select" id="put-window">
+        <option value="30">앞으로 30일</option>
+        <option value="90" selected>앞으로 90일</option>
+        <option value="180">앞으로 180일</option>
+        <option value="365">앞으로 1년</option>
+        <option value="all">전체 (만기까지)</option>
+      </select>
+      <span class="tlabel" style="margin-left:8px;">유형</span>
+      <select class="select" id="put-type">
+        <option value="">전체</option>
+        <option value="CB">CB</option>
+        <option value="BW">BW</option>
+        <option value="EB">EB</option>
+      </select>
+    </div>
+
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th class="left">D-day</th>
+          <th class="left">풋 행사일</th>
+          <th class="left">종목</th>
+          <th class="left">유형</th>
+          <th class="left">회차</th>
+          <th>발행액</th>
+          <th>잔량 (추정)</th>
+          <th>전환가</th>
+          <th class="left">만기</th>
+        </tr>
+      </thead>
+      <tbody id="put-body"><tr><td colspan="9" class="empty-state">불러오는 중…</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- 발행이력 by 종목 -->
+  <div class="section">
+    <h2>발행이력 <em>by 종목</em></h2>
+    <div class="desc">검색 / 필터 후 종목 카드 클릭 → 발행건 펼침 · 종목명 클릭 → 종목 딥다이브</div>
+
+    <div class="toolbar-mini">
+      <span class="tlabel">검색</span>
+      <input class="input" id="search" placeholder="종목명 또는 종목코드…" autocomplete="off">
+      <span class="tlabel" style="margin-left:8px;">유형</span>
+      <select class="select" id="filter-type">
+        <option value="">전체</option>
+        <option value="CB">CB만</option>
+        <option value="BW">BW만</option>
+        <option value="EB">EB만</option>
+      </select>
+      <span class="tlabel" style="margin-left:8px;">상태</span>
+      <select class="select" id="filter-status">
+        <option value="">전체</option>
+        <option value="live">미상환만</option>
+        <option value="put-soon">풋옵션 임박</option>
+      </select>
+      <span class="tlabel" style="margin-left:8px;">정렬</span>
+      <select class="select" id="sort-by">
+        <option value="put">풋옵션 가까운 순</option>
+        <option value="outstanding">미상환액 큰 순</option>
+        <option value="recent">최근 발행순</option>
+        <option value="name">가나다순</option>
+      </select>
+    </div>
+
+    <div id="issuer-list">
+      <div class="empty-state">불러오는 중…</div>
+    </div>
+  </div>
+
+  <div class="footer-info">
+    <span>데이터: OpenDART 주요사항보고서 (cvbdIsDecsn / bdwtIsDecsn / exbdIsDecsn)</span>
+    <span>잔량 추정: 행사·상환 공시 본문 정규식 파싱 (parsed) / 부재 시 만기 기준 face 값 (face)</span>
+    <span>주 1회 자동 갱신 (월요일 19:00 UTC)</span>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+const STATE = {
+  data: null,
+  putWindow: 90,
+  putType: '',
+  search: '',
+  filterType: '',
+  filterStatus: '',
+  sortBy: 'put',
+  expanded: new Set(),
+};
+
+const TODAY = (() => { const d = new Date(); d.setHours(0,0,0,0); return d; })();
+const TODAY_ISO = TODAY.toISOString().slice(0, 10);
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+function fmtKRW(n) {
+  if (!Number.isFinite(n)) return '—';
+  if (n === 0) return '0';
+  const eok = 100_000_000;
+  const jo = 1_000_000_000_000;
+  if (Math.abs(n) >= jo) return (n / jo).toFixed(2).replace(/\.?0+$/, '') + '조';
+  if (Math.abs(n) >= eok) return Math.round(n / eok).toLocaleString() + '억';
+  if (Math.abs(n) >= 10000) return (n / 10000).toFixed(1).replace(/\.0$/, '') + '만';
+  return n.toLocaleString();
+}
+
+function fmtPct(n) {
+  if (!Number.isFinite(n)) return '—';
+  return n.toFixed(2).replace(/\.?0+$/, '') + '%';
+}
+
+function daysFrom(iso) {
+  if (!iso) return null;
+  const t = new Date(iso + 'T00:00:00');
+  if (isNaN(t)) return null;
+  return Math.round((t - TODAY) / 86400000);
+}
+
+function dayPill(days) {
+  if (days === null || days === undefined) return '<span class="day-pill past">—</span>';
+  if (days < 0) return `<span class="day-pill past">D+${-days}</span>`;
+  if (days === 0) return '<span class="day-pill today">D-DAY</span>';
+  const cls = days <= 30 ? 'soon' : days <= 180 ? 'soon' : 'later';
+  return `<span class="day-pill ${cls}">D-${days}</span>`;
+}
+
+function typePill(t) {
+  const cls = (t || '').toLowerCase();
+  return `<span class="type-pill ${cls}">${escapeHtml(t || '?')}</span>`;
+}
+
+function effectiveOutstanding(iss) {
+  // Parsed > matured (0) > face (if maturity in future) > 0.
+  if (Number.isFinite(iss.currentOutstanding)) return iss.currentOutstanding;
+  if (iss.maturityDate && iss.maturityDate > TODAY_ISO) return iss.faceAmount || 0;
+  return 0;
+}
+
+function isLive(iss) {
+  return effectiveOutstanding(iss) > 0;
+}
+
+function nextPutDate(iss) {
+  // The earliest put start in the future. putEnd is ignored (range start
+  // is what matters for "도래"). If parsed outstanding is 0, no put left.
+  if (effectiveOutstanding(iss) <= 0) return null;
+  const ps = iss.putStart;
+  if (!ps) return null;
+  if (ps <= TODAY_ISO) {
+    // Already inside the put window — still actionable until putEnd.
+    if (iss.putEnd && iss.putEnd < TODAY_ISO) return null;
+    return ps;
+  }
+  return ps;
+}
+
+async function loadData() {
+  try {
+    const r = await fetch('data/mezzanine.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    STATE.data = await r.json();
+  } catch (e) {
+    STATE.data = null;
+    console.warn('mezzanine load failed', e);
+  }
+}
+
+function renderMeta() {
+  const d = STATE.data;
+  if (!d) {
+    $('meta-asof').textContent = '—';
+    $('meta-issuers').textContent = '—';
+    $('meta-issuances').textContent = '—';
+    $('meta-parsed').textContent = '—';
+    return;
+  }
+  $('meta-asof').textContent = d.asOf
+    ? new Date(d.asOf).toLocaleString('ko-KR') : '—';
+  $('meta-issuers').textContent = (d.issuersWithMezzanine ?? '—').toLocaleString
+    ? (d.issuersWithMezzanine ?? 0).toLocaleString() + '곳'
+    : '—';
+  $('meta-issuances').textContent = (d.totalIssuances ?? 0).toLocaleString() + '건';
+  $('meta-parsed').textContent = (d.totalOutstandingParsed ?? 0).toLocaleString() + '건 파싱';
+}
+
+function flatIssuances() {
+  const d = STATE.data;
+  if (!d || !d.mezzanine) return [];
+  const rows = [];
+  for (const [ticker, entry] of Object.entries(d.mezzanine)) {
+    for (const iss of (entry.issuances || [])) {
+      rows.push({ ticker, name: entry.name, iss });
+    }
+  }
+  return rows;
+}
+
+function renderPuts() {
+  const tbody = $('put-body');
+  const flat = flatIssuances();
+  if (!flat.length) {
+    tbody.innerHTML = `<tr><td colspan="9" class="empty-state">
+      메자닌 데이터가 없습니다.<br>
+      <span style="font-size:10px;">data/mezzanine.json 미생성 — Actions의 'DART Mezzanine' 워크플로 수동 실행 필요</span>
+    </td></tr>`;
+    return;
+  }
+  const winRaw = STATE.putWindow;
+  const winDays = winRaw === 'all' ? 99999 : Number(winRaw);
+  const items = [];
+  for (const row of flat) {
+    if (STATE.putType && row.iss.type !== STATE.putType) continue;
+    const ps = nextPutDate(row.iss);
+    if (!ps) continue;
+    const days = daysFrom(ps);
+    if (days === null) continue;
+    if (days < -30) continue; // ignore long-past puts
+    if (days > winDays) continue;
+    items.push({ ...row, putDate: ps, days });
+  }
+  items.sort((a, b) => a.days - b.days);
+
+  if (!items.length) {
+    tbody.innerHTML = `<tr><td colspan="9" class="empty-state">선택한 기간 내 풋옵션 도래 발행건이 없습니다.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = items.map(({ ticker, name, iss, putDate, days }) => {
+    const out = effectiveOutstanding(iss);
+    const outBadge = Number.isFinite(iss.currentOutstanding)
+      ? '<span class="status-pill parsed">parsed</span>'
+      : (out > 0 ? '<span class="status-pill face">face</span>' : '');
+    const cv = Number.isFinite(iss.conversionPrice)
+      ? iss.conversionPrice.toLocaleString() + '원' : '—';
+    return `<tr class="clickable" data-ticker="${escapeHtml(ticker)}">
+      <td class="left">${dayPill(days)}</td>
+      <td class="left">${escapeHtml(putDate)}</td>
+      <td class="left">
+        <a href="stock-deep-dive.html#${escapeHtml(ticker)}" target="_blank" rel="noopener" style="text-decoration:none;font-weight:500;">
+          ${escapeHtml(name)}
+        </a>
+        <span class="muted" style="margin-left:6px;font-size:10px;">${escapeHtml(ticker)}</span>
+      </td>
+      <td class="left">${typePill(iss.type)}</td>
+      <td class="left">${escapeHtml(iss.round || '—')}</td>
+      <td class="num">${fmtKRW(iss.faceAmount)}</td>
+      <td class="num">${fmtKRW(out)} ${outBadge}</td>
+      <td class="num">${cv}</td>
+      <td class="left muted">${escapeHtml(iss.maturityDate || '—')}</td>
+    </tr>`;
+  }).join('');
+}
+
+function issuerCardHtml(ticker, entry) {
+  const issuances = (entry.issuances || []).slice();
+  const events = entry.unmatchedEvents || [];
+  const summary = entry.summary || {};
+  const liveCount = issuances.filter(isLive).length;
+  const totalOut = issuances.reduce((s, i) => s + effectiveOutstanding(i), 0);
+  const expanded = STATE.expanded.has(ticker);
+  const nextPut = (() => {
+    let best = null;
+    for (const iss of issuances) {
+      const ps = nextPutDate(iss);
+      if (!ps) continue;
+      if (!best || ps < best.date) best = { date: ps, amount: effectiveOutstanding(iss) };
+    }
+    return best;
+  })();
+
+  const issHtml = expanded ? issuances.map(iss => issuanceHtml(iss)).join('') : '';
+  const orphanEvHtml = (expanded && events.length) ? `
+    <div class="iss" style="border-left-color: var(--ink-faint);">
+      <div class="iss-head"><span class="round muted">미매칭 이벤트</span>
+        <span class="dates muted">회차 매칭 실패한 행사·상환 공시</span></div>
+      <div class="events">${events.map(eventPill).join('')}</div>
+    </div>` : '';
+
+  return `<div class="issuer-card ${expanded ? '' : 'collapsed'}" data-ticker="${escapeHtml(ticker)}">
+    <div class="issuer-head">
+      <span class="toggle">${expanded ? '−' : '+'}</span>
+      <span class="nm">
+        <a href="stock-deep-dive.html#${escapeHtml(ticker)}" target="_blank" rel="noopener" style="text-decoration:none;">
+          ${escapeHtml(entry.name)}
+        </a>
+      </span>
+      <span class="ticker">${escapeHtml(ticker)}</span>
+      <span class="summary">
+        <span><span class="lbl">발행</span><span class="val">${issuances.length}건</span></span>
+        <span><span class="lbl">미상환</span><span class="val">${liveCount}건 · ${fmtKRW(totalOut)}</span></span>
+        ${nextPut ? `<span><span class="lbl">다음 풋</span><span class="val put">${escapeHtml(nextPut.date)}</span></span>` : ''}
+        ${summary.totalEvents ? `<span><span class="lbl">이벤트</span><span class="val">${summary.totalEvents}건</span></span>` : ''}
+      </span>
+    </div>
+    <div class="issuances">${issHtml}${orphanEvHtml}</div>
+  </div>`;
+}
+
+function issuanceHtml(iss) {
+  const out = effectiveOutstanding(iss);
+  const live = out > 0;
+  const matured = !live && iss.maturityDate && iss.maturityDate <= TODAY_ISO;
+  const ps = nextPutDate(iss);
+  const psDays = ps ? daysFrom(ps) : null;
+  const putSoon = live && psDays !== null && psDays >= -30 && psDays <= 90;
+  const cls = matured ? 'matured' : (putSoon ? 'put-soon' : (live ? 'live' : ''));
+
+  const outBadge = Number.isFinite(iss.currentOutstanding)
+    ? '<span class="status-pill parsed">parsed</span>'
+    : (live ? '<span class="status-pill face">face</span>' : '');
+  const statusBadge = matured
+    ? '<span class="status-pill matured">상환</span>'
+    : (live ? '<span class="status-pill live">미상환</span>' : '');
+
+  const events = (iss.events || []).slice().sort((a, b) =>
+    (a.date || '').localeCompare(b.date || ''));
+  const evHtml = events.length ? `
+    <div class="events">${events.map(eventPill).join('')}</div>` : '';
+
+  return `<div class="iss ${cls}">
+    <div class="iss-head">
+      <span class="round">${typePill(iss.type)} 제 ${escapeHtml(iss.round || '?')}회</span>
+      ${statusBadge}
+      <span class="dates">${escapeHtml(iss.issueDate || '?')} → ${escapeHtml(iss.maturityDate || '?')}</span>
+    </div>
+    <div class="iss-grid">
+      <div class="kv"><span class="k">발행액</span><span class="v">${fmtKRW(iss.faceAmount)}</span></div>
+      <div class="kv"><span class="k">잔량 추정</span><span class="v ${live ? 'accent' : 'faint'}">${fmtKRW(out)} ${outBadge}</span></div>
+      <div class="kv"><span class="k">표면이율</span><span class="v">${fmtPct(iss.couponRate)}</span></div>
+      <div class="kv"><span class="k">YTM</span><span class="v">${fmtPct(iss.ytmRate)}</span></div>
+      <div class="kv"><span class="k">전환가</span><span class="v">${Number.isFinite(iss.conversionPrice) ? iss.conversionPrice.toLocaleString() + '원' : '—'}</span></div>
+      <div class="kv"><span class="k">전환비율</span><span class="v">${fmtPct(iss.conversionRatio)}</span></div>
+      <div class="kv"><span class="k">전환청구</span><span class="v faint">${escapeHtml(iss.convertStart || '?')} ~ ${escapeHtml(iss.convertEnd || '?')}</span></div>
+      <div class="kv"><span class="k">풋옵션</span><span class="v ${putSoon ? 'accent' : 'faint'}">${escapeHtml(iss.putStart || '—')}${iss.putEnd ? ' ~ ' + iss.putEnd.slice(5) : ''}</span></div>
+      ${iss.callStart ? `<div class="kv"><span class="k">콜옵션</span><span class="v faint">${escapeHtml(iss.callStart)}${iss.callEnd ? ' ~ ' + iss.callEnd.slice(5) : ''}</span></div>` : ''}
+    </div>
+    ${evHtml}
+  </div>`;
+}
+
+function eventPill(ev) {
+  const label = {
+    conversion: '전환청구',
+    warrant_exercise: '신주인수권행사',
+    exchange: '교환청구',
+    put: '풋 행사',
+    call: '콜 행사',
+    redemption: '만기상환',
+    correction: '정정',
+  }[ev.type] || ev.type;
+  return `<span class="ev-pill ${escapeHtml(ev.type)}">
+    <span class="d">${escapeHtml(ev.date || '')}</span>${escapeHtml(label)}${ev.round ? ' · 제' + escapeHtml(ev.round) + '회' : ''}
+  </span>`;
+}
+
+function renderIssuers() {
+  const wrap = $('issuer-list');
+  const d = STATE.data;
+  if (!d || !d.mezzanine) {
+    wrap.innerHTML = `<div class="empty-state">
+      메자닌 데이터가 없습니다.<br>
+      <span style="font-size:10px;">data/mezzanine.json 미생성 — Actions의 'DART Mezzanine' 워크플로 수동 실행 필요</span>
+    </div>`;
+    return;
+  }
+
+  const q = STATE.search.trim().toLowerCase();
+  let entries = Object.entries(d.mezzanine).map(([ticker, entry]) => {
+    const issuances = (entry.issuances || []).filter(iss =>
+      !STATE.filterType || iss.type === STATE.filterType);
+    let nextPut = null;
+    let totalOut = 0;
+    let liveCount = 0;
+    let recent = '';
+    for (const iss of issuances) {
+      const out = effectiveOutstanding(iss);
+      if (out > 0) liveCount++;
+      totalOut += out;
+      const ps = nextPutDate(iss);
+      if (ps && (!nextPut || ps < nextPut)) nextPut = ps;
+      if (iss.rceptDt && iss.rceptDt > recent) recent = iss.rceptDt;
+    }
+    return { ticker, entry: { ...entry, issuances }, nextPut, totalOut, liveCount, recent };
+  }).filter(({ ticker, entry, liveCount, nextPut }) => {
+    if (!entry.issuances.length) return false;
+    if (q) {
+      const hay = (entry.name + ' ' + ticker).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    if (STATE.filterStatus === 'live' && liveCount === 0) return false;
+    if (STATE.filterStatus === 'put-soon') {
+      if (!nextPut) return false;
+      const dd = daysFrom(nextPut);
+      if (dd === null || dd > 180 || dd < -30) return false;
+    }
+    return true;
+  });
+
+  entries.sort((a, b) => {
+    if (STATE.sortBy === 'put') {
+      const ad = a.nextPut ? daysFrom(a.nextPut) : Infinity;
+      const bd = b.nextPut ? daysFrom(b.nextPut) : Infinity;
+      const aa = (ad !== null && ad >= -30) ? ad : Infinity;
+      const bb = (bd !== null && bd >= -30) ? bd : Infinity;
+      if (aa !== bb) return aa - bb;
+      return b.totalOut - a.totalOut;
+    }
+    if (STATE.sortBy === 'outstanding') return b.totalOut - a.totalOut;
+    if (STATE.sortBy === 'recent') return (b.recent || '').localeCompare(a.recent || '');
+    return a.entry.name.localeCompare(b.entry.name, 'ko');
+  });
+
+  if (!entries.length) {
+    wrap.innerHTML = `<div class="empty-state">조건에 맞는 종목이 없습니다.</div>`;
+    return;
+  }
+  wrap.innerHTML = entries.map(({ ticker, entry }) => issuerCardHtml(ticker, entry)).join('');
+}
+
+function bind() {
+  $('put-window').addEventListener('change', e => { STATE.putWindow = e.target.value; renderPuts(); });
+  $('put-type').addEventListener('change', e => { STATE.putType = e.target.value; renderPuts(); });
+  $('search').addEventListener('input', e => { STATE.search = e.target.value; renderIssuers(); });
+  $('filter-type').addEventListener('change', e => { STATE.filterType = e.target.value; renderIssuers(); });
+  $('filter-status').addEventListener('change', e => { STATE.filterStatus = e.target.value; renderIssuers(); });
+  $('sort-by').addEventListener('change', e => { STATE.sortBy = e.target.value; renderIssuers(); });
+
+  $('issuer-list').addEventListener('click', (e) => {
+    // Don't toggle when the user clicked the deep-dive link itself.
+    if (e.target.closest('a')) return;
+    const card = e.target.closest('.issuer-card');
+    if (!card) return;
+    const t = card.dataset.ticker;
+    if (STATE.expanded.has(t)) STATE.expanded.delete(t);
+    else STATE.expanded.add(t);
+    renderIssuers();
+  });
+}
+
+(async function init() {
+  bind();
+  await loadData();
+  renderMeta();
+  renderPuts();
+  renderIssuers();
+})();
+</script>
+</body>
+</html>
