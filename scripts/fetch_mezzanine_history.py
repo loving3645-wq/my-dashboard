@@ -86,6 +86,52 @@ EVENT_PATTERNS = [
     (re.compile(r"^\[정정\].*전환사채|^\[기재정정\].*전환사채"), "correction"),
 ]
 
+# Put-option exercise schedule isn't returned in the structured DART
+# response — it lives in the disclosure body as either a labeled table
+# row or narrative prose. These patterns are tried in order against a
+# 2000-char window starting at the first put keyword in the body text
+# (XML tags already stripped by fetch_disclosure_body).
+PUT_KEYWORD_RE = re.compile(r"사채매수청구권|조기상환청구권|풋옵션")
+CALL_KEYWORD_RE = re.compile(r"사채매도청구권|매도청구권|콜옵션")
+
+# A loose date pattern — accepts "YYYY년 MM월 DD일", "YYYY-MM-DD",
+# "YYYY.MM.DD", "YYYYMMDD". Captures the raw match for later
+# normalization by _to_iso_date so we don't double the format logic.
+_DATE_PAT = (
+    r"(\d{4}\s*[년\-./]?\s*\d{1,2}\s*[월\-./]?\s*\d{1,2}\s*일?)"
+)
+
+PUT_START_PATTERNS = [
+    # Table-style label: "행사가능기간 시작일 : 2025년 11월 30일"
+    re.compile(
+        r"(?:행사\s*가능\s*기간\s*시작일?|행사\s*시작일?|개시일?|"
+        r"최초\s*행사일?|첫\s*행사일?)"
+        r"\s*[:：]?\s*" + _DATE_PAT
+    ),
+    # "행사가능기간 : 2025-11-30 ~ 2027-11-30" — capture left date only
+    re.compile(
+        r"(?:행사\s*가능\s*기간|행사\s*기간)\s*[:：]?\s*"
+        + _DATE_PAT + r"\s*[~∼\-]\s*\d{4}"
+    ),
+    # Narrative: "발행일로부터 12개월이 경과한 날(2025년 11월 30일)…"
+    re.compile(
+        r"발행일.{0,30}경과한?\s*날\s*[\(（]\s*" + _DATE_PAT + r"\s*[\)）]"
+    ),
+]
+
+PUT_END_PATTERNS = [
+    re.compile(
+        r"(?:행사\s*가능\s*기간\s*종료일?|행사\s*종료일?|만료일?|"
+        r"마지막\s*행사일?)"
+        r"\s*[:：]?\s*" + _DATE_PAT
+    ),
+    re.compile(
+        r"(?:행사\s*가능\s*기간|행사\s*기간)\s*[:：]?\s*"
+        + _DATE_PAT.replace("(", "(?:") + r"\s*[~∼\-]\s*"
+        + _DATE_PAT
+    ),
+]
+
 ENDPOINTS = {
     "CB": "https://opendart.fss.or.kr/api/cvbdIsDecsn.json",
     "BW": "https://opendart.fss.or.kr/api/bdwtIsDecsn.json",
@@ -395,6 +441,84 @@ def parse_outstanding_from_body(text):
     return None
 
 
+def parse_schedule_from_body(text, keyword_re, start_pats, end_pats):
+    """Locate the first hit of `keyword_re` in `text` and run start/end
+    patterns against a 2000-char window starting there. Returns
+    (start_iso, end_iso) — either may be None.
+
+    Constraining the search window matters: a CB disclosure also discusses
+    things like 전환청구기간 in similar prose, and end-only patterns like
+    "행사가능기간" would otherwise grab the conversion period instead.
+    """
+    if not text:
+        return None, None
+    m = keyword_re.search(text)
+    if not m:
+        return None, None
+    chunk = text[m.start(): m.start() + 2000]
+    start_iso = None
+    for pat in start_pats:
+        match = pat.search(chunk)
+        if match:
+            start_iso = _to_iso_date(match.group(1))
+            if start_iso:
+                break
+    end_iso = None
+    for pat in end_pats:
+        match = pat.search(chunk)
+        if match:
+            # Range pattern captures end date in the last group.
+            end_iso = _to_iso_date(match.group(match.lastindex or 1))
+            if end_iso:
+                break
+    # Sanity: end should be >= start. If not, drop end (likely matched
+    # something earlier in the chunk).
+    if start_iso and end_iso and end_iso < start_iso:
+        end_iso = None
+    return start_iso, end_iso
+
+
+def enrich_with_put_schedule(sess, issuances):
+    """For each not-yet-redeemed issuance, fetch its own disclosure body
+    and extract put (and best-effort call) exercise schedule. Most CBs
+    keep these as narrative or labeled tables in the body — they're
+    absent from DART's structured JSON response.
+
+    Skips issuances that are already past maturity or that
+    enrich_with_outstanding marked as fully redeemed: nothing to put.
+    """
+    today = date.today().isoformat()
+    for x in issuances:
+        if x.get("putStart"):
+            continue  # already populated via legacy structured key
+        if x.get("currentOutstanding") == 0:
+            continue
+        if x.get("maturityDate") and x["maturityDate"] < today:
+            continue
+        rcept_no = x.get("rceptNo")
+        if not rcept_no:
+            continue
+        body = fetch_disclosure_body(sess, rcept_no)
+        if not body:
+            continue
+        ps, pe = parse_schedule_from_body(
+            body, PUT_KEYWORD_RE, PUT_START_PATTERNS, PUT_END_PATTERNS
+        )
+        if ps:
+            x["putStart"] = ps
+            x["putSource"] = "body"
+        if pe:
+            x["putEnd"] = pe
+        # Same body usually mentions any call schedule too.
+        cs, ce = parse_schedule_from_body(
+            body, CALL_KEYWORD_RE, PUT_START_PATTERNS, PUT_END_PATTERNS
+        )
+        if cs:
+            x["callStart"] = cs
+        if ce:
+            x["callEnd"] = ce
+
+
 def enrich_with_outstanding(sess, issuances):
     """For each issuance with action events, parse the latest non-correction
     event's disclosure body to recover the post-exercise outstanding face
@@ -551,6 +675,9 @@ def fetch_one(sess, ticker, name, corp_code, bgn_de, end_de):
     # For issuances with action events, fetch + parse the latest event's
     # body to recover the actual post-exercise outstanding face amount.
     enrich_with_outstanding(sess, issuances)
+    # Put/call schedules aren't in the structured DART response — parse
+    # them out of each live issuance's own disclosure body.
+    enrich_with_put_schedule(sess, issuances)
     return {
         "name": name,
         "corpCode": corp_code,
@@ -654,14 +781,17 @@ def main():
                 if v not in (None, "", []):
                     counts[k] += 1
     if sample_total:
-        # put_*/call_* are intentionally absent from the structured DART
-        # response (narrative-only) — exclude from the SUSPECT warning so
-        # the legitimately broken fields stand out.
-        always_empty = {"putStart", "putEnd", "callStart", "callEnd"}
+        # put/call schedules come from disclosure-body parsing (regex),
+        # so partial fill is expected — only warn if essentially nothing
+        # was extracted, which would mean the patterns broke entirely.
+        body_parsed = {"putStart", "putEnd", "callStart", "callEnd"}
         print("Field fill rates:", flush=True)
         for k in sorted(counts):
             pct = 100.0 * counts[k] / sample_total
-            warn = "  <-- SUSPECT" if pct < 5 and k not in always_empty else ""
+            if k in body_parsed:
+                warn = "  <-- BODY PARSE MISSING" if pct < 1 else ""
+            else:
+                warn = "  <-- SUSPECT" if pct < 5 else ""
             print(
                 f"  {k:<22} {counts[k]:>6}/{sample_total:<6} ({pct:5.1f}%){warn}",
                 flush=True,
