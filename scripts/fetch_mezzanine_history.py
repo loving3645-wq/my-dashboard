@@ -96,23 +96,43 @@ WORKERS = 8
 TIMEOUT = 15
 RETRY_COUNT = 2
 
-# Field aliases — DART's response key naming varies subtly across these
-# three endpoints (and across legacy filings). We try each alias in order
-# and take the first non-empty value.
+# Field aliases — DART's response key naming varies across the three
+# endpoints (CB / BW / EB) and across legacy filings. We try each alias
+# in order and take the first non-empty value.
+#
+# Source: OpenDART API guide (cvbdIsDecsn / bdwtIsDecsn / exbdIsDecsn).
+# Earlier mapping had typos (bd_int_ex vs the real bd_intr_ex) and was
+# missing BW/EB-specific price/ratio/exercise-period keys, which caused
+# all date / rate fields to come back null in production.
 FIELDS = {
-    "round": ["bd_kind", "bd_tm", "kind", "tm"],
-    "face_amount": ["bd_isu_amt", "bd_fta", "isu_amt", "bdfta"],
+    "round": ["bd_tm", "bd_knd", "bd_kind", "kind", "tm"],
+    "face_amount": ["bd_fta", "bd_isu_amt", "isu_amt", "bdfta"],
     "currency": ["fdrm_crncy", "ovis_fdrm_crncy", "crncy"],
-    "issue_date": ["pymd", "pay_dt", "pymd_dt", "bd_isu_dt"],
-    "maturity": ["mtrt_dt", "bd_mtrt_dt", "mty_dt"],
-    "coupon_rate": ["bd_int_ex", "sl_intr_rt", "cpn_rt", "int_rt_ex"],
-    "ytm_rate": ["bd_int_sf", "mtrt_intr_rt", "ytm_rt", "int_rt_sf"],
-    "conversion_price": ["cv_prc", "cnv_prc", "exrc_prc"],
-    "conversion_ratio": ["cv_rt", "cnv_rt", "exrc_rt"],
-    "convert_start": ["cv_rqsr_bgd", "cnv_pd_bgn", "exrc_pd_bgn"],
-    "convert_end": ["cv_rqsr_edd", "cnv_pd_end", "exrc_pd_end"],
+    # 납입일 (CB/BW/EB 공통).
+    "issue_date": ["pymd", "pay_dt", "pymd_dt", "bd_isu_dt", "isu_dt"],
+    # 만기일 — DART 실제 응답 키는 bd_mtd. 과거 자체 추측이었던
+    # mtrt_dt / bd_mtrt_dt / mty_dt는 실데이터에서 한 번도 안 채워졌음.
+    "maturity": ["bd_mtd", "mtrt_dt", "bd_mtrt_dt", "mty_dt"],
+    # 표면이자율 / 만기이자율 — 실제 키는 bd_intr_ex / bd_intr_sf.
+    "coupon_rate": ["bd_intr_ex", "bd_int_ex", "sl_intr_rt", "cpn_rt"],
+    "ytm_rate": ["bd_intr_sf", "bd_int_sf", "mtrt_intr_rt", "ytm_rt"],
+    # 가격 / 비율: CB는 cv_prc / cv_rt, BW는 wt_prc / wt_rt (신주인수권
+    # 행사가액·비율), EB는 ex_prc / ex_rt (교환가액·비율).
+    "conversion_price": ["cv_prc", "wt_prc", "ex_prc", "cnv_prc", "exrc_prc"],
+    "conversion_ratio": ["cv_rt", "wt_rt", "ex_rt", "cnv_rt", "exrc_rt"],
+    # 청구·행사기간: CB cv_rqsr_*, BW wt_exrc_pd_*, EB ex_rqsr_*.
+    "convert_start": [
+        "cv_rqsr_bgd", "wt_exrc_pd_bgn", "ex_rqsr_bgd",
+        "cnv_pd_bgn", "exrc_pd_bgn",
+    ],
+    "convert_end": [
+        "cv_rqsr_edd", "wt_exrc_pd_edd", "ex_rqsr_edd",
+        "cnv_pd_end", "exrc_pd_end",
+    ],
+    # 사채매수청구권(풋) 행사가능 기간 — CB/BW/EB 공통.
     "put_start": ["pthbd_rcsr_bgd", "pt_pd_bgn", "ery_rdmpt_pd_bgn"],
     "put_end": ["pthbd_rcsr_edd", "pt_pd_end", "ery_rdmpt_pd_end"],
+    # 매도청구권(콜) 행사가능 기간.
     "call_start": ["clbd_rcsr_bgd", "cl_pd_bgn"],
     "call_end": ["clbd_rcsr_edd", "cl_pd_end"],
 }
@@ -202,12 +222,16 @@ def _to_float_pct(s):
 def _to_iso_date(s):
     if not s:
         return None
-    s = s.strip()
-    # Accept YYYY-MM-DD, YYYY.MM.DD, YYYY/MM/DD, YYYYMMDD
-    m = re.match(r"^(\d{4})[\-./]?(\d{2})[\-./]?(\d{2})", s)
+    s = str(s).strip()
+    # "2024년 12월 31일" → "2024-12-31--" → strip; also handle stray spaces.
+    s = re.sub(r"[년월]", "-", s)
+    s = s.replace("일", "")
+    s = re.sub(r"\s+", "", s)
+    # Accept YYYY-MM-DD, YYYY.MM.DD, YYYY/MM/DD, YYYYMMDD.
+    m = re.match(r"^(\d{4})[\-./]?(\d{1,2})[\-./]?(\d{1,2})", s)
     if not m:
         return None
-    y, mo, d = m.group(1), m.group(2), m.group(3)
+    y, mo, d = m.group(1), m.group(2).zfill(2), m.group(3).zfill(2)
     return f"{y}-{mo}-{d}"
 
 
@@ -606,6 +630,30 @@ def main():
         f"parsed_outstanding={total_parsed}",
         flush=True,
     )
+
+    # Per-field fill rate. A field that suddenly drops to 0% almost always
+    # means DART renamed a response key — easier to catch in CI than to
+    # discover after the page has been showing dashes for weeks.
+    counts = {}
+    sample_total = 0
+    for entry in results.values():
+        for iss in entry.get("issuances", []):
+            sample_total += 1
+            for k, v in iss.items():
+                if k in ("events", "outstandingSource", "currentOutstanding"):
+                    continue
+                counts.setdefault(k, 0)
+                if v not in (None, "", []):
+                    counts[k] += 1
+    if sample_total:
+        print("Field fill rates:", flush=True)
+        for k in sorted(counts):
+            pct = 100.0 * counts[k] / sample_total
+            warn = "  <-- SUSPECT" if pct < 5 else ""
+            print(
+                f"  {k:<22} {counts[k]:>6}/{sample_total:<6} ({pct:5.1f}%){warn}",
+                flush=True,
+            )
 
 
 if __name__ == "__main__":
