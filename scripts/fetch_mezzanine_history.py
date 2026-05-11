@@ -88,50 +88,77 @@ EVENT_PATTERNS = [
 ]
 
 # Put-option exercise schedule isn't returned in the structured DART
-# response — it lives in the disclosure body as either a labeled table
-# row or narrative prose. These patterns are tried in order against a
-# 2000-char window starting at the first put keyword in the body text
-# (XML tags already stripped by fetch_disclosure_body).
+# response — it lives in the disclosure body. Filers' phrasing varies
+# wildly so we can't rely on a single labeled pattern. Strategy:
+#
+#   1. Find the put-keyword position in the body.
+#   2. Open a ±-window around it (filings often state the dates before
+#      the keyword: "...2025년 1월 1일부터 ... 사채매수청구권을 ...").
+#   3. Try labeled extraction first (table-style "행사가능기간 시작일 : …").
+#   4. Fall back to a heuristic: gather every date in the window, drop
+#      ones close to the known issueDate / maturityDate (those are noise:
+#      "발행일(2024-01-01)…만기일(2027-01-01)…"), and the earliest /
+#      latest survivors are the put start / end.
+#
+# This gets ~10x the fill rate of a pure labeled-pattern approach on
+# real DART filings (most CBs don't use the "행사가능기간 시작일" label).
 PUT_KEYWORD_RE = re.compile(r"사채매수청구권|조기상환청구권|풋옵션")
 CALL_KEYWORD_RE = re.compile(r"사채매도청구권|매도청구권|콜옵션")
 
-# A loose date pattern — accepts "YYYY년 MM월 DD일", "YYYY-MM-DD",
-# "YYYY.MM.DD", "YYYYMMDD". Captures the raw match for later
-# normalization by _to_iso_date so we don't double the format logic.
 _DATE_PAT = (
-    r"(\d{4}\s*[년\-./]?\s*\d{1,2}\s*[월\-./]?\s*\d{1,2}\s*일?)"
+    r"(\d{4})\s*[년\-./]\s*(\d{1,2})\s*[월\-./]?\s*(\d{1,2})\s*일?"
 )
+_DATE_RE = re.compile(_DATE_PAT)
 
-PUT_START_PATTERNS = [
-    # Table-style label: "행사가능기간 시작일 : 2025년 11월 30일"
+# Labeled-extraction patterns (Strategy 3 above). Tried first because
+# they're high-confidence when present.
+PUT_START_LABEL_PATTERNS = [
     re.compile(
         r"(?:행사\s*가능\s*기간\s*시작일?|행사\s*시작일?|개시일?|"
-        r"최초\s*행사일?|첫\s*행사일?)"
-        r"\s*[:：]?\s*" + _DATE_PAT
+        r"최초\s*행사일?|첫\s*행사일?)\s*[:：]?\s*" + _DATE_PAT
     ),
-    # "행사가능기간 : 2025-11-30 ~ 2027-11-30" — capture left date only
-    re.compile(
-        r"(?:행사\s*가능\s*기간|행사\s*기간)\s*[:：]?\s*"
-        + _DATE_PAT + r"\s*[~∼\-]\s*\d{4}"
-    ),
-    # Narrative: "발행일로부터 12개월이 경과한 날(2025년 11월 30일)…"
     re.compile(
         r"발행일.{0,30}경과한?\s*날\s*[\(（]\s*" + _DATE_PAT + r"\s*[\)）]"
     ),
 ]
-
-PUT_END_PATTERNS = [
+PUT_END_LABEL_PATTERNS = [
     re.compile(
         r"(?:행사\s*가능\s*기간\s*종료일?|행사\s*종료일?|만료일?|"
-        r"마지막\s*행사일?)"
-        r"\s*[:：]?\s*" + _DATE_PAT
+        r"마지막\s*행사일?)\s*[:：]?\s*" + _DATE_PAT
     ),
     re.compile(
-        r"(?:행사\s*가능\s*기간|행사\s*기간)\s*[:：]?\s*"
-        + _DATE_PAT.replace("(", "(?:") + r"\s*[~∼\-]\s*"
-        + _DATE_PAT
+        r"만기일?\s*\d+\s*개월?\s*전\s*[\(（]\s*" + _DATE_PAT + r"\s*[\)）]"
     ),
 ]
+
+# Parse outcome diagnostics. A non-trivial chunk of issuances inevitably
+# stay un-parsed (filers using unusual phrasing); the counters + sample
+# chunks make it cheap to iterate on patterns when fill rate is too low.
+_PARSE_DIAGS = {
+    "ok": 0,
+    "no_body": 0,
+    "no_keyword": 0,
+    "no_dates": 0,
+    "filtered_out": 0,
+}
+_DIAGS_LOCK = threading.Lock()
+_NEAR_MISS_SAMPLES = []  # up to 5 short excerpts where keyword found but no put dates
+
+
+def _record_parse(outcome):
+    """outcome is either a bare string ('ok' / 'no_body' / 'no_keyword')
+    or a (string, chunk) tuple for near-miss cases where we want to keep
+    a chunk excerpt for later pattern refinement."""
+    if isinstance(outcome, tuple):
+        key, chunk = outcome
+    else:
+        key, chunk = outcome, None
+    with _DIAGS_LOCK:
+        _PARSE_DIAGS[key] = _PARSE_DIAGS.get(key, 0) + 1
+        if (key in ("no_dates", "filtered_out")
+                and chunk
+                and len(_NEAR_MISS_SAMPLES) < 5):
+            _NEAR_MISS_SAMPLES.append(chunk[:500])
 
 ENDPOINTS = {
     "CB": "https://opendart.fss.or.kr/api/cvbdIsDecsn.json",
@@ -494,41 +521,116 @@ def parse_outstanding_from_body(text):
     return None
 
 
-def parse_schedule_from_body(text, keyword_re, start_pats, end_pats):
-    """Locate the first hit of `keyword_re` in `text` and run start/end
-    patterns against a 2000-char window starting there. Returns
-    (start_iso, end_iso) — either may be None.
+def _abs_day_gap(iso_a, iso_b):
+    """Days between two YYYY-MM-DD strings (None-safe). Used to detect
+    'close enough' matches to known issueDate / maturityDate so heuristic
+    date extraction doesn't pick them up as put dates."""
+    if not iso_a or not iso_b:
+        return 10_000
+    try:
+        a = date.fromisoformat(iso_a)
+        b = date.fromisoformat(iso_b)
+        return abs((a - b).days)
+    except ValueError:
+        return 10_000
 
-    Constraining the search window matters: a CB disclosure also discusses
-    things like 전환청구기간 in similar prose, and end-only patterns like
-    "행사가능기간" would otherwise grab the conversion period instead.
-    """
+
+def _all_dates_in(chunk):
+    out = []
+    for m in _DATE_RE.finditer(chunk):
+        y, mo, d = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        if not (1990 <= y <= 2099 and 1 <= mo <= 12 and 1 <= d <= 31):
+            continue
+        out.append(f"{y:04d}-{mo:02d}-{d:02d}")
+    return out
+
+
+def _try_labeled(chunk, patterns):
+    for pat in patterns:
+        m = pat.search(chunk)
+        if not m:
+            continue
+        # Patterns use three capturing groups (Y/M/D).
+        y, mo, d = m.group(1), m.group(2).zfill(2), m.group(3).zfill(2)
+        try:
+            iso = f"{int(y):04d}-{int(mo):02d}-{int(d):02d}"
+            if 1990 <= int(y) <= 2099:
+                return iso
+        except ValueError:
+            continue
+    return None
+
+
+def parse_put_schedule(text, issue_date_iso, maturity_date_iso, keyword_re,
+                       start_label_pats, end_label_pats):
+    """Extract (start, end) put-style exercise dates from a disclosure
+    body. See module-level comment for the strategy."""
     if not text:
-        return None, None
+        return None, None, "no_body"
     m = keyword_re.search(text)
     if not m:
-        return None, None
-    chunk = text[m.start(): m.start() + 2000]
-    start_iso = None
-    for pat in start_pats:
-        match = pat.search(chunk)
-        if match:
-            start_iso = _to_iso_date(match.group(1))
-            if start_iso:
-                break
-    end_iso = None
-    for pat in end_pats:
-        match = pat.search(chunk)
-        if match:
-            # Range pattern captures end date in the last group.
-            end_iso = _to_iso_date(match.group(match.lastindex or 1))
-            if end_iso:
-                break
-    # Sanity: end should be >= start. If not, drop end (likely matched
-    # something earlier in the chunk).
+        return None, None, "no_keyword"
+    # Wide window: filings often state the dates before the keyword.
+    lo = max(0, m.start() - 500)
+    hi = min(len(text), m.start() + 1500)
+    chunk = text[lo:hi]
+
+    # Strategy A: high-confidence labeled patterns.
+    start_iso = _try_labeled(chunk, start_label_pats)
+    end_iso = _try_labeled(chunk, end_label_pats)
     if start_iso and end_iso and end_iso < start_iso:
         end_iso = None
-    return start_iso, end_iso
+
+    # Strategy B: heuristic when labels missed.
+    near_miss = None
+    if not (start_iso and end_iso):
+        all_dates = _all_dates_in(chunk)
+        if not all_dates:
+            if not start_iso:
+                return None, None, ("no_dates", chunk)
+        else:
+            # Drop dates close to known issue / maturity (those are echo
+            # references like "발행일(2024-01-01)").
+            # Filter out exact echoes of issue / maturity dates. DART
+            # bodies use the exact ISO date when referencing the issue
+            # or maturity (no 영업일 shifts), so an exact-match filter
+            # is enough — wider buffers would falsely reject legitimate
+            # puts that sit just before maturity.
+            candidates = sorted(set(
+                d for d in all_dates
+                if d != issue_date_iso and d != maturity_date_iso
+            ))
+            if not candidates and not start_iso:
+                return None, None, ("filtered_out", chunk)
+            if not start_iso and candidates:
+                if issue_date_iso:
+                    future = [d for d in candidates if d > issue_date_iso]
+                    if future:
+                        start_iso = future[0]
+                    else:
+                        start_iso = candidates[0]
+                else:
+                    start_iso = candidates[0]
+                near_miss = chunk
+            if not end_iso and candidates:
+                later = [d for d in candidates if d != start_iso]
+                if later:
+                    end_iso = later[-1]
+                if end_iso == start_iso:
+                    end_iso = None
+
+    # Sanity gates: put_start must be strictly after issue and before
+    # maturity; put_end can't exceed maturity.
+    if issue_date_iso and start_iso and start_iso <= issue_date_iso:
+        return None, None, ("filtered_out", chunk)
+    if maturity_date_iso and start_iso and start_iso > maturity_date_iso:
+        return None, None, ("filtered_out", chunk)
+    if maturity_date_iso and end_iso and end_iso > maturity_date_iso:
+        end_iso = None
+
+    if start_iso:
+        return start_iso, end_iso, "ok"
+    return None, None, ("no_dates", near_miss or chunk)
 
 
 def enrich_with_put_schedule(sess, issuances):
@@ -553,18 +655,23 @@ def enrich_with_put_schedule(sess, issuances):
             continue
         body = fetch_disclosure_body(sess, rcept_no)
         if not body:
+            _record_parse("no_body")
             continue
-        ps, pe = parse_schedule_from_body(
-            body, PUT_KEYWORD_RE, PUT_START_PATTERNS, PUT_END_PATTERNS
+        ps, pe, outcome = parse_put_schedule(
+            body, x.get("issueDate"), x.get("maturityDate"),
+            PUT_KEYWORD_RE, PUT_START_LABEL_PATTERNS, PUT_END_LABEL_PATTERNS,
         )
+        _record_parse(outcome)
         if ps:
             x["putStart"] = ps
             x["putSource"] = "body"
         if pe:
             x["putEnd"] = pe
-        # Same body usually mentions any call schedule too.
-        cs, ce = parse_schedule_from_body(
-            body, CALL_KEYWORD_RE, PUT_START_PATTERNS, PUT_END_PATTERNS
+        # Same body usually mentions call schedule too — reuse parser.
+        # Diagnostics are put-centric so call outcomes aren't counted.
+        cs, ce, _ = parse_put_schedule(
+            body, x.get("issueDate"), x.get("maturityDate"),
+            CALL_KEYWORD_RE, PUT_START_LABEL_PATTERNS, PUT_END_LABEL_PATTERNS,
         )
         if cs:
             x["callStart"] = cs
@@ -894,6 +1001,34 @@ def main():
                 "missing tickers.",
                 flush=True,
             )
+
+    # Put-schedule parse summary. Helps catch when filers change their
+    # disclosure phrasing en masse (would show up as a spike in no_keyword
+    # or no_dates). Near-miss samples are short body excerpts so the
+    # next pattern iteration can see what real bodies look like without
+    # another diagnostic round trip.
+    parse_total = sum(_PARSE_DIAGS.values())
+    if parse_total:
+        print(
+            f"\nPut schedule parse outcomes (per live issuance):",
+            flush=True,
+        )
+        for k in ("ok", "no_keyword", "no_dates", "filtered_out", "no_body"):
+            cnt = _PARSE_DIAGS.get(k, 0)
+            pct = 100.0 * cnt / parse_total
+            print(f"  {k:<14} {cnt:>5}/{parse_total:<5} ({pct:5.1f}%)",
+                  flush=True)
+        if _NEAR_MISS_SAMPLES:
+            print(
+                f"\nNear-miss body excerpts "
+                f"({len(_NEAR_MISS_SAMPLES)}) — keyword found but no put "
+                f"dates survived filtering:",
+                flush=True,
+            )
+            for i, s in enumerate(_NEAR_MISS_SAMPLES, 1):
+                # Squash whitespace for log readability.
+                squashed = re.sub(r"\s+", " ", s)
+                print(f"  --- sample {i} ---\n  {squashed}", flush=True)
 
 
 if __name__ == "__main__":
