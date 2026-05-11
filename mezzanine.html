@@ -685,12 +685,24 @@ function issuanceHtml(iss) {
       <div class="kv"><span class="k">전환가</span><span class="v">${Number.isFinite(iss.conversionPrice) ? iss.conversionPrice.toLocaleString() + '원' : '—'}</span></div>
       <div class="kv"><span class="k">전환비율</span><span class="v">${fmtPct(iss.conversionRatio)}</span></div>
       <div class="kv"><span class="k">전환청구</span><span class="v ${putSoon ? 'accent' : 'faint'}">${escapeHtml(iss.convertStart || '?')} ~ ${escapeHtml(iss.convertEnd || '?')}</span></div>
-      <div class="kv"><span class="k">풋옵션</span><span class="v ${iss.putStart ? 'accent' : 'faint'}">${
-        iss.putStart
-          ? escapeHtml(iss.putStart) + (iss.putEnd ? ' ~ ' + escapeHtml(iss.putEnd) : '')
-          : '본문 미발견'
-      }</span></div>
-      ${iss.callStart ? `<div class="kv"><span class="k">콜옵션</span><span class="v faint">${escapeHtml(iss.callStart)}${iss.callEnd ? ' ~ ' + escapeHtml(iss.callEnd) : ''}</span></div>` : ''}
+      <div class="kv">
+        <span class="k">풋옵션 (조기상환청구)</span>
+        <span class="v ${iss.putStart ? 'accent' : 'faint'}">${
+          iss.putStart
+            ? escapeHtml(iss.putStart) + (iss.putEnd ? ' ~ ' + escapeHtml(iss.putEnd) : ' 부터')
+              + (iss.putPct ? ` <span class="muted" style="font-weight:400;">(${escapeHtml(iss.putPct)})</span>` : '')
+            : '본문 미발견'
+        }</span>
+      </div>
+      ${iss.callStart || iss.callPct ? `
+      <div class="kv">
+        <span class="k">콜옵션 (매도청구권)</span>
+        <span class="v faint">${
+          iss.callStart
+            ? escapeHtml(iss.callStart) + (iss.callEnd ? ' ~ ' + escapeHtml(iss.callEnd) : ' 부터')
+            : '—'
+        }${iss.callPct ? ` <span class="muted">(${escapeHtml(iss.callPct)})</span>` : ''}</span>
+      </div>` : ''}
     </div>
     ${evHtml}
   </div>`;
