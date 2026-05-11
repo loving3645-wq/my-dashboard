@@ -182,7 +182,8 @@
     <div class="seg"><span class="lbl">발행기업</span><span class="val" id="meta-issuers">—</span></div>
     <div class="seg"><span class="lbl">건수</span><span class="val" id="meta-issuances">—</span></div>
     <div class="seg"><span class="lbl">미상환 (parsed)</span><span class="val" id="meta-parsed">—</span></div>
-    <div class="seg"><span class="lbl">소스</span><span class="val">OpenDART</span></div>
+    <div class="seg"><span class="lbl">상폐/관리</span><span class="val" id="meta-extra">—</span></div>
+    <div class="seg"><span class="lbl">소스</span><span class="val">OpenDART + 큐레이트 엑셀</span></div>
   </div>
 
   <!-- 최근 발행 -->
@@ -413,13 +414,32 @@ function nextEventDate(iss) {
 }
 
 async function loadData() {
+  const ts = Date.now();
   try {
-    const r = await fetch('data/mezzanine.json?t=' + Date.now(), { cache: 'no-store' });
+    const r = await fetch('data/mezzanine.json?t=' + ts, { cache: 'no-store' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     STATE.data = await r.json();
   } catch (e) {
     STATE.data = null;
     console.warn('mezzanine load failed', e);
+  }
+  // Optional companion file with issuances from delisted / non-tickered
+  // companies (sourced from a curated Excel import). 404 is fine — file
+  // is only present when the importer has been run.
+  try {
+    const r2 = await fetch('data/mezzanine-extra.json?t=' + ts, { cache: 'no-store' });
+    if (r2.ok && STATE.data) {
+      const extra = await r2.json();
+      const merged = { ...STATE.data.mezzanine, ...(extra.mezzanine || {}) };
+      STATE.data = {
+        ...STATE.data,
+        mezzanine: merged,
+        extraIssuers: extra.issuers || 0,
+        extraTotal: extra.totalIssuances || 0,
+      };
+    }
+  } catch (e) {
+    console.info('mezzanine-extra not present (ok)');
   }
 }
 
@@ -430,6 +450,7 @@ function renderMeta() {
     $('meta-issuers').textContent = '—';
     $('meta-issuances').textContent = '—';
     $('meta-parsed').textContent = '—';
+    $('meta-extra').textContent = '—';
     return;
   }
   $('meta-asof').textContent = d.asOf
@@ -439,6 +460,9 @@ function renderMeta() {
     : '—';
   $('meta-issuances').textContent = (d.totalIssuances ?? 0).toLocaleString() + '건';
   $('meta-parsed').textContent = (d.totalOutstandingParsed ?? 0).toLocaleString() + '건 파싱';
+  $('meta-extra').textContent = d.extraTotal
+    ? `${d.extraIssuers}곳 · ${d.extraTotal}건`
+    : '0';
 }
 
 function flatIssuances() {
@@ -447,10 +471,23 @@ function flatIssuances() {
   const rows = [];
   for (const [ticker, entry] of Object.entries(d.mezzanine)) {
     for (const iss of (entry.issuances || [])) {
-      rows.push({ ticker, name: entry.name, iss });
+      rows.push({ ticker, name: entry.name, delisted: !!entry.delisted, iss });
     }
   }
   return rows;
+}
+
+function nameLink(ticker, name, delisted) {
+  // Delisted / Excel-only issuers have no ticker → don't link to
+  // deep-dive (which would 404). Show name as plain text plus a 상폐
+  // marker so the page distinguishes them.
+  const safe = escapeHtml(name);
+  if (delisted) {
+    return `<span style="font-weight:500;">${safe}</span>
+      <span class="status-pill matured" style="margin-left:6px;">상폐/관리</span>`;
+  }
+  return `<a href="stock-deep-dive.html#${escapeHtml(ticker)}" target="_blank" rel="noopener"
+      style="text-decoration:none;font-weight:500;">${safe}</a>`;
 }
 
 function dartLink(rceptNo) {
@@ -524,7 +561,7 @@ function renderPuts() {
     tbody.innerHTML = `<tr><td colspan="12" class="empty-state">선택한 기간 내 만기/전환청구/풋옵션 도래 발행건이 없습니다.</td></tr>`;
     return;
   }
-  tbody.innerHTML = items.map(({ ticker, name, iss, ev }) => {
+  tbody.innerHTML = items.map(({ ticker, name, iss, ev, delisted }) => {
     const out = effectiveOutstanding(iss);
     const outBadge = Number.isFinite(iss.currentOutstanding)
       ? '<span class="status-pill parsed">parsed</span>'
@@ -536,10 +573,8 @@ function renderPuts() {
       <td class="left">${escapeHtml(ev.date)}</td>
       <td class="left">${eventBadgeHtml(ev.kind)}</td>
       <td class="left">
-        <a href="stock-deep-dive.html#${escapeHtml(ticker)}" target="_blank" rel="noopener" style="text-decoration:none;font-weight:500;">
-          ${escapeHtml(name)}
-        </a>
-        <span class="muted" style="margin-left:6px;font-size:10px;">${escapeHtml(ticker)}</span>
+        ${nameLink(ticker, name, delisted)}
+        ${delisted ? '' : `<span class="muted" style="margin-left:6px;font-size:10px;">${escapeHtml(ticker)}</span>`}
       </td>
       <td class="left">${typePill(iss.type)}</td>
       <td class="left">${escapeHtml(iss.round || '—')}</td>
@@ -580,17 +615,15 @@ function renderRecent() {
     tbody.innerHTML = `<tr><td colspan="11" class="empty-state">선택한 기간 내 신규 발행건이 없습니다.</td></tr>`;
     return;
   }
-  tbody.innerHTML = items.map(({ ticker, name, iss, refDate, days }) => {
+  tbody.innerHTML = items.map(({ ticker, name, iss, refDate, days, delisted }) => {
     const cv = Number.isFinite(iss.conversionPrice)
       ? iss.conversionPrice.toLocaleString() + '원' : '—';
     return `<tr>
       <td class="left">${escapeHtml(refDate)} <span class="muted" style="font-size:10px;">${days === 0 ? '오늘' : 'D+' + (-days)}</span></td>
       <td class="left muted">${escapeHtml(iss.issueDate || '—')}</td>
       <td class="left">
-        <a href="stock-deep-dive.html#${escapeHtml(ticker)}" target="_blank" rel="noopener" style="text-decoration:none;font-weight:500;">
-          ${escapeHtml(name)}
-        </a>
-        <span class="muted" style="margin-left:6px;font-size:10px;">${escapeHtml(ticker)}</span>
+        ${nameLink(ticker, name, delisted)}
+        ${delisted ? '' : `<span class="muted" style="margin-left:6px;font-size:10px;">${escapeHtml(ticker)}</span>`}
       </td>
       <td class="left">${typePill(iss.type)}</td>
       <td class="left">${escapeHtml(iss.round || '—')}</td>
@@ -629,15 +662,16 @@ function issuerCardHtml(ticker, entry) {
       <div class="events">${events.map(eventPill).join('')}</div>
     </div>` : '';
 
+  const delisted = !!entry.delisted;
   return `<div class="issuer-card ${expanded ? '' : 'collapsed'}" data-ticker="${escapeHtml(ticker)}">
     <div class="issuer-head">
       <span class="toggle">${expanded ? '−' : '+'}</span>
       <span class="nm">
-        <a href="stock-deep-dive.html#${escapeHtml(ticker)}" target="_blank" rel="noopener" style="text-decoration:none;">
-          ${escapeHtml(entry.name)}
-        </a>
+        ${delisted
+          ? escapeHtml(entry.name) + ' <span class="status-pill matured" style="margin-left:6px;">상폐/관리</span>'
+          : `<a href="stock-deep-dive.html#${escapeHtml(ticker)}" target="_blank" rel="noopener" style="text-decoration:none;">${escapeHtml(entry.name)}</a>`}
       </span>
-      <span class="ticker">${escapeHtml(ticker)}</span>
+      <span class="ticker">${delisted ? '' : escapeHtml(ticker)}</span>
       <span class="summary">
         <span><span class="lbl">발행</span><span class="val">${issuances.length}건</span></span>
         <span><span class="lbl">미상환</span><span class="val">${liveCount}건 · ${fmtKRW(totalOut)}</span></span>
