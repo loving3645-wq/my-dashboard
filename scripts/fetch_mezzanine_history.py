@@ -38,6 +38,11 @@ KST = timezone(timedelta(hours=9))
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TICKERS_FILE = os.path.join(ROOT, "tickers-full.js")
 OUTPUT_FILE = os.path.join(ROOT, "data", "mezzanine.json")
+# Per-rceptNo cache of disclosure-body parse results. Disclosure content
+# is immutable once filed, so once parsed we never need to fetch the
+# body again. First run is slow (~20 min for ~1500 fetches), subsequent
+# runs only fetch new disclosures (~1-2 min).
+BODY_CACHE_FILE = os.path.join(ROOT, "data", "mezzanine-body-cache.json")
 
 DART_KEY = os.environ.get("OPENDART_KEY", "").strip()
 CORP_CODE_URL = "https://opendart.fss.or.kr/api/corpCode.xml"
@@ -164,9 +169,54 @@ _PARSE_DIAGS = {
     "no_keyword": 0,
     "no_dates": 0,
     "filtered_out": 0,
+    "cache_hit": 0,
 }
 _DIAGS_LOCK = threading.Lock()
 _NEAR_MISS_SAMPLES = []  # up to 5 short excerpts where keyword found but no put dates
+
+# Body parse cache: rcept_no -> {putStart, putEnd, putPct, callStart,
+# callEnd, callPct, outcome}. Keys with None values are stripped on
+# write to keep the file compact. "no_body" outcomes are NOT cached —
+# those can be transient (rate limit / network) and may succeed on a
+# later run.
+_BODY_CACHE = {}
+_BODY_CACHE_DIRTY = False
+_BODY_CACHE_LOCK = threading.Lock()
+
+
+def load_body_cache():
+    global _BODY_CACHE
+    try:
+        with open(BODY_CACHE_FILE, encoding="utf-8") as f:
+            _BODY_CACHE = json.load(f)
+    except (FileNotFoundError, ValueError):
+        _BODY_CACHE = {}
+    return len(_BODY_CACHE)
+
+
+def save_body_cache():
+    if not _BODY_CACHE_DIRTY:
+        return False
+    os.makedirs(os.path.dirname(BODY_CACHE_FILE), exist_ok=True)
+    with open(BODY_CACHE_FILE, "w", encoding="utf-8") as f:
+        json.dump(
+            _BODY_CACHE, f, ensure_ascii=False,
+            separators=(",", ":"), sort_keys=True,
+        )
+    return True
+
+
+def _cache_get(rcept_no):
+    with _BODY_CACHE_LOCK:
+        return _BODY_CACHE.get(rcept_no)
+
+
+def _cache_put(rcept_no, entry):
+    global _BODY_CACHE_DIRTY
+    compact = {k: v for k, v in entry.items() if v is not None}
+    with _BODY_CACHE_LOCK:
+        _BODY_CACHE[rcept_no] = compact
+        _BODY_CACHE_DIRTY = True
 
 
 def _record_parse(outcome):
@@ -697,16 +747,46 @@ def enrich_with_put_schedule(sess, issuances):
         rcept_no = x.get("rceptNo")
         if not rcept_no:
             continue
+
+        # Cache hit: skip the body fetch entirely. Disclosure bodies
+        # are immutable so cached results stay valid forever.
+        cached = _cache_get(rcept_no)
+        if cached is not None:
+            _record_parse("cache_hit")
+            if cached.get("putStart"):
+                x["putStart"] = cached["putStart"]
+                x["putSource"] = "body"
+            for k in ("putEnd", "putPct", "callStart", "callEnd", "callPct"):
+                if cached.get(k):
+                    x[k] = cached[k]
+            continue
+
         body = fetch_disclosure_body(sess, rcept_no)
         if not body:
+            # Don't cache — body fetch failures may be transient.
             _record_parse("no_body")
             continue
+
         ps, pe, pct, outcome = parse_put_schedule(
             body, x.get("issueDate"), x.get("maturityDate"),
             PUT_KEYWORD_RE, PUT_START_LABEL_PATTERNS, PUT_END_LABEL_PATTERNS,
             stop_re=PUT_PARSE_STOP_RE,
         )
         _record_parse(outcome)
+        # Same body usually mentions call schedule — reuse parser with
+        # call stop_re. Diagnostics are put-centric so call outcomes
+        # aren't separately counted.
+        cs, ce, cpct, _ = parse_put_schedule(
+            body, x.get("issueDate"), x.get("maturityDate"),
+            CALL_KEYWORD_RE, PUT_START_LABEL_PATTERNS, PUT_END_LABEL_PATTERNS,
+            stop_re=CALL_PARSE_STOP_RE,
+        )
+        outcome_key = outcome if isinstance(outcome, str) else outcome[0]
+        _cache_put(rcept_no, {
+            "putStart": ps, "putEnd": pe, "putPct": pct,
+            "callStart": cs, "callEnd": ce, "callPct": cpct,
+            "outcome": outcome_key,
+        })
         if ps:
             x["putStart"] = ps
             x["putSource"] = "body"
@@ -714,14 +794,6 @@ def enrich_with_put_schedule(sess, issuances):
             x["putEnd"] = pe
         if pct:
             x["putPct"] = pct
-        # Same body usually mentions call schedule too — reuse parser
-        # with the call stop_re so the window doesn't leak back into
-        # the put section. Diagnostics are put-centric.
-        cs, ce, cpct, _ = parse_put_schedule(
-            body, x.get("issueDate"), x.get("maturityDate"),
-            CALL_KEYWORD_RE, PUT_START_LABEL_PATTERNS, PUT_END_LABEL_PATTERNS,
-            stop_re=CALL_PARSE_STOP_RE,
-        )
         if cs:
             x["callStart"] = cs
         if ce:
@@ -928,6 +1000,11 @@ def main():
         sys.exit(1)
 
     sess = make_session()
+    cache_loaded = load_body_cache()
+    print(
+        f"Loaded body-parse cache: {cache_loaded:,} entries",
+        flush=True,
+    )
     print("Fetching DART corp_code master…", flush=True)
     try:
         code_map = download_corp_code_map(sess)
@@ -1001,6 +1078,12 @@ def main():
         flush=True,
     )
 
+    if save_body_cache():
+        print(
+            f"Wrote {BODY_CACHE_FILE} · {len(_BODY_CACHE):,} cached entries",
+            flush=True,
+        )
+
     # Per-field fill rate. A field that suddenly drops to 0% almost always
     # means DART renamed a response key — easier to catch in CI than to
     # discover after the page has been showing dashes for weeks.
@@ -1064,7 +1147,8 @@ def main():
             f"\nPut schedule parse outcomes (per live issuance):",
             flush=True,
         )
-        for k in ("ok", "no_keyword", "no_dates", "filtered_out", "no_body"):
+        for k in ("ok", "cache_hit", "no_keyword", "no_dates",
+                  "filtered_out", "no_body"):
             cnt = _PARSE_DIAGS.get(k, 0)
             pct = 100.0 * cnt / parse_total
             print(f"  {k:<14} {cnt:>5}/{parse_total:<5} ({pct:5.1f}%)",
