@@ -17,5 +17,12 @@
     "매각",
     "지분인수"
   ],
-  "custom": []
+  "custom": [],
+  "outlets": [
+    { "name": "더벨",         "query": "site:thebell.co.kr" },
+    { "name": "인베스트조선",   "query": "site:investchosun.com" },
+    { "name": "딜사이트",       "query": "site:dealsite.co.kr" },
+    { "name": "마켓인사이트",   "query": "site:hankyung.com 마켓인사이트" },
+    { "name": "팍스넷뉴스",     "query": "site:paxnetnews.com" }
+  ]
 }
