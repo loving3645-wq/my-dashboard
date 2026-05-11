@@ -120,19 +120,33 @@ def load_excel_rows(paths):
 
 
 def build_index(mezz):
-    """Index by (norm_name, type, round) → list of (ticker, iss). When
-    a name has more than one issuance with same (type, round) (rare but
-    possible across years), the issueDate disambiguates downstream."""
-    index = {}
-    name_only = {}
+    """Three indexes for progressive matching:
+
+    1. (norm_name, type, round) — strict, used first.
+    2. (norm_name) — name-only fallback when round mismatches.
+    3. (issueDate, type, round) — name-INDEPENDENT fallback. Catches
+       companies whose ticker-file name is stale (사명 변경 미반영):
+       e.g. ticker 377030 still reads "비트맥스" but Excel has its
+       current name "맥스트". The CB itself was filed on the same
+       issueDate with the same type and round, so the date+type+round
+       triple matches uniquely.
+    """
+    by_full = {}
+    by_name = {}
+    by_date = {}
     for ticker, entry in mezz.get("mezzanine", {}).items():
         name_n = _norm_name(entry.get("name"))
         for iss in entry.get("issuances", []):
             rnd = _norm_round(iss.get("round"))
-            key = (name_n, iss["type"], rnd)
-            index.setdefault(key, []).append((ticker, iss))
-            name_only.setdefault(name_n, []).append((ticker, iss))
-    return index, name_only
+            issd = iss.get("issueDate")
+            full_key = (name_n, iss["type"], rnd)
+            by_full.setdefault(full_key, []).append((ticker, iss))
+            by_name.setdefault(name_n, []).append((ticker, iss))
+            if issd and rnd:
+                by_date.setdefault((issd, iss["type"], rnd), []).append(
+                    (ticker, iss)
+                )
+    return by_full, by_name, by_date
 
 
 def main():
@@ -149,42 +163,48 @@ def main():
     except FileNotFoundError:
         cache = {}
 
-    index, name_only = build_index(mezz)
+    by_full, by_name, by_date = build_index(mezz)
     rows = list(load_excel_rows(args.excel))
     print(f"Loaded {len(rows):,} Excel rows", flush=True)
 
     matched = 0
+    matched_by = {"full": 0, "name_only": 0, "date_fallback": 0}
     unmatched_examples = []
     unmatched_count = 0
     by_unmatch_reason = {"name_missing": 0, "round_mismatch": 0}
 
     for row in rows:
-        candidates = index.get((row["name"], row["type"], row["round"]), [])
+        candidates = by_full.get((row["name"], row["type"], row["round"]), [])
+        match_kind = "full"
         if not candidates:
-            # Fallback: name + type, ignore round (round labels sometimes
-            # differ between Excel curator's tally and DART filing).
+            # Fallback 1: name + type, ignore round.
             pool = [
-                (t, i) for (t, i) in name_only.get(row["name"], [])
+                (t, i) for (t, i) in by_name.get(row["name"], [])
                 if i["type"] == row["type"]
             ]
-            if not pool:
-                unmatched_count += 1
+            if pool and row["issueDate"]:
+                for cand in pool:
+                    if cand[1].get("issueDate") == row["issueDate"]:
+                        candidates = [cand]
+                        match_kind = "name_only"
+                        break
+        if not candidates and row["issueDate"] and row["round"]:
+            # Fallback 2: name-INDEPENDENT match on (issueDate, type,
+            # round). Catches stale ticker-file names (사명 변경).
+            candidates = list(by_date.get(
+                (row["issueDate"], row["type"], row["round"]), []
+            ))
+            if candidates:
+                match_kind = "date_fallback"
+        if not candidates:
+            unmatched_count += 1
+            if by_name.get(row["name"]):
+                by_unmatch_reason["round_mismatch"] += 1
+            else:
                 by_unmatch_reason["name_missing"] += 1
                 if len(unmatched_examples) < 8:
                     unmatched_examples.append(row)
-                continue
-            # Pick the one whose issueDate matches (or closest by date).
-            best = None
-            if row["issueDate"]:
-                for cand in pool:
-                    if cand[1].get("issueDate") == row["issueDate"]:
-                        best = cand
-                        break
-            if not best:
-                unmatched_count += 1
-                by_unmatch_reason["round_mismatch"] += 1
-                continue
-            candidates = [best]
+            continue
 
         # Disambiguate by issueDate if multiple round-matches.
         chosen = None
@@ -197,6 +217,7 @@ def main():
             chosen = candidates[0]
 
         ticker, iss = chosen
+        matched_by[match_kind] += 1
         # Apply put/call to issuance.
         if row["putStart"]:
             iss["putStart"] = row["putStart"]
@@ -228,6 +249,7 @@ def main():
         f"({100.0 * matched / len(rows):.1f}% match rate)",
         flush=True,
     )
+    print(f"  matched by:      {matched_by}", flush=True)
     print(f"  unmatch reasons: {by_unmatch_reason}", flush=True)
     if unmatched_examples:
         print("\n  Sample unmatched (likely missing from DART scan):")
