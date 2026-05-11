@@ -41,8 +41,23 @@ USER_AGENT = (
 GOOGLE_NEWS_RSS = "https://news.google.com/rss/search"
 WORKERS = 6
 PER_KEYWORD_LIMIT = 30
+PER_OUTLET_LIMIT = 40
+# Cap how many articles any single source can contribute to the final list.
+# Prevents aggregators (Investing.com, v.daum.net, 네이트) from dominating.
+PER_SOURCE_CAP = 20
 WINDOW_DAYS = 14
 TIMEOUT = 15
+
+# Direct outlet seeds: Google News indexes these IB/deal-focused outlets, but
+# generic keyword queries rarely surface them. Pulling each via a `site:` query
+# guarantees baseline coverage.
+DEFAULT_OUTLETS = [
+    {"name": "더벨", "query": "site:thebell.co.kr"},
+    {"name": "인베스트조선", "query": "site:investchosun.com"},
+    {"name": "딜사이트", "query": "site:dealsite.co.kr"},
+    {"name": "마켓인사이트", "query": "site:hankyung.com 마켓인사이트"},
+    {"name": "팍스넷뉴스", "query": "site:paxnetnews.com"},
+]
 
 TAG_RE = re.compile(r"<[^>]+>")
 WS_RE = re.compile(r"\s+")
@@ -61,16 +76,23 @@ def load_keywords():
         "custom": [],
     }
     if not os.path.exists(KEYWORDS_FILE):
-        return builtin
+        return {**builtin, "outlets": list(DEFAULT_OUTLETS)}
     try:
         with open(KEYWORDS_FILE, encoding="utf-8") as f:
             data = json.load(f)
         defaults = data.get("default") or builtin["default"]
         custom = data.get("custom") or []
-        return {"default": list(defaults), "custom": list(custom)}
+        outlets = data.get("outlets")
+        if outlets is None:
+            outlets = list(DEFAULT_OUTLETS)
+        return {
+            "default": list(defaults),
+            "custom": list(custom),
+            "outlets": list(outlets),
+        }
     except (json.JSONDecodeError, OSError) as e:
         print(f"[warn] could not read keyword file: {e}", file=sys.stderr)
-        return builtin
+        return {**builtin, "outlets": list(DEFAULT_OUTLETS)}
 
 
 def make_session():
@@ -103,10 +125,10 @@ def parse_pubdate(s):
         return None
 
 
-def fetch_keyword(session, keyword):
-    """Fetch one keyword's RSS feed, return list of article dicts."""
+def _fetch_rss_search(session, query, limit, label):
+    """Fetch a Google News RSS search query, return list of article dicts."""
     params = {
-        "q": keyword,
+        "q": query,
         "hl": "ko",
         "gl": "KR",
         "ceid": "KR:ko",
@@ -116,13 +138,13 @@ def fetch_keyword(session, keyword):
         r = session.get(url, timeout=TIMEOUT)
         r.raise_for_status()
     except requests.RequestException as e:
-        print(f"[warn] {keyword}: fetch failed: {e}", file=sys.stderr)
+        print(f"[warn] {label}: fetch failed: {e}", file=sys.stderr)
         return []
 
     try:
         root = ET.fromstring(r.content)
     except ET.ParseError as e:
-        print(f"[warn] {keyword}: parse failed: {e}", file=sys.stderr)
+        print(f"[warn] {label}: parse failed: {e}", file=sys.stderr)
         return []
 
     items = []
@@ -149,10 +171,18 @@ def fetch_keyword(session, keyword):
             "summary": description,
         })
 
-        if len(items) >= PER_KEYWORD_LIMIT:
+        if len(items) >= limit:
             break
 
     return items
+
+
+def fetch_keyword(session, keyword):
+    return _fetch_rss_search(session, keyword, PER_KEYWORD_LIMIT, keyword)
+
+
+def fetch_outlet(session, outlet):
+    return _fetch_rss_search(session, outlet["query"], PER_OUTLET_LIMIT, f"outlet:{outlet['name']}")
 
 
 def main():
@@ -178,21 +208,39 @@ def main():
         print("[error] no keywords configured", file=sys.stderr)
         sys.exit(1)
 
-    print(f"[info] crawling {len(all_keywords)} keywords")
+    outlets = [
+        o for o in (keywords_cfg.get("outlets") or [])
+        if isinstance(o, dict) and o.get("name") and o.get("query")
+    ]
+
+    print(f"[info] crawling {len(all_keywords)} keywords + {len(outlets)} outlets")
     session = make_session()
 
     by_keyword = {}
+    by_outlet = {}
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
-        futures = {pool.submit(fetch_keyword, session, kw): kw for kw in all_keywords}
-        for fut in as_completed(futures):
-            kw = futures[fut]
+        kw_futures = {pool.submit(fetch_keyword, session, kw): kw for kw in all_keywords}
+        outlet_futures = {pool.submit(fetch_outlet, session, o): o for o in outlets}
+
+        for fut in as_completed(kw_futures):
+            kw = kw_futures[fut]
             try:
                 items = fut.result()
             except Exception as e:
                 print(f"[warn] {kw}: {e}", file=sys.stderr)
                 items = []
             by_keyword[kw] = items
-            print(f"[info] {kw}: {len(items)} items")
+            print(f"[info] kw {kw}: {len(items)} items")
+
+        for fut in as_completed(outlet_futures):
+            o = outlet_futures[fut]
+            try:
+                items = fut.result()
+            except Exception as e:
+                print(f"[warn] outlet {o['name']}: {e}", file=sys.stderr)
+                items = []
+            by_outlet[o["name"]] = items
+            print(f"[info] outlet {o['name']}: {len(items)} items")
 
     # Build a flat, deduplicated article list. Each article carries the list
     # of keywords it matched so a single article tagged by multiple keywords
@@ -209,8 +257,55 @@ def main():
                 entry["keywords"] = [kw]
                 flat[key] = entry
 
+    # Merge outlet articles. They don't add to the keyword chip set — articles
+    # surfaced only via outlet seeds get an empty keywords list, so they appear
+    # in the unfiltered view but not under any specific keyword filter.
+    for o in outlets:
+        for item in by_outlet.get(o["name"], []):
+            key = item["url"]
+            if key in flat:
+                continue
+            entry = dict(item)
+            entry["keywords"] = []
+            flat[key] = entry
+
+    # Normalize bare-domain source labels (e.g. "thebell.co.kr") to friendly
+    # outlet names ("더벨") so the UI shows consistent labels.
+    domain_to_name = {}
+    for o in outlets:
+        for token in (o.get("query") or "").split():
+            if token.lower().startswith("site:"):
+                d = token[5:].lower()
+                if d.startswith("www."):
+                    d = d[4:]
+                if d:
+                    domain_to_name[d] = o["name"]
+    for a in flat.values():
+        src = (a.get("source") or "").strip().lower()
+        if src.startswith("www."):
+            src = src[4:]
+        if src in domain_to_name:
+            a["source"] = domain_to_name[src]
+
     articles = list(flat.values())
     articles.sort(key=lambda x: x.get("published") or "", reverse=True)
+
+    # Per-source diversity cap: after sorting newest-first, drop excess articles
+    # from sources that have already hit the cap. Keeps the freshest items.
+    if PER_SOURCE_CAP > 0:
+        seen = {}
+        kept = []
+        dropped = 0
+        for a in articles:
+            s = (a.get("source") or "").strip() or "(unknown)"
+            if seen.get(s, 0) >= PER_SOURCE_CAP:
+                dropped += 1
+                continue
+            seen[s] = seen.get(s, 0) + 1
+            kept.append(a)
+        articles = kept
+        if dropped:
+            print(f"[info] diversity cap={PER_SOURCE_CAP}: dropped {dropped} articles")
 
     payload = {
         "generated_at": datetime.now(KST).isoformat(timespec="seconds"),
@@ -220,6 +315,11 @@ def main():
             {"name": kw, "origin": keyword_origin[kw], "count": len(by_keyword.get(kw, []))}
             for kw in all_keywords
         ],
+        "outlets": [
+            {"name": o["name"], "query": o["query"], "count": len(by_outlet.get(o["name"], []))}
+            for o in outlets
+        ],
+        "per_source_cap": PER_SOURCE_CAP,
         "articles": articles,
     }
 
