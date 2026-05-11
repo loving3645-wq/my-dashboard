@@ -1,0 +1,50 @@
+name: DART Mezzanine — body retry
+
+# Retries body fetches for issuances already in data/mezzanine.json that
+# previously came up empty (rate-limited or transient error in the main
+# fetch workflow). Much faster than re-running the full scan since it
+# skips the 2,600-ticker endpoint sweep entirely.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  # Share the same group as the main fetch workflow so retries and full
+  # runs serialize cleanly (no overlapping writes to mezzanine.json).
+  group: fetch-mezzanine
+  cancel-in-progress: false
+
+jobs:
+  retry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install --quiet requests
+
+      - name: Retry failed body fetches
+        env:
+          OPENDART_KEY: ${{ secrets.OPENDART_KEY }}
+        run: python scripts/retry_mezzanine_bodies.py
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/mezzanine.json data/mezzanine-body-cache.json
+          if git diff --cached --quiet; then
+            echo "No changes — nothing to commit"
+          else
+            STAMP=$(date -u +"%Y-%m-%d %H:%M")
+            git commit -m "💳 Mezzanine body retry ${STAMP}"
+            git push
+          fi
