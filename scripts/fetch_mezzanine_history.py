@@ -105,6 +105,30 @@ EVENT_PATTERNS = [
 PUT_KEYWORD_RE = re.compile(r"사채매수청구권|조기상환청구권|풋옵션")
 CALL_KEYWORD_RE = re.compile(r"사채매도청구권|매도청구권|콜옵션")
 
+# Common section breaks shared between put and call parsers. The
+# per-keyword stop_re also includes the OTHER option's keyword so
+# parsing one section doesn't leak into the other (real DART filings
+# put 조기상환청구권 immediately followed by 매수인의 매도청구권).
+_COMMON_BREAKS = (
+    r"합병에?\s*관한\s*사항|"
+    r"청약일|납입일|납입방법|보증기관|담보제공|대표주관회사|"
+    r"이사회결의일|사외이사\s*참석|감사위원\s*참석"
+)
+PUT_PARSE_STOP_RE = re.compile(
+    _COMMON_BREAKS + r"|매수인의?\s*매도청구권|콜옵션|매도청구권"
+)
+CALL_PARSE_STOP_RE = re.compile(
+    _COMMON_BREAKS + r"|조기상환청구권|사채매수청구권|풋옵션"
+)
+
+# % of 전자등록금액 (face amount) that the holder / issuer can demand
+# in a single exercise. Most CB bodies write this as "전부 또는 일부"
+# (qualitative) but some specify a numeric cap, hence both shapes.
+PCT_PATTERN = re.compile(
+    r"(?:전자등록금액|사채\s*권면\s*금액|권면\s*총액)\s*의?\s*"
+    r"(전부\s*(?:또는\s*일부)?|일부|\d{1,3}\s*(?:\.\d+)?\s*%)"
+)
+
 _DATE_PAT = (
     r"(\d{4})\s*[년\-./]\s*(\d{1,2})\s*[월\-./]?\s*(\d{1,2})\s*일?"
 )
@@ -562,18 +586,38 @@ def _try_labeled(chunk, patterns):
 
 
 def parse_put_schedule(text, issue_date_iso, maturity_date_iso, keyword_re,
-                       start_label_pats, end_label_pats):
-    """Extract (start, end) put-style exercise dates from a disclosure
-    body. See module-level comment for the strategy."""
+                       start_label_pats, end_label_pats,
+                       stop_re=None):
+    """Extract (start, end, pct) put-style exercise schedule from a
+    disclosure body. Returns ((start_iso, end_iso, pct), outcome).
+    The pct string is the human phrase ("전부 또는 일부", "70%", etc.) —
+    callers normalize for display.
+
+    See module-level comment for the strategy.
+    """
     if not text:
-        return None, None, "no_body"
+        return None, None, None, "no_body"
     m = keyword_re.search(text)
     if not m:
-        return None, None, "no_keyword"
-    # Wide window: filings often state the dates before the keyword.
-    lo = max(0, m.start() - 500)
+        return None, None, None, "no_keyword"
+    # Real DART filings always put the section heading FIRST then the
+    # narrative — forward-only window is correct. 100-char backward
+    # buffer covers tabular cases where a cell label (e.g.,
+    # "행사가능기간") sits to the left of the dates after XML strip.
+    # Truncate forward at the next section heading so put doesn't leak
+    # into call and vice versa (back-to-back in real filings).
+    lo = max(0, m.start() - 100)
     hi = min(len(text), m.start() + 1500)
+    if stop_re:
+        bm_fwd = stop_re.search(text, m.end())
+        if bm_fwd and bm_fwd.start() < hi:
+            hi = bm_fwd.start()
     chunk = text[lo:hi]
+    pct_match = PCT_PATTERN.search(chunk)
+    pct = pct_match.group(1).strip() if pct_match else None
+    if pct:
+        # Normalize: collapse internal whitespace.
+        pct = re.sub(r"\s+", "", pct)
 
     # Strategy A: high-confidence labeled patterns.
     start_iso = _try_labeled(chunk, start_label_pats)
@@ -587,7 +631,7 @@ def parse_put_schedule(text, issue_date_iso, maturity_date_iso, keyword_re,
         all_dates = _all_dates_in(chunk)
         if not all_dates:
             if not start_iso:
-                return None, None, ("no_dates", chunk)
+                return None, None, pct, ("no_dates", chunk)
         else:
             # Drop dates close to known issue / maturity (those are echo
             # references like "발행일(2024-01-01)").
@@ -601,7 +645,7 @@ def parse_put_schedule(text, issue_date_iso, maturity_date_iso, keyword_re,
                 if d != issue_date_iso and d != maturity_date_iso
             ))
             if not candidates and not start_iso:
-                return None, None, ("filtered_out", chunk)
+                return None, None, pct, ("filtered_out", chunk)
             if not start_iso and candidates:
                 if issue_date_iso:
                     future = [d for d in candidates if d > issue_date_iso]
@@ -622,15 +666,15 @@ def parse_put_schedule(text, issue_date_iso, maturity_date_iso, keyword_re,
     # Sanity gates: put_start must be strictly after issue and before
     # maturity; put_end can't exceed maturity.
     if issue_date_iso and start_iso and start_iso <= issue_date_iso:
-        return None, None, ("filtered_out", chunk)
+        return None, None, pct, ("filtered_out", chunk)
     if maturity_date_iso and start_iso and start_iso > maturity_date_iso:
-        return None, None, ("filtered_out", chunk)
+        return None, None, pct, ("filtered_out", chunk)
     if maturity_date_iso and end_iso and end_iso > maturity_date_iso:
         end_iso = None
 
     if start_iso:
-        return start_iso, end_iso, "ok"
-    return None, None, ("no_dates", near_miss or chunk)
+        return start_iso, end_iso, pct, "ok"
+    return None, None, pct, ("no_dates", near_miss or chunk)
 
 
 def enrich_with_put_schedule(sess, issuances):
@@ -657,9 +701,10 @@ def enrich_with_put_schedule(sess, issuances):
         if not body:
             _record_parse("no_body")
             continue
-        ps, pe, outcome = parse_put_schedule(
+        ps, pe, pct, outcome = parse_put_schedule(
             body, x.get("issueDate"), x.get("maturityDate"),
             PUT_KEYWORD_RE, PUT_START_LABEL_PATTERNS, PUT_END_LABEL_PATTERNS,
+            stop_re=PUT_PARSE_STOP_RE,
         )
         _record_parse(outcome)
         if ps:
@@ -667,16 +712,22 @@ def enrich_with_put_schedule(sess, issuances):
             x["putSource"] = "body"
         if pe:
             x["putEnd"] = pe
-        # Same body usually mentions call schedule too — reuse parser.
-        # Diagnostics are put-centric so call outcomes aren't counted.
-        cs, ce, _ = parse_put_schedule(
+        if pct:
+            x["putPct"] = pct
+        # Same body usually mentions call schedule too — reuse parser
+        # with the call stop_re so the window doesn't leak back into
+        # the put section. Diagnostics are put-centric.
+        cs, ce, cpct, _ = parse_put_schedule(
             body, x.get("issueDate"), x.get("maturityDate"),
             CALL_KEYWORD_RE, PUT_START_LABEL_PATTERNS, PUT_END_LABEL_PATTERNS,
+            stop_re=CALL_PARSE_STOP_RE,
         )
         if cs:
             x["callStart"] = cs
         if ce:
             x["callEnd"] = ce
+        if cpct:
+            x["callPct"] = cpct
 
 
 def enrich_with_outstanding(sess, issuances):
