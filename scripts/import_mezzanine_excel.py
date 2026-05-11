@@ -24,6 +24,10 @@ import openpyxl
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MEZZ_FILE = os.path.join(ROOT, "data", "mezzanine.json")
+# Issuances from companies that aren't in our current ticker universe
+# (delisted, SPAC-merged, KONEX, etc.) live in a separate file so the
+# DART-scan workflow doesn't overwrite them. Page loads both and unions.
+EXTRA_FILE = os.path.join(ROOT, "data", "mezzanine-extra.json")
 CACHE_FILE = os.path.join(ROOT, "data", "mezzanine-body-cache.json")
 
 
@@ -172,6 +176,7 @@ def main():
     unmatched_examples = []
     unmatched_count = 0
     by_unmatch_reason = {"name_missing": 0, "round_mismatch": 0}
+    unmatched_rows = []
 
     for row in rows:
         candidates = by_full.get((row["name"], row["type"], row["round"]), [])
@@ -204,6 +209,7 @@ def main():
                 by_unmatch_reason["name_missing"] += 1
                 if len(unmatched_examples) < 8:
                     unmatched_examples.append(row)
+            unmatched_rows.append(row)
             continue
 
         # Disambiguate by issueDate if multiple round-matches.
@@ -258,16 +264,56 @@ def main():
                 f"    {r['issueDate']}  {r['raw_name']}  {r['type']} 제{r['round']}회"
             )
 
+    # Group unmatched rows by normalized name → one synthetic issuer
+    # per company so the page can render them as cards.
+    extra = {}
+    for row in unmatched_rows:
+        key = row["name"] or "_unknown"
+        e = extra.setdefault(key, {
+            "name": row["raw_name"],
+            "delisted": True,
+            "issuances": [],
+        })
+        e["issuances"].append({
+            "type": row["type"],
+            "round": row["round"],
+            "issueDate": row["issueDate"],
+            "maturityDate": row["maturity"],
+            "putStart": row["putStart"],
+            "callStart": row["callStart"],
+            "callPct": row["callPct"],
+            "source": "excel-unmatched",
+        })
+    # Stable sort issuances by issueDate desc within each issuer.
+    for e in extra.values():
+        e["issuances"].sort(key=lambda i: i.get("issueDate") or "0", reverse=True)
+    extra_payload = {
+        "note": "Issuances from companies absent in tickers-full.js — "
+                "typically delisted / merged / KONEX. Loaded alongside "
+                "mezzanine.json on the page.",
+        "issuers": len(extra),
+        "totalIssuances": sum(len(e["issuances"]) for e in extra.values()),
+        "mezzanine": extra,
+    }
+    print(
+        f"  extra delisted issuers: {len(extra)} "
+        f"({extra_payload['totalIssuances']} issuances)",
+        flush=True,
+    )
+
     if args.dry_run:
         print("\n(dry-run: no files written)")
         return
 
     with open(MEZZ_FILE, "w", encoding="utf-8") as f:
         json.dump(mezz, f, ensure_ascii=False, separators=(",", ":"))
+    with open(EXTRA_FILE, "w", encoding="utf-8") as f:
+        json.dump(extra_payload, f, ensure_ascii=False, separators=(",", ":"))
     with open(CACHE_FILE, "w", encoding="utf-8") as f:
         json.dump(cache, f, ensure_ascii=False, separators=(",", ":"),
                   sort_keys=True)
     print(f"\nWrote {MEZZ_FILE}")
+    print(f"Wrote {EXTRA_FILE}  ({len(extra):,} delisted issuers)")
     print(f"Wrote {CACHE_FILE}  ({len(cache):,} cached entries)")
 
 
