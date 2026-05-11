@@ -24,6 +24,7 @@ import json
 import os
 import re
 import sys
+import threading
 import time
 import zipfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -140,7 +141,26 @@ ENDPOINTS = {
 
 WORKERS = 8
 TIMEOUT = 15
-RETRY_COUNT = 2
+RETRY_COUNT = 3
+
+# DART status codes returned in the JSON body. Treating them three ways:
+#   - hard-fail (don't retry, return empty for this call)
+#   - retryable transient (light backoff)
+#   - retryable rate-limited (longer exponential backoff)
+# See https://opendart.fss.or.kr/guide/main.do.
+HARD_FAIL_STATUSES = frozenset({"010", "011", "012", "013", "014"})
+TRANSIENT_STATUSES = frozenset({"100", "101", "800", "900"})
+RATELIMIT_STATUSES = frozenset({"020"})
+
+# Counter of API calls that returned empty after exhausting retries.
+# Surfaced at the end of main() so silent data loss is visible.
+_API_FAILURES = {"ratelimit": 0, "transient": 0, "http_error": 0, "network": 0}
+_FAILURES_LOCK = threading.Lock()
+
+
+def _record_failure(kind):
+    with _FAILURES_LOCK:
+        _API_FAILURES[kind] = _API_FAILURES.get(kind, 0) + 1
 
 # Field aliases — DART's response key naming varies across the three
 # endpoints (CB / BW / EB). Verified against actual response samples
@@ -344,16 +364,37 @@ def scan_events(sess, corp_code, bgn_de, end_de):
             "page_count": LIST_PAGE_SIZE,
             "page_no": page_no,
         }
+        body = None
+        for attempt in range(RETRY_COUNT + 1):
+            try:
+                r = sess.get(LIST_URL, params=params, timeout=TIMEOUT)
+                if r.status_code == 429 or 500 <= r.status_code < 600:
+                    time.sleep(2 * (attempt + 1))
+                    continue
+                if r.status_code != 200:
+                    break
+                body = r.json()
+                status = body.get("status")
+                if status in RATELIMIT_STATUSES:
+                    time.sleep(2 ** (attempt + 1))
+                    continue
+                if status in TRANSIENT_STATUSES:
+                    time.sleep(0.5 * (attempt + 1))
+                    continue
+                break
+            except (requests.RequestException, ValueError):
+                time.sleep(0.5 * (attempt + 1))
+                continue
+        if not body:
+            break
+        status = body.get("status")
+        if status == "013":
+            break
+        if status != "000":
+            _record_failure("ratelimit" if status in RATELIMIT_STATUSES
+                            else "http_error")
+            break
         try:
-            r = sess.get(LIST_URL, params=params, timeout=TIMEOUT)
-            if r.status_code != 200:
-                break
-            body = r.json()
-            status = body.get("status")
-            if status == "013":
-                break
-            if status != "000":
-                break
             for row in (body.get("list") or []):
                 title = (row.get("report_nm") or "").strip()
                 kind = categorize_event(title)
@@ -389,11 +430,23 @@ def fetch_disclosure_body(sess, rcept_no):
                 params={"crtfc_key": DART_KEY, "rcept_no": rcept_no},
                 timeout=TIMEOUT,
             )
+            if r.status_code == 429 or 500 <= r.status_code < 600:
+                time.sleep(2 * (attempt + 1))
+                continue
             if r.status_code != 200:
                 return None
             try:
                 zf = zipfile.ZipFile(io.BytesIO(r.content))
             except zipfile.BadZipFile:
+                # Often a JSON error body (rate limit) instead of a ZIP.
+                # Check and back off if so.
+                try:
+                    body = r.json()
+                    if body.get("status") in RATELIMIT_STATUSES:
+                        time.sleep(2 ** (attempt + 1))
+                        continue
+                except ValueError:
+                    pass
                 return None
             chunks = []
             for name in zf.namelist():
@@ -635,25 +688,49 @@ def fetch_kind(sess, corp_code, kind, bgn_de, end_de):
         "bgn_de": bgn_de,
         "end_de": end_de,
     }
+    last_reason = "network"
     for attempt in range(RETRY_COUNT + 1):
         try:
             r = sess.get(url, params=params, timeout=TIMEOUT)
+            if r.status_code == 429 or 500 <= r.status_code < 600:
+                # HTTP-level rate limit / server error. Back off and retry.
+                last_reason = "ratelimit" if r.status_code == 429 else "http_error"
+                time.sleep(2 * (attempt + 1))
+                continue
             if r.status_code != 200:
+                _record_failure("http_error")
                 return []
             body = r.json()
             status = body.get("status")
-            if status == "013":
+            if status == "000":
+                rows = body.get("list") or []
+                return [normalize_issuance(row, kind) for row in rows]
+            if status in HARD_FAIL_STATUSES:
+                # "013" = no data is legitimate. The others ("010" missing
+                # key, "011" expired, "012" IP block, "014" no file) are
+                # job-level fatal; surface in the silent-failure counter
+                # so the run summary shows the cause.
+                if status != "013":
+                    _record_failure("http_error")
                 return []
-            if status != "000":
-                if status in ("100", "101", "800", "900"):
-                    time.sleep(0.5 * (attempt + 1))
-                    continue
-                return []
-            rows = body.get("list") or []
-            return [normalize_issuance(row, kind) for row in rows]
+            if status in RATELIMIT_STATUSES:
+                last_reason = "ratelimit"
+                # 2s, 4s, 8s, 16s — DART rate limit window is ~1 minute.
+                time.sleep(2 ** (attempt + 1))
+                continue
+            if status in TRANSIENT_STATUSES:
+                last_reason = "transient"
+                time.sleep(0.5 * (attempt + 1))
+                continue
+            # Unknown status — log as http_error so it doesn't silently
+            # vanish, but don't retry.
+            _record_failure("http_error")
+            return []
         except requests.RequestException:
+            last_reason = "network"
             time.sleep(0.5 * (attempt + 1))
             continue
+    _record_failure(last_reason)
     return []
 
 
@@ -794,6 +871,27 @@ def main():
                 warn = "  <-- SUSPECT" if pct < 5 else ""
             print(
                 f"  {k:<22} {counts[k]:>6}/{sample_total:<6} ({pct:5.1f}%){warn}",
+                flush=True,
+            )
+
+    # Silent-failure summary. Non-zero ratelimit count means some
+    # tickers' mezzanine quietly didn't make it into the data — re-run
+    # the workflow to capture them, or reduce WORKERS if it persists.
+    total_fail = sum(_API_FAILURES.values())
+    if total_fail:
+        print(
+            f"\nAPI failures after retries: total={total_fail} "
+            f"ratelimit={_API_FAILURES['ratelimit']} "
+            f"http_error={_API_FAILURES['http_error']} "
+            f"transient={_API_FAILURES['transient']} "
+            f"network={_API_FAILURES['network']}",
+            flush=True,
+        )
+        if _API_FAILURES["ratelimit"] > 100:
+            print(
+                "  WARN: high ratelimit count — DART throttled many calls. "
+                "Re-trigger the workflow or lower WORKERS to recover the "
+                "missing tickers.",
                 flush=True,
             )
 
