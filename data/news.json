@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-05-12T11:41:06+09:00",
+  "generated_at": "2026-05-12T15:12:23+09:00",
   "window_days": 14,
-  "total": 439,
+  "total": 445,
   "keywords": [
     {
       "name": "투자유치",
@@ -36,7 +36,7 @@
     {
       "name": "무상증자",
       "origin": "default",
-      "count": 4
+      "count": 3
     },
     {
       "name": "자사주",
@@ -81,7 +81,7 @@
     {
       "name": "지분인수",
       "origin": "default",
-      "count": 16
+      "count": 17
     }
   ],
   "outlets": [
@@ -93,12 +93,12 @@
     {
       "name": "인베스트조선",
       "query": "site:investchosun.com",
-      "count": 18
+      "count": 19
     },
     {
       "name": "딜사이트",
       "query": "site:dealsite.co.kr",
-      "count": 22
+      "count": 25
     },
     {
       "name": "마켓인사이트",
@@ -108,29 +108,999 @@
     {
       "name": "팍스넷뉴스",
       "query": "site:paxnetnews.com",
-      "count": 18
+      "count": 13
     }
   ],
   "per_source_cap": 20,
   "articles": [
     {
-      "title": "[경향신문] 이창민 교수, 한국형 주주 자본주의 관련 코멘트 - 뉴스H",
-      "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE9aTUR3T0o1bUhsQ3Z4MWdaZVE4Um1MUmN3b2JGWGI1eEtMNC01eXY1WXM4WENYRnltRFlpckNqam1uQmstYy1uMkVIcGxMZXZNLW0yemtUZFpqUGh3SkEwRXh1U2NEQll1SnJB?oc=5",
-      "source": "뉴스H",
-      "published": "2026-05-12T11:36:51+09:00",
-      "summary": "[경향신문] 이창민 교수, 한국형 주주 자본주의 관련 코멘트 뉴스H",
+      "title": "국산화 시대 맞은 ‘CAR-T 치료제’, 글로벌 M&A 열풍에 ‘새 기회’ - 에너지경제신문",
+      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE9KdXNMSWJMRkdheDhIczFkbUJ3QUlzLTBBU0lBMDcycU9yOU0zTU5EUUpzSXV2WnFYNHkyUXBieXZWRFlUTEwtaWt2NGVUVmRTUElOVlhNOG5UZEE?oc=5",
+      "source": "에너지경제신문",
+      "published": "2026-05-12T15:06:42+09:00",
+      "summary": "국산화 시대 맞은 ‘CAR-T 치료제’, 글로벌 M&A 열풍에 ‘새 기회’ 에너지경제신문",
+      "keywords": [
+        "인수합병",
+        "M&A"
+      ]
+    },
+    {
+      "title": "플레이위드코리아 김학준 대표, 10만 자사주 매입 추진 - newsis.com",
+      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE9teU9SamNyVjdHVmp5Q1RmblRXdlFfQmVYTUg2OHlsR1N6cnFzUnprOXFmdXJxWURpOEJNOWxROWNGekRHcklOSjNZLWNJNHJEUFNsV1ZoaTRGNTJSNkFQYdIBeEFVX3lxTE5jeUF2NkFQWUtWQWJUOGE1NFhmVlZsS1YzSjQxdFJ0NGhMM0x4UnZ0T25hTVhDbjdNTzEwTlVXeDdEanRhZG0yNnVuRUg2V012N3BOUzhkdWtEZERHY3hJdmxZenE3M2g3bE03WlN5VU5XdTJOTGJDSg?oc=5",
+      "source": "newsis.com",
+      "published": "2026-05-12T15:06:41+09:00",
+      "summary": "플레이위드코리아 김학준 대표, 10만 자사주 매입 추진 newsis.com",
+      "keywords": [
+        "자사주"
+      ]
+    },
+    {
+      "title": "SKC, 유상증자로 1.2조 조달…‘글라스기판’ 베팅 - 뉴스토마토",
+      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE1NRGR5UTAyd2RRbDlOT29hSTNOc0REazcxRmFUTk54a2cxQWI1c1ZGTDRUT2laa2pqeFVMdmpSeVpkR2t4R2QyeTRVMVZUOVhyNWZJYk1mdTEyc0hYd3Zpdw?oc=5",
+      "source": "뉴스토마토",
+      "published": "2026-05-12T15:06:38+09:00",
+      "summary": "SKC, 유상증자로 1.2조 조달…‘글라스기판’ 베팅 뉴스토마토",
       "keywords": [
         "유상증자"
       ]
     },
     {
-      "title": "[리포트 브리핑]더즌, 'IPO기업 업데이트: 핵심 사업 고성장 지속' Not Rated - 한국투자증권 - 뉴스핌",
-      "url": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE5oUTdQQUxaYXpVSTdYTFRvRUp3ZjNmcy1jalpQejdzYUowZWwycTlkLUoyYzNFZi0wVURRYnY3TXJNYXpDS2tPbk40RzIzbFh0RU9UMWtYdmV6X1Fv?oc=5",
-      "source": "뉴스핌",
-      "published": "2026-05-12T11:33:00+09:00",
-      "summary": "[리포트 브리핑]더즌, 'IPO기업 업데이트: 핵심 사업 고성장 지속' Not Rated - 한국투자증권 뉴스핌",
+      "title": "재계, AI시대 준비…M&A 신중 모드·부동산으로 내실 다진다 - 아시아타임즈",
+      "url": "https://news.google.com/rss/articles/CBMiXkFVX3lxTE9pcnRweHB1Qkd4TVV2VXdiNFdWUzRNTUxzWUdNU01VY2M2UjB5SFNWa3JSekd1cWxZa3d5VHZGdnZFa0lPdkhjVVpYQTlqcnZYYUc2b1phU2RkcjEzR2c?oc=5",
+      "source": "아시아타임즈",
+      "published": "2026-05-12T15:05:00+09:00",
+      "summary": "재계, AI시대 준비…M&A 신중 모드·부동산으로 내실 다진다 아시아타임즈",
+      "keywords": [
+        "인수합병",
+        "M&A"
+      ]
+    },
+    {
+      "title": "서울대학교기술지주, 모태펀드 운용사·컴퍼니빌더 주관기관 동시 선정 - 플래텀(Platum)",
+      "url": "https://news.google.com/rss/articles/CBMiSEFVX3lxTFB1dXVKM2xURU1vNmo4b3dXM2VGNlhJYUlLQkhwNHV0NkNPNXFhc2FPcEI5TFljYWc1U2xMam9wT09tdV9jb0EwYQ?oc=5",
+      "source": "플래텀(Platum)",
+      "published": "2026-05-12T15:04:09+09:00",
+      "summary": "서울대학교기술지주, 모태펀드 운용사·컴퍼니빌더 주관기관 동시 선정 플래텀(Platum)",
+      "keywords": [
+        "투자유치"
+      ]
+    },
+    {
+      "title": "[Company Watch] 인크로스, 1Q 수익성 급감 '인건비·보안비' 압박 - thebell.co.kr",
+      "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxON0NWVnpwQlRPdnplQmY4ZTJqSUN2NEFBSVJoWEt5Ym80dnoxZzVZRk40ZE15bTUwQlNGS29xX3ljVWFwWDM0Ym53eFRUNDJBZG1TdXIydXdSX0JJZC15STk3dDdiOV9UMXFUYVRaT1VfRzdkY1J3NDBFNVRrTEcwOFA5MFdLdEkwUERB?oc=5",
+      "source": "더벨",
+      "published": "2026-05-12T15:04:09+09:00",
+      "summary": "[Company Watch] 인크로스, 1Q 수익성 급감 '인건비·보안비' 압박 thebell.co.kr",
+      "keywords": []
+    },
+    {
+      "title": "바로팜, 건기식 제조사 '씨에이치디제약' 인수 - thebell.co.kr",
+      "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxOYndacEU5bk81cWhtcjVrY3ZTWE8tdGxTdXFsSXdVRmFWZjZOWWxkS0FNT3RLb0lVbTFYYTFOYkd4NF8tVUpCWE9xTU81NER3WDFXUW1Ecm9kbmMtNlh0a1J3X3JZb0htZ180ZmVjaFRHU3N2MnltVUVIYVJFbFVpY1l1cE9Zc19XdHMw?oc=5",
+      "source": "더벨",
+      "published": "2026-05-12T15:04:04+09:00",
+      "summary": "바로팜, 건기식 제조사 '씨에이치디제약' 인수 thebell.co.kr",
+      "keywords": []
+    },
+    {
+      "title": "판테온 인터내셔널, 2억 2,400만 파운드 자산 매각 및 자사주 매입 약속 - Investing.com 한국어",
+      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE9hRkJNc1pyVExiUHRPVzhTeGY1Vk5HVjRDbHAzTFFrOVNKYk12NzQyWExfWXlTLTIyUzRZalBCbU1Hc09rY3R2Q3JuMHZ0dWpWQlp0TmNscllOeHpsYjZrOEJvZVRBYU5rcXNqM3hfWXo?oc=5",
+      "source": "Investing.com 한국어",
+      "published": "2026-05-12T15:04:00+09:00",
+      "summary": "판테온 인터내셔널, 2억 2,400만 파운드 자산 매각 및 자사주 매입 약속 Investing.com 한국어",
+      "keywords": [
+        "자사주"
+      ]
+    },
+    {
+      "title": "오픈AI 직원 75명 '440억' 주식 대박...\"역대 최대 프리 IPO 보상\" - AI타임스",
+      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE15Mzc3ZWFQeWRKYjNXY0dYOTBOM3N4RTAyYmVIbHY4eFhxdWw4T1Uwc2luTEVqdFFHMUV2cEswczFDZGVmdlZ6emFPZ2Q0d0ZWYm0wRjRleTFOVVhQNU5fdk9pLUhQdnB5b1E?oc=5",
+      "source": "AI타임스",
+      "published": "2026-05-12T15:03:59+09:00",
+      "summary": "오픈AI 직원 75명 '440억' 주식 대박...\"역대 최대 프리 IPO 보상\" AI타임스",
       "keywords": [
         "IPO"
+      ]
+    },
+    {
+      "title": "[중화학 ON] SKC, 유상증자로 1.2조 확보 外 - 딜사이트",
+      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE91S21iaWxjRHkxcHo2aE5HOEJxbGN0dmQzSW56d1F0QjBkM282NzE0dUFhZUdtLUg5STBiZi1XOFN4MWZzQ2VzemhPc2prZlE?oc=5",
+      "source": "딜사이트",
+      "published": "2026-05-12T15:03:21+09:00",
+      "summary": "[중화학 ON] SKC, 유상증자로 1.2조 확보 外 딜사이트",
+      "keywords": [
+        "유상증자"
+      ]
+    },
+    {
+      "title": "[중화학 ON] SKC, 유상증자로 1.2조 확보 外 - 딜사이트",
+      "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE1iOGhlLUo3LTFCd3g1WHV2eUVpVVJtbG1MZV9hV2hpLVdVX2lzZWtqOTlzUlBYdGpkS0lhNHB6S1dsb3RtNHdadExSWlNwbjFUdS1aMC1zNGE?oc=5",
+      "source": "딜사이트",
+      "published": "2026-05-12T15:03:21+09:00",
+      "summary": "[중화학 ON] SKC, 유상증자로 1.2조 확보 外 딜사이트",
+      "keywords": []
+    },
+    {
+      "title": "파두 연간 흑자전환 기대…구조적 성장 궤도 - thebell.co.kr",
+      "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxNYkMxMnRJdXY4NzB4Wi1iTDEwZzNHMGxqTEU3QnRqZ09hb2luWnI2YXM0a2V0Q0hEcDBBcmZ4YUdqc1JCeHp5dEZrdTE4anlueDAxaVhBUlRIbWN1em1HaVBDcEdmSVRsNmZaNWEwLXVrOVZaN3AtbDh5WldRSGNJT2ZPeklwRFZ6SXJV?oc=5",
+      "source": "더벨",
+      "published": "2026-05-12T15:02:44+09:00",
+      "summary": "파두 연간 흑자전환 기대…구조적 성장 궤도 thebell.co.kr",
+      "keywords": []
+    },
+    {
+      "title": "신성환 금통위원 \"WGBI 편입 끝나는 12월, 국채 거래절벽 대비해야\"[KIW 2026] - 한국경제",
+      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE9wcXg1Y19PaGxVNGlBZHhHaldzYl9zTTFqaU9sbWk2cFEydk9JbnFJNk5haXRsc2lfZzAzUllCR1dqNmpfUWhpakxpemlsREdtNm1ZbzBaWGZDUdIBVEFVX3lxTFBxQnJtY0lJQkN1M3ZiTHVVU2xqb1I3QlJ1elNudmFIN2pIQVFGV0ZzMVlzUk0xUlpVc2NhNXAzc1IzMFlHcm5MRnltc1NoZ0dzeGJmVA?oc=5",
+      "source": "한국경제",
+      "published": "2026-05-12T14:57:21+09:00",
+      "summary": "신성환 금통위원 \"WGBI 편입 끝나는 12월, 국채 거래절벽 대비해야\"[KIW 2026] 한국경제",
+      "keywords": []
+    },
+    {
+      "title": "SKC, 유상증자로 1.2조 확보···글라스기판 투자·차입금 상황 등 활용 - 서울파이낸스",
+      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTFBPLUV3c0JTS3BwZ2RNSlBLM281Ull0TlZDY0NPTk5rWG8yX3paS2NJTnNxWVplRlpjODVENGc2U0RfVzNTLWRlWG5NdzBJUmdBZnUzWHRZUHdXRFJ1SldfaTV0c3o2X1djOFE?oc=5",
+      "source": "서울파이낸스",
+      "published": "2026-05-12T14:56:52+09:00",
+      "summary": "SKC, 유상증자로 1.2조 확보···글라스기판 투자·차입금 상황 등 활용 서울파이낸스",
+      "keywords": [
+        "유상증자"
+      ]
+    },
+    {
+      "title": "SKC, 1조1671억원 유상증자…유리기판 상용화 속도 - 디일렉",
+      "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE9zc1RfdVo0U0EwSk1rTFVIOHdFbGp2dXNLR1RxZndXam1GUzBFLWwzcW1GRzBQOEJabFdMQnpGSDNVb3pKNVctQUR1MmozSWpRalFqSWFsZ285OTVnYmFyaEpuZlZnQQ?oc=5",
+      "source": "디일렉",
+      "published": "2026-05-12T14:56:13+09:00",
+      "summary": "SKC, 1조1671억원 유상증자…유리기판 상용화 속도 디일렉",
+      "keywords": [
+        "유상증자"
+      ]
+    },
+    {
+      "title": "삼성전자 \"AI 데이터센터 시대, 메모리 수요 폭발할 것\"[KIW 2026] - 한국경제",
+      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE1aWk5kZUdfVy1xbWMwY0VxZGNtaWFtRG5hSzhTVTZSNllKOGNmZ1VUcTQxVElKWU5ENThyanlpODlDNVFYd3Fkd0sxaGZ1TVNBSXpPZ1N2SEw5d9IBVEFVX3lxTE5MTGZWVkI5WlhpVzdlMkxJQ2pWRi0wTEtBaF83ZWQybFJyUDVpV1ctel91ekRQN1JPUkM1V0JnZ29kc2FKRmFjbmJTU2xLc0tJcjRhZQ?oc=5",
+      "source": "한국경제",
+      "published": "2026-05-12T14:54:23+09:00",
+      "summary": "삼성전자 \"AI 데이터센터 시대, 메모리 수요 폭발할 것\"[KIW 2026] 한국경제",
+      "keywords": []
+    },
+    {
+      "title": "'로봇 데이터' 전문 컨피그, 삼성·현대·LG·SKT 등으로부터 투자 유치 - AI타임스",
+      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTFBEbzJidnRxVzFaMjM1S0FqWDh2WVlCd2w1Zm9wVlpPbnJ6UFc3WExFaWNMTUJacmh0eDRQeUEtV1FGMXhUcnk4ZDRBbHdFNHlGR2owYkFSdU0wYXJMNzdDMWJsUWRabzlvQWc?oc=5",
+      "source": "AI타임스",
+      "published": "2026-05-12T14:53:07+09:00",
+      "summary": "'로봇 데이터' 전문 컨피그, 삼성·현대·LG·SKT 등으로부터 투자 유치 AI타임스",
+      "keywords": [
+        "투자유치"
+      ]
+    },
+    {
+      "title": "[단독] LG엔솔, 중국·핀란드 양극재 합작사 지분 인수…유럽 내 공급망 확보 - 더구루",
+      "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE1kVEZudHNDM1ZRdVZYNGVWb1hNOExsdGloQmR1cDVwYlZKUzNLa0R1OS1ROVVuWXc4aGY2Vm9ybmNGeE1pWUpYdTdzVFRsU0NQaGptSnhIellqOFRIS3RHRlFCTjNYQQ?oc=5",
+      "source": "더구루",
+      "published": "2026-05-12T14:52:52+09:00",
+      "summary": "[단독] LG엔솔, 중국·핀란드 양극재 합작사 지분 인수…유럽 내 공급망 확보 더구루",
+      "keywords": [
+        "지분인수"
+      ]
+    },
+    {
+      "title": "미래에셋자산운용 ‘TIGER 구글밸류체인 ETF’ 상장…AI 인프라 성장 흐름에 대응 - 백세시대",
+      "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTFBwRERvS2FBWG5lNjliWTRyQ1ZYc0dmYkoyLU1KTWg4NEQ3Q0VrTm9HeGFJSGRyRWpzU1A1M21qQVpUektFZDJZa3FFSTliN3Vpbmdhd3RBMzVaQkM2Nk1pN3lmRUQ3T01MbVdv?oc=5",
+      "source": "백세시대",
+      "published": "2026-05-12T14:49:53+09:00",
+      "summary": "미래에셋자산운용 ‘TIGER 구글밸류체인 ETF’ 상장…AI 인프라 성장 흐름에 대응 백세시대",
+      "keywords": [
+        "상장"
+      ]
+    },
+    {
+      "title": "신한카드, '장기연체채권' 캠코 새도약기금에 매각 결정 - 백세시대",
+      "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE85U28tUTJZY3lKZ0hDZlVrOGFlSlExU2NrSTIxNnpRZHdkSlVteVZoT0dwdEZxbE10d2lJTG1OY2hJdnpnM0JJdi1TaTV0VzJIb3U5UllUako4OUtxVF9veGRGTFk3aktSZklV?oc=5",
+      "source": "백세시대",
+      "published": "2026-05-12T14:49:32+09:00",
+      "summary": "신한카드, '장기연체채권' 캠코 새도약기금에 매각 결정 백세시대",
+      "keywords": [
+        "매각"
+      ]
+    },
+    {
+      "title": "[기업家] 넥슨 ②ㅣ 30주년 IP부터 신사업 등…게임 산업 행보 - CBC뉴스",
+      "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE50bksySUR1cW1TbkIxcjdfVG02YU9rR3kzNkVPU0dxUW5WRk1lbWdvbkx4elY5X243QU5sMHlPNlJsekJiS19YeUNfdVVJTlpEZExQQ2kwX2steHVkVnBvQVpJMmtrQno0?oc=5",
+      "source": "CBC뉴스",
+      "published": "2026-05-12T14:48:37+09:00",
+      "summary": "[기업家] 넥슨 ②ㅣ 30주년 IP부터 신사업 등…게임 산업 행보 CBC뉴스",
+      "keywords": [
+        "신사업"
+      ]
+    },
+    {
+      "title": "리걸테크 ‘멘타트’, 11억 시드 투자 유치 및 AI 법률 문서 작성 서비스 정식 출시 예고 - beSUCCESS",
+      "url": "https://news.google.com/rss/articles/CBMiRkFVX3lxTFBmMjkyQnNnQ3NjMmFIR1kyMkM0YzFkdEdJY2ROOG1tNEk5Tko4OEpkM19qRTAwLTBuQl9Ta3BWWDQ4ZGszeFE?oc=5",
+      "source": "beSUCCESS",
+      "published": "2026-05-12T14:45:43+09:00",
+      "summary": "리걸테크 ‘멘타트’, 11억 시드 투자 유치 및 AI 법률 문서 작성 서비스 정식 출시 예고 beSUCCESS",
+      "keywords": [
+        "투자유치"
+      ]
+    },
+    {
+      "title": "SKC 유상증자로 1.2조 조달, \"유리기판 투자와 차입 상환에 활용\" - 비즈니스포스트",
+      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE43S0FlVDhoZ1Y3LW05a0JkRGoyTHdCR3FyazAzZ3VhNTZHV0NUdTJXd2VEU0oyc3pZRmtPM090b2tiWUtqem9xcnpMbW1vN1dRX2F1S0ZZWm8ybU9VUzNQWkxkdUZfVjI5bGxDUElFQUZXOEk?oc=5",
+      "source": "비즈니스포스트",
+      "published": "2026-05-12T14:43:15+09:00",
+      "summary": "SKC 유상증자로 1.2조 조달, \"유리기판 투자와 차입 상환에 활용\" 비즈니스포스트",
+      "keywords": [
+        "유상증자"
+      ]
+    },
+    {
+      "title": "SKC, 1조1671억 유상증자 ‘신사업·재무개선’ 실탄 확보 - 블로터",
+      "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTFBYSnpsalBQRWlveTRWYjRXNzBmY25TaUR0b2hEMllJZUhJMEVPU0V3OS12VENSTy1TTWY3NVg0YnVGbEtvU1hPMXFzQ2RjbTAyMjhSQVM2Y0NmVVBsbEMxTW1XOUpuTU4y0gFsQVVfeXFMTWljenVxM29tQy15eThPTXVlLUdyYkhKX0xiRmhuQUF3WFBValpQSGRKTnJZNUhyX3NndUczS2ZoMU00TmFLUmhvRno4blppbU5ma1ZSVUNPbTJZdzlLV3QwMWRRanFkSWkwQy1u?oc=5",
+      "source": "블로터",
+      "published": "2026-05-12T14:42:42+09:00",
+      "summary": "SKC, 1조1671억 유상증자 ‘신사업·재무개선’ 실탄 확보 블로터",
+      "keywords": [
+        "유상증자",
+        "신사업"
+      ]
+    },
+    {
+      "title": "SKC, 유상증자로 1.2조 조달…신사업ㆍ차입금 상환 투입 - fetv.co.kr",
+      "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE9RangzWnJ1YUR0QUNiVXktRmwxVldZVzJLaU5EaGlGRnBfbDRNUGpsZDhpT3U4eVoyZEZxcUlPQ3dpNDNVQk9TZmt6UmJjRzgtQ2FyWkJPMllQMUNfXzRNQXBRdVpBSTlC?oc=5",
+      "source": "fetv.co.kr",
+      "published": "2026-05-12T14:41:22+09:00",
+      "summary": "SKC, 유상증자로 1.2조 조달…신사업ㆍ차입금 상환 투입 fetv.co.kr",
+      "keywords": [
+        "유상증자",
+        "신사업"
+      ]
+    },
+    {
+      "title": "현대운용, 'UNICORN 코스닥바이오액티브' ETF 상장 - 아시아경제",
+      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE1UMVdrMEZvXzNod2FNQVdpTFZjS19ocV9YbjRyNTJhd2JWRnRRV0ZJUG1Na3REV0hxZXlJZ1g1czRxc0IxSmpFV25tdzlNMTByNkJaY05jZkZPUjdEenUxSw?oc=5",
+      "source": "아시아경제",
+      "published": "2026-05-12T14:40:49+09:00",
+      "summary": "현대운용, 'UNICORN 코스닥바이오액티브' ETF 상장 아시아경제",
+      "keywords": [
+        "상장"
+      ]
+    },
+    {
+      "title": "카카오페이, 월 사용자 1000만 예고 '카드사 맞불' - thebell.co.kr",
+      "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxQLWFYckV6NDVMRkVCaXZrbE4zNTA4Z2hpcEdEcGhxU2x6OUdHU2VEbTZLbWUwclVxSUVIOUIzQkh4YVRfM1VpY3hSNXMtTWRPQkI4Yjc5ejB2cjBZSkVwUHhHRXllenMtTEtYd0R0bjkwcUN0Yk1adk5LcEtzbUlrcG5RT2RSNGZqLWg0?oc=5",
+      "source": "더벨",
+      "published": "2026-05-12T14:38:24+09:00",
+      "summary": "카카오페이, 월 사용자 1000만 예고 '카드사 맞불' thebell.co.kr",
+      "keywords": []
+    },
+    {
+      "title": "업비트 원화마켓 상장에…베니스토큰, 20분 만에 40%대 급등[특징코인] - 뉴스1",
+      "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE9rbmF4Q2pERm5TZmtYOTctN25jT0pCOGI2dmZoUnB3NFJETEhlSmxSRTZmVldIaXlFZzZRY2FDQlhDenQ5ajdoVG1IQnNZU04yckFlTGVXWEFxNzhOY1hoUGFma0lkQQ?oc=5",
+      "source": "뉴스1",
+      "published": "2026-05-12T14:37:55+09:00",
+      "summary": "업비트 원화마켓 상장에…베니스토큰, 20분 만에 40%대 급등[특징코인] 뉴스1",
+      "keywords": [
+        "상장"
+      ]
+    },
+    {
+      "title": "이노제닉스, 45억 원 규모 투자 유치…대장암 조기진단 혈액 기반 검사 기술력 및 상업화 가능성 인정 - 바이오타임즈",
+      "url": "https://news.google.com/rss/articles/CBMibEFVX3lxTE4tQU1fbkJHeEYxYndxbEEtLTBBYVlTNElYSXN4VlFkbHlCZmZtMm9zWU5GTmhJd2xicUZyNHdsMGYyYkxkelRpQkpHRnZqLXlYRi0yZzlUS2NVM2M3RFVienlxZEd4allmOGhKbg?oc=5",
+      "source": "바이오타임즈",
+      "published": "2026-05-12T14:35:51+09:00",
+      "summary": "이노제닉스, 45억 원 규모 투자 유치…대장암 조기진단 혈액 기반 검사 기술력 및 상업화 가능성 인정 바이오타임즈",
+      "keywords": [
+        "투자유치"
+      ]
+    },
+    {
+      "title": "\"시장 70% 이기는 대체 데이터 전략…고객 신뢰 누적\" - thebell.co.kr",
+      "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxNRjhsR2oxWVEweXNlRnU1dUFmLWdEQ1AtNmpxRXUxVHJmVnEtbTRSNGN3UjI0NS1tb0dMbUNObGw4UGF4OEJkNERRQXRSSmF5aWhKai1VckExbllEZGtLb3BfY1FSaDFOa0FJeU9ZbDBUWjVmdlRmRmRRUTZCb1B3QWNmNkNwMFdYNzhZ?oc=5",
+      "source": "더벨",
+      "published": "2026-05-12T14:34:18+09:00",
+      "summary": "\"시장 70% 이기는 대체 데이터 전략…고객 신뢰 누적\" thebell.co.kr",
+      "keywords": []
+    },
+    {
+      "title": "'어닝서프라이즈' 삼성증권, 외국인 통합계좌로 성장 날개 - 네이트",
+      "url": "https://news.google.com/rss/articles/CBMiU0FVX3lxTE00R25GeExEZlZDd3ZfZXZSV2NnWHlhdjNqejdxZV9pdFJuU3V6a1hMdm9ENGJjVjBudnFjMDc5ZTJIalJYb08teDZLYllDOVZCTTF3?oc=5",
+      "source": "네이트",
+      "published": "2026-05-12T14:34:00+09:00",
+      "summary": "'어닝서프라이즈' 삼성증권, 외국인 통합계좌로 성장 날개 네이트",
+      "keywords": [
+        "어닝서프라이즈"
+      ]
+    },
+    {
+      "title": "딜라이트룸, M&A 사업부 딜라이트허브 통해 글로벌 학습 앱 ‘노지(noji)’ 인수 및 확장 본격화 - beSUCCESS",
+      "url": "https://news.google.com/rss/articles/CBMiRkFVX3lxTE43MGE3Sy1GRC1fN3hyd3F5ZVdJeXJ3ZUE1ajZKV2cxTUlIZ3hKUmd2bDZlTVctTEd0bF9oNkpsOFRoWFQ5TVE?oc=5",
+      "source": "beSUCCESS",
+      "published": "2026-05-12T14:30:40+09:00",
+      "summary": "딜라이트룸, M&A 사업부 딜라이트허브 통해 글로벌 학습 앱 ‘노지(noji)’ 인수 및 확장 본격화 beSUCCESS",
+      "keywords": [
+        "M&A"
+      ]
+    },
+    {
+      "title": "피지컬AI 선두주자에 투자…'RISE 현대차고정피지컬AI' 상장 - 머니투데이 - 머니투데이",
+      "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE1jbXFGYWViaGw0TW5CLXE2SzJCUUROcERTajVUcjBJVExDZTVESEVEM0JFSTFONEExRWNkUUxNTUt1TVozRmhPUXQ2d3RCS1B5b1N2VDlXcUdJQ2VDVC1QRmpZQVkzUG5M0gFuQVVfeXFMUGJKaXdNZG1KeGNCbFFfY3RIQnBjMjJDMy1QTWlOLUFSYzJWZFdPS2ttX0tUMVlOcFNPWFAzRi1fdjJDOWYxeHotNGREcy1ncXFEM3JvdDJqMXF1Z2JGb3FGcGtuaFI0ZUdlX1lDaGc?oc=5",
+      "source": "머니투데이",
+      "published": "2026-05-12T14:30:11+09:00",
+      "summary": "피지컬AI 선두주자에 투자…'RISE 현대차고정피지컬AI' 상장 - 머니투데이 머니투데이",
+      "keywords": [
+        "상장"
+      ]
+    },
+    {
+      "title": "[IT는 지금] LG유플, AI비서 '익시오' SaaS형 수출 첫발 外 - 딜사이트",
+      "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE4tclE2UTZVTmU3b3FmY000U2o5bGFWZ3ZXZlNFd1RlMHdnVUJsYmRGQ0FEYTJPM25FZ2hUOFc1VjhiTXlVVkNKYTBsWHhxa0RaalZDWENsbEQ?oc=5",
+      "source": "딜사이트",
+      "published": "2026-05-12T14:23:18+09:00",
+      "summary": "[IT는 지금] LG유플, AI비서 '익시오' SaaS형 수출 첫발 外 딜사이트",
+      "keywords": []
+    },
+    {
+      "title": "[단독] '저가 합병' 막는다…상장사 합병에 '주가 대신 공정가액' 적용 - v.daum.net",
+      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTFBoVkE4VW5WZjg0UFc0SHZZVzlPRXBmZXdJb2JkaGlCS1lrR0tmbnZBQ1J2RGZ5QXFTVlVBRnVEM1o2TFM2V1NCNW5ReC02ZkU?oc=5",
+      "source": "v.daum.net",
+      "published": "2026-05-12T14:23:15+09:00",
+      "summary": "[단독] '저가 합병' 막는다…상장사 합병에 '주가 대신 공정가액' 적용 v.daum.net",
+      "keywords": [
+        "합병"
+      ]
+    },
+    {
+      "title": "유니테스트, SK하이닉스에 반도체 검사장비 공급…292억 규모 - 딜사이트",
+      "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTFBOZDZwQk15cDJfbUVraHNBVWtiNTV4MjM3VjA5X2ZWOVFDekZvellXSmZDcGN5c3k1WXBwRlFSa1VSMXFQdG1vSGpkdEdFYTlyWmV1Q0JxejM?oc=5",
+      "source": "딜사이트",
+      "published": "2026-05-12T14:22:56+09:00",
+      "summary": "유니테스트, SK하이닉스에 반도체 검사장비 공급…292억 규모 딜사이트",
+      "keywords": []
+    },
+    {
+      "title": "[단독] '저가 합병' 막는다…상장사 합병에 '주가 대신 공정가액' 적용 - 네이트",
+      "url": "https://news.google.com/rss/articles/CBMiU0FVX3lxTE9RVHQzbElVOFNxY2x5aDlnejJwZXdlU3c2LVZYdlRaQ1RqVGpGNlB3azZXV2pxdEhWUTNyZHFvVVl1Z19Mc2stSHB5SmN0T0h4a1dV?oc=5",
+      "source": "네이트",
+      "published": "2026-05-12T14:22:00+09:00",
+      "summary": "[단독] '저가 합병' 막는다…상장사 합병에 '주가 대신 공정가액' 적용 네이트",
+      "keywords": [
+        "합병"
+      ]
+    },
+    {
+      "title": "충남도, 中 장쑤성 기업 1500만 달러 투자 유치 - newsis.com",
+      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE5JNFRiY1Z4MGVLOFlzSFJFcU8zNzM2UGdsZnluT3o4Y2Zib0Z5ajRzcGNJWEtUSXFtYl9TYklDTWRaZnpwcEVjYVZZVjRNQ2U0WDNmVjdJenM5UUFlRzNjbdIBeEFVX3lxTE1uYmVOM19jcG9rVzRFb0ZPZ0FpLVRIN0dNV0hHNUlHX3JPUnhzMk40ck9NdnVOV1pJRm9FbndERngyTWNSemVZbEZFNVlQcHBtbzE3ajRZR1ozeHBfdFBTVm1TdVhlYTQtYjh2UFZnT0EtcU13ZU1CaQ?oc=5",
+      "source": "newsis.com",
+      "published": "2026-05-12T14:21:56+09:00",
+      "summary": "충남도, 中 장쑤성 기업 1500만 달러 투자 유치 newsis.com",
+      "keywords": [
+        "투자유치"
+      ]
+    },
+    {
+      "title": "딜라이트룸, 글로벌 학습 앱 ‘노지’ 인수∙∙∙M&A 통한 글로벌 포트폴리오 확장 - 스타트업투데이",
+      "url": "https://news.google.com/rss/articles/CBMibEFVX3lxTFAwWUtDclNFd1dIVk5iQ245YVpRbXZ3ckpSVHVrR2RYNDN5QlVUdnhscmRoRXRQSjZITkhJNTR3cGF0WlhnaTdhWnBTeG1uRDJSTnJPMjZsNFUtdjN2OUZXNnlwWF9Nd3RsakxWeA?oc=5",
+      "source": "스타트업투데이",
+      "published": "2026-05-12T14:15:48+09:00",
+      "summary": "딜라이트룸, 글로벌 학습 앱 ‘노지’ 인수∙∙∙M&A 통한 글로벌 포트폴리오 확장 스타트업투데이",
+      "keywords": [
+        "M&A"
+      ]
+    },
+    {
+      "title": "SKC, 유상증자로 1조1671억 확보…차입금 상환 '재무건전성 제고' - 녹색경제신문",
+      "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTFAxNTNQSktDNktoSHF0Z25UaFE4ZWZrTWJKb0lDSXNraXN4bjVpUld3cFRQOHdfam1xeXc5TUhkQ0hQSWxPbERkNU1DcWg0QzV3UUZ2U1F3eVJ1Q2VFY1g1S1E0Z3dMMjh6?oc=5",
+      "source": "녹색경제신문",
+      "published": "2026-05-12T14:15:16+09:00",
+      "summary": "SKC, 유상증자로 1조1671억 확보…차입금 상환 '재무건전성 제고' 녹색경제신문",
+      "keywords": [
+        "유상증자"
+      ]
+    },
+    {
+      "title": "[AI의 종목 이야기] 서비스나우, M&A 위해 40억달러 채권 발행 - 뉴스핌",
+      "url": "https://news.google.com/rss/articles/CBMiXEFVX3lxTFBtVGxHNEVUQlZlMXNhWHFXNDZBcWduU1JHeHpqdkV1YUtDd3RvdHVWUGxyX1g4cnNxaU9FZ25BRmR3dkVCSmZ3UDd6eHBjdDg1bnQ0M2tidGU5cWU0?oc=5",
+      "source": "뉴스핌",
+      "published": "2026-05-12T14:15:00+09:00",
+      "summary": "[AI의 종목 이야기] 서비스나우, M&A 위해 40억달러 채권 발행 뉴스핌",
+      "keywords": [
+        "M&A"
+      ]
+    },
+    {
+      "title": "미드나잇웨이브, 시드 투자 유치 및 팁스 선정 기반 AI 음원 IP 사업 고도화 - beSUCCESS",
+      "url": "https://news.google.com/rss/articles/CBMiRkFVX3lxTE85Ri1YUldXWkszUnZQaEV0X2owdU5LOTRjaFBJdmZFNnZOYTc1VTQzVmlVX1otZ2M0QkhSSVRQQmZPa2hfaEE?oc=5",
+      "source": "beSUCCESS",
+      "published": "2026-05-12T14:10:35+09:00",
+      "summary": "미드나잇웨이브, 시드 투자 유치 및 팁스 선정 기반 AI 음원 IP 사업 고도화 beSUCCESS",
+      "keywords": [
+        "투자유치"
+      ]
+    },
+    {
+      "title": "[thebell interview] 이지스, 데이터주권 강화 트렌드로 글로벌 공략 가속화 - thebell.co.kr",
+      "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxORGxrZnJ3eHFwcTFMejNnX2c5a2l0SmExWmtlb1pXUTd1bXZzQm9uLVB2Zm5EYzVCT1d3WVRXV2FLYmhONjI1SUppTlJvSGVQa3p2N3RwZ19nSHRvdzNFdE5KQnhkaUJqenQ4ZjdydmdrYVpueklSZTVGUFR5X1lDaGRoeGFfZzd5Yk5v?oc=5",
+      "source": "더벨",
+      "published": "2026-05-12T14:10:02+09:00",
+      "summary": "[thebell interview] 이지스, 데이터주권 강화 트렌드로 글로벌 공략 가속화 thebell.co.kr",
+      "keywords": []
+    },
+    {
+      "title": "신한은행 점찍은 베트남 핀테크 ‘소반항’, 380만 달러 투자 유치 - PRESS9",
+      "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTFBxcUI0QkVuY0hic1JjZGVBemFjdXdBSDBMQmp0b0E3MG9kU3VTZ1B1Vkktb09DcHdla2syM3lxamNIcTZqTXF2b0xVLTVaZXJhUzd3ck9vWW5nNWpNU0h2YTFESk0?oc=5",
+      "source": "PRESS9",
+      "published": "2026-05-12T14:08:28+09:00",
+      "summary": "신한은행 점찍은 베트남 핀테크 ‘소반항’, 380만 달러 투자 유치 PRESS9",
+      "keywords": [
+        "투자유치"
+      ]
+    },
+    {
+      "title": "한화솔루션, 소액주주 반발 산 유상증자 결국 연기 - v.daum.net",
+      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE9Eb1dyRlVOdVpvdzJwOWVvZWo3NGoySHJJWlFsOWluNHVUck1OX2dYVkVUaU95SXNnbll0Q0pMTFpOQ3lNbDdycDRSMUFaNzA?oc=5",
+      "source": "v.daum.net",
+      "published": "2026-05-12T14:07:54+09:00",
+      "summary": "한화솔루션, 소액주주 반발 산 유상증자 결국 연기 v.daum.net",
+      "keywords": [
+        "유상증자"
+      ]
+    },
+    {
+      "title": "창녕남부농협 출범 ‘기념식·현판식’개최... 부곡·영산농협 하나로 합병 - 아시아투데이",
+      "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE9wWU5wMWJRbWg2Ym5waTJSMnM2WHdEZkUzZkRYSGR4M04yZXY0ODRyUUMtLUpXVHBYZmhheGtkVFRjOEpSbHMtY09GdE02bGJMM18wOXdFOG1DS2ZxRFhXMGJWamZNV1VPdU1oaG5R?oc=5",
+      "source": "아시아투데이",
+      "published": "2026-05-12T14:04:34+09:00",
+      "summary": "창녕남부농협 출범 ‘기념식·현판식’개최... 부곡·영산농협 하나로 합병 아시아투데이",
+      "keywords": [
+        "합병"
+      ]
+    },
+    {
+      "title": "[에이아이오 IPO] 국산 낸드컨트롤러 제조…8월 예심 목표 - thebell.co.kr",
+      "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxOOTk4dm1xejhuTEdDcmNmLWRBci1QQXBiY0hFNVRHX2RjUTlIVUhMeXY2SEE2OTh2bzRHUElGaDExTnYtSjgyeVFMamNoRWRGOXpaRVJNTV92S1U4X0xMeWh1QjJJb1lJOGtSMkExTmxheWQxZWRBU05ZeWhNczVxOGhicXZiUTR4?oc=5",
+      "source": "더벨",
+      "published": "2026-05-12T14:04:01+09:00",
+      "summary": "[에이아이오 IPO] 국산 낸드컨트롤러 제조…8월 예심 목표 thebell.co.kr",
+      "keywords": []
+    },
+    {
+      "title": "신한카드, 장기연체채권 전액 매각…포용금융 실천 - BBS불교방송",
+      "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE9mUDMtMjIyUll4TVJDU2psc3kwbUxFWG9DVWVkSVlFUUdLekp1aXZMWU5jSzU2MDhqM2I2YXpfS3UxdzBxNDhtOVY0TTU0bTFSa0FQNWllWWFGOHNEMzIycnZqX0JEQk1uR05B?oc=5",
+      "source": "BBS불교방송",
+      "published": "2026-05-12T14:03:16+09:00",
+      "summary": "신한카드, 장기연체채권 전액 매각…포용금융 실천 BBS불교방송",
+      "keywords": [
+        "매각"
+      ]
+    },
+    {
+      "title": "아리울태양광발전, 계열사 비에스한양 유상증자 참여 - 디지털투데이",
+      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE5LYl94S3REM09IMnNIN1BDREIxa1NZeDZKUnNjaVNMdzBFakRTOTFURG4wR1FJRXg1SUxFUy04dUxwc3hwcWlZbmN5emJDazFORUxOaTZUd19RMElxbzRZQTRaY1Vvbm1DTHVpWkdSa3hndTg?oc=5",
+      "source": "디지털투데이",
+      "published": "2026-05-12T14:02:01+09:00",
+      "summary": "아리울태양광발전, 계열사 비에스한양 유상증자 참여 디지털투데이",
+      "keywords": [
+        "유상증자"
+      ]
+    },
+    {
+      "title": "[리포트 브리핑]삼성증권, '높아진 눈높이를 상회하는 어닝 서프라이즈' 목표가 155,000원 - 신한투자증권 - 뉴스핌",
+      "url": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE9DUFBmemFSUkpjbm5wUXRqcmYwNXl0bjRVc1N0eTl2S0tTVDN1QzNBWW54eU1XTlo3b0lUX0dKRGJ4Qy1XbHVtTHhDYUo4NFlvMHpWZ1NRVUxHZ2Z6?oc=5",
+      "source": "뉴스핌",
+      "published": "2026-05-12T14:01:00+09:00",
+      "summary": "[리포트 브리핑]삼성증권, '높아진 눈높이를 상회하는 어닝 서프라이즈' 목표가 155,000원 - 신한투자증권 뉴스핌",
+      "keywords": [
+        "어닝서프라이즈"
+      ]
+    },
+    {
+      "title": "﻿한국 통화정책, 변곡점에 서있나? - 한국경제",
+      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE54TWNlUXhZV3RCMzZHR1NEclNOM2NzNmhiQkx3aXFqRHZFdEZuWG1STmwzVVlLUTBDQnRNTzR4WXlRamY2blpWbzJyWk9SeDJlcHFaY2l5M3FQQdIBVEFVX3lxTFBOQnNWLWZjNVp5dTJJNlZmdHc0V2RSVzhEQjI5WWxwS2lkWHk2bENSVGFGb24tbGhnc29kbVRrcGVEYXlKeERMTWxWYkoteFpndEtDRQ?oc=5",
+      "source": "한국경제",
+      "published": "2026-05-12T14:00:06+09:00",
+      "summary": "﻿한국 통화정책, 변곡점에 서있나? 한국경제",
+      "keywords": []
+    },
+    {
+      "title": "[CEONEWS 이재훈의 X파일 16화] 네이버·두나무의 '20조 빅딜', 혁신인가 독점인가 - CEONEWS",
+      "url": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE9rOGhWdWl0LVVlNVlKNDlGRGM1VC13bndGVk92YnN6bkcxZTk0a01iZnd0NURUaXB2SjBVY2dJWTRhWTBvMHZucUJoZWp6UEkzNUZyTGMtZmQ0TVNJN0Fj?oc=5",
+      "source": "CEONEWS",
+      "published": "2026-05-12T14:00:00+09:00",
+      "summary": "[CEONEWS 이재훈의 X파일 16화] 네이버·두나무의 '20조 빅딜', 혁신인가 독점인가 CEONEWS",
+      "keywords": [
+        "합병"
+      ]
+    },
+    {
+      "title": "미드나잇웨이브, 매쉬업벤처스·슈미트로부터 시드 투자 유치 - 플래텀(Platum)",
+      "url": "https://news.google.com/rss/articles/CBMiSEFVX3lxTFBDczV2MmtsNmRaUzczOE0xaFhxR3l6X2pQM1AycDdOdTJsckVCcUVPY3Bpd0otWWtHTFRlRk5vY215XzRXeGp2ZQ?oc=5",
+      "source": "플래텀(Platum)",
+      "published": "2026-05-12T13:59:03+09:00",
+      "summary": "미드나잇웨이브, 매쉬업벤처스·슈미트로부터 시드 투자 유치 플래텀(Platum)",
+      "keywords": [
+        "투자유치"
+      ]
+    },
+    {
+      "title": "하나은행도 상록수 채권 전액 새도약기금 매각키로 - 경향신문",
+      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE5VQWJEc0NhNy1LTW1sWWxHXzdCS21jWDdmY0hxNXBzdjVvLWpYWDBRVTJvUngxdTIyN3FnS20tVHhQcEVNVnVZZTZTV2g0bV9BZExjVHlDSUhid9IBX0FVX3lxTE9HVzRUMjJwS3NCWmkteHBLQXNWXzVfZ2pjdDNiVFhQeDNldjZ5c1NVSDZqdzhuQ25lY0JublNVVlRKLThwTmF3YnZDNXhjWG8taHE0eHhKUkdWbEtSZ0tF?oc=5",
+      "source": "경향신문",
+      "published": "2026-05-12T13:58:00+09:00",
+      "summary": "하나은행도 상록수 채권 전액 새도약기금 매각키로 경향신문",
+      "keywords": [
+        "매각"
+      ]
+    },
+    {
+      "title": "SKC, 1.2조원 규모 유상증자…\"글라스기판 투자·재무개선 가속\" - 연합뉴스",
+      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTFBJY1NMYUdJTTY4cHBpN3FFM1NNY3lsOGNsR3JCY0gzdlBXX0g4Mjh3T001RUdJQkY0alpzTWlqZWxiT3o5TmFQWi1YWmZKZ2VwQTJOR2VjWkhyVmvSAWBBVV95cUxNZlR3YnpjZXVETTRscnRLZlNISXB1VGxYTzBhZjFZTERvZmpoMVA0T2lTSHd3Tm12eFNub0pNT1hDQ21IbTlTSmxna0xhVlBVa0RRWjFydmotenZGVHFEVlo?oc=5",
+      "source": "연합뉴스",
+      "published": "2026-05-12T13:55:40+09:00",
+      "summary": "SKC, 1.2조원 규모 유상증자…\"글라스기판 투자·재무개선 가속\" 연합뉴스SKC, 유상증자로 약 1.2조 확보…“글라스기판 상용화∙재무구조 개선” - 조선비즈 ChosunbizSKC, 유상증자 1.2조 확보…\"5775억 빚 갚고, 미래사업 투자 확대\" newsis.com",
+      "keywords": [
+        "유상증자"
+      ]
+    },
+    {
+      "title": "벤처투자 ‘엑시트 병목’ 해소 논의…IPO 편중 구조 개선 공론화 - 핀포인트뉴스",
+      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE9EZlZFcHJTcmRlYmYtNk5pS2ZuZHVkZUFlUEpVMkw4aXJTeW1wWmxlSzJxX256aHA0V3pOUjFqYldxemFLZm1EWUN4UHFXd1JLdkptM0xXNzJId3Q4bmIwQnkybnB0cnBEN19vY1EtaWtfejjSAXdBVV95cUxPa3dSTldGT2JJSWd4OF9acHZjRmp2eGEtdTJtcG9lckdmbG56eTZ1azZUQ0ZpbUNxaXBrUkVFODM0ZlFpdkZEWnh6OUdOU181YXB2dm9rOUdnQVVMdl9vRHBPQTlYdHVmWElzRHdiQ2dITXNvbjMwVQ?oc=5",
+      "source": "핀포인트뉴스",
+      "published": "2026-05-12T13:55:13+09:00",
+      "summary": "벤처투자 ‘엑시트 병목’ 해소 논의…IPO 편중 구조 개선 공론화 핀포인트뉴스",
+      "keywords": [
+        "IPO"
+      ]
+    },
+    {
+      "title": "[특징주] 달바글로벌, 1분기 어닝 서프라이즈에 14%대 급등…장중 사상 최고가 경신 - 와이드경제",
+      "url": "https://news.google.com/rss/articles/CBMibEFVX3lxTFBPRnF3LW9NdzZ6MjNZcTlFZGQ5WDNHc213ajV3UkdMM1REMy1KR0pvZWh2SWo5MUI3QjFfTGZxRWxOZWlDbWl1Q1lQSkY4R1RCei1GTFFJaFBBUUNwLTVHWF9Zb2pVdTJUWWxtNg?oc=5",
+      "source": "와이드경제",
+      "published": "2026-05-12T13:54:58+09:00",
+      "summary": "[특징주] 달바글로벌, 1분기 어닝 서프라이즈에 14%대 급등…장중 사상 최고가 경신 와이드경제",
+      "keywords": [
+        "어닝서프라이즈"
+      ]
+    },
+    {
+      "title": "[이슈] NXC, 정부 보유 1조 자사주 매입… 다음달 소각으로 지배구조 단순화 - 오늘경제",
+      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE9iR1MwYllwdUtRV0lfbnpoNEZnWjJOU2xGSFBFejQ5N05kclU0S3FRRjh6UW5HMk9aaXZsbnBoNEVKNC0xV0F2d1huTm16bG8xWXV5VHA3RnVVeGZ3S0hmS3czY051VjlOUmI1MGJTNUVxT1E?oc=5",
+      "source": "오늘경제",
+      "published": "2026-05-12T13:53:27+09:00",
+      "summary": "[이슈] NXC, 정부 보유 1조 자사주 매입… 다음달 소각으로 지배구조 단순화 오늘경제",
+      "keywords": [
+        "자사주"
+      ]
+    },
+    {
+      "title": "한화솔루션, 유상증자 일정 전면 연기…금감원 2차 정정요구 여파 - 인베스트조선",
+      "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxQQ2luYXFObFZERlhJSTczWmRhT0VhdENfNnE5dUlZV05UQWk0bGczY0U3YVYwc1JuNnNTZHdUa2lDTHJsakF1VG1sOTVqaDVBY2pXMmZyTElaMnR3YzNHQXdpZ29ta1pEazVzTHFSdDQ5R0tkWmRNX0lHdXZ3Sl9YT0xpZw?oc=5",
+      "source": "인베스트조선",
+      "published": "2026-05-12T13:49:00+09:00",
+      "summary": "한화솔루션, 유상증자 일정 전면 연기…금감원 2차 정정요구 여파 인베스트조선",
+      "keywords": [
+        "유상증자"
+      ]
+    },
+    {
+      "title": "SKC, 유상증자로 글라스기판 상용화 자금 확보 - 디지털투데이",
+      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTFBpeldILVRQM0dLSDdqVE9GOGNTTWxZSHVkMU5Mc21zcVFxbTVRdG1IdF9BRXVaNEVEREpkNm9GTTB5RldoWkNSc3d4ampIa0pfU0NmMDkwYWxtMF9OMTI4MDBVSENNelA3X0FHVFhHbGlxbzg?oc=5",
+      "source": "디지털투데이",
+      "published": "2026-05-12T13:45:58+09:00",
+      "summary": "SKC, 유상증자로 글라스기판 상용화 자금 확보 디지털투데이",
+      "keywords": [
+        "유상증자"
+      ]
+    },
+    {
+      "title": "삼현철강, 8.5억 규모 자사주 소각 결정 - 마켓인",
+      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTFAzbzZGbk0tLXotTmNGRVgyU1pkbDdWTTVheVFfbDB6UWRPOTBoMlpXclJPMjA2U0YwNE42VUVNcU81ZHNEUEJ3dVllRDJuc2JvR0V2eTcyRXQ5YWZqY25NTUR4MDNpQXJ2X2UxZi1VUlc3QUE?oc=5",
+      "source": "마켓인",
+      "published": "2026-05-12T13:45:16+09:00",
+      "summary": "삼현철강, 8.5억 규모 자사주 소각 결정 마켓인",
+      "keywords": [
+        "자사주"
+      ]
+    },
+    {
+      "title": "셀트리온, 佛 헬스케어 기업 인수…현지 약국·병원 영업망 확보했다 - 중소기업신문",
+      "url": "https://news.google.com/rss/articles/CBMibEFVX3lxTFAwdWh1MUdRQjFLUDlOMTY3M3V3bnhocEdkOTludnJiZTctUEljVXJNeHlWM0lYRlhpMHNRQldJeERwT0gxX3NoYmplUWZKOGpyZVVrTjlSTHVrVW5XNWJqWEIyYkt1T21DT0V0VQ?oc=5",
+      "source": "중소기업신문",
+      "published": "2026-05-12T13:42:38+09:00",
+      "summary": "셀트리온, 佛 헬스케어 기업 인수…현지 약국·병원 영업망 확보했다 중소기업신문",
+      "keywords": [
+        "인수합병"
+      ]
+    },
+    {
+      "title": "SKC, 유상증자 발행가 9만9천500원 확정…1.17조 조달 - 연합인포맥스",
+      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTFA1SWNwQ3EwcUowNEdDTElmMDhPMWlBaWFnU3RLNzlJRkgtamlTTVFRLW9rNDlOZktES0NhQjZhbktLZVVTNktQSHJkbXdLdG5jYnpPYi10MHpQZ2FBcjItMkhmOHowMUQ3YzJZVFhNWU8?oc=5",
+      "source": "연합인포맥스",
+      "published": "2026-05-12T13:42:22+09:00",
+      "summary": "SKC, 유상증자 발행가 9만9천500원 확정…1.17조 조달 연합인포맥스",
+      "keywords": [
+        "유상증자"
+      ]
+    },
+    {
+      "title": "7000피 질주에 황제주 속출…액면분할론 다시 고개 - v.daum.net",
+      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTFBIeTQydmlNNTJ4dUpHeUVrVDQ1VVRlRGlFLWdybGxFSWRvWWRTYmx6MWMxcEZZelJrMnNtdnczbFVxTlNPcUdZNjg4NU13Tjg?oc=5",
+      "source": "v.daum.net",
+      "published": "2026-05-12T13:37:08+09:00",
+      "summary": "7000피 질주에 황제주 속출…액면분할론 다시 고개 v.daum.net",
+      "keywords": [
+        "분할"
+      ]
+    },
+    {
+      "title": "[롯데케미칼 분석] 호실적에도 주가 급락…핵심 리스크 4가지 - 한국경제",
+      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE51S1JIdWEzS1paTjdMbDVBcnpiYkV0eU5tV3J4UUh2bEVHNkU1YzdFcmRac3Y5Y0VhUVhMRXg3NVdub3hwNWxScUpZcGEtNGxtMGlPSXpraDFXUQ?oc=5",
+      "source": "한국경제",
+      "published": "2026-05-12T13:34:53+09:00",
+      "summary": "[롯데케미칼 분석] 호실적에도 주가 급락…핵심 리스크 4가지 한국경제",
+      "keywords": []
+    },
+    {
+      "title": "타일러 테크놀로지스, 12억 5천만 달러 전환사채 발행 가격 확정 - Investing.com 한국어",
+      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE5DU2p5TkVLVTVWaTZZVTQ2M1JXRHktazRybEY3dVVQTllaNC1mMktKYUxuQ3l3WEh3NkdmYWdCakpnOVBqbXdkMllxODdqWU1NdkZrTTBlbkh2Y0JETUxaRERhS09OemdTSHZ5enNYWEc?oc=5",
+      "source": "Investing.com 한국어",
+      "published": "2026-05-12T13:31:00+09:00",
+      "summary": "타일러 테크놀로지스, 12억 5천만 달러 전환사채 발행 가격 확정 Investing.com 한국어",
+      "keywords": [
+        "전환사채"
+      ]
+    },
+    {
+      "title": "AI 축구 분석 플랫폼 스포틱스, $320만 달러 투자 유치 - 코인니스",
+      "url": "https://news.google.com/rss/articles/CBMiSEFVX3lxTE9sUzBNeXNtVEczcXNFeXQ1OGZsMTF1QlhLUlZZbTQxSkRvVmpuQ2dHV3FFMkEwT1ZvTkhlWmQ3Rk42RWhwZ05QMw?oc=5",
+      "source": "코인니스",
+      "published": "2026-05-12T13:26:29+09:00",
+      "summary": "AI 축구 분석 플랫폼 스포틱스, $320만 달러 투자 유치 코인니스",
+      "keywords": [
+        "투자유치"
+      ]
+    },
+    {
+      "title": "팀제이커브, 미 기업 ODK Media로부터 시드 투자 유치…“AI 교육 넘어 일하는 방식 설계” - 전자신문",
+      "url": "https://news.google.com/rss/articles/CBMiTkFVX3lxTE5nWWY1V0Y3OEMwV0FYZ0pqdEtkVG9FZGVVWjBRRUV0NUdkdFlDalBSdi1ibE1PTmtuUjZGZEppZmlfdW01S2hwOFllQkhsdw?oc=5",
+      "source": "전자신문",
+      "published": "2026-05-12T13:26:08+09:00",
+      "summary": "팀제이커브, 미 기업 ODK Media로부터 시드 투자 유치…“AI 교육 넘어 일하는 방식 설계” 전자신문",
+      "keywords": [
+        "투자유치"
+      ]
+    },
+    {
+      "title": "플레이위드코리아 김학준 대표, 자사주 10만주 매입…책임경영 강화 - 디지털데일리",
+      "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE4tcmhZVGdoWng4SHM1dVhMWmplZmdjY0xtUXFEMjROa1pFS3NjRDJRaUlibkpobndIS3Q0SXhlMDVPQ045S1Z6TDAtMGZKYmRSOUwyUVdkanlmUnlocVo0Mm9vcUk?oc=5",
+      "source": "디지털데일리",
+      "published": "2026-05-12T13:21:20+09:00",
+      "summary": "플레이위드코리아 김학준 대표, 자사주 10만주 매입…책임경영 강화 디지털데일리",
+      "keywords": [
+        "자사주"
+      ]
+    },
+    {
+      "title": "SKC, 유상증자로 1.2조원 확보...글라스기판 상용화 박차 - 더트래커",
+      "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE5kN0NyZS0xRS1nSjF5ZkxhVGtnanBrT184WXo0ZG5OQ0xoUkdocDZpNklJeHR2S2ZmcTNZc2M3Q1JGc25Rek15dGNMdDMyeGZjQzFLa3drWU8?oc=5",
+      "source": "더트래커",
+      "published": "2026-05-12T13:20:15+09:00",
+      "summary": "SKC, 유상증자로 1.2조원 확보...글라스기판 상용화 박차 더트래커",
+      "keywords": [
+        "유상증자"
+      ]
+    },
+    {
+      "title": "[thebell note] 글로벌에서 찾은 벤처캐피탈의 초심 - thebell.co.kr",
+      "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxPbjhTYXNvYlhxZHRnNC1uQnlmdGRpdEtJWXRRMVRISzJ4QWZKUUJ4Z1Q0V0lPR0tZclNzT0NLLW16ZGZMLVJESE1zcENKYTNTZmN1QklIU20zOHhvTFNHbWVrWXN4MGJmbGxoUWlxbmpQc3hFa2xMSEZwcG05Q2kzV2g0RkZXNjhzS1Iw?oc=5",
+      "source": "더벨",
+      "published": "2026-05-12T13:19:53+09:00",
+      "summary": "[thebell note] 글로벌에서 찾은 벤처캐피탈의 초심 thebell.co.kr",
+      "keywords": []
+    },
+    {
+      "title": "[HLB 포럼]베리스모 CAR-T 기술이전, 플랫폼은 M&A 영역으로 분리 - PRESS9",
+      "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE5UN09RNkg5RTR0MUZSN3pSRlkwc3ZFMWxRdUViWEg4dTFDbEZOekRfd2JoNEJYem9VT3lCZEQtczktMGtKYW5td0NMQUxVcEoybWVXQ3BOek1URDUzWDdUUFY0Rzc?oc=5",
+      "source": "PRESS9",
+      "published": "2026-05-12T13:18:01+09:00",
+      "summary": "[HLB 포럼]베리스모 CAR-T 기술이전, 플랫폼은 M&A 영역으로 분리 PRESS9",
+      "keywords": [
+        "인수합병",
+        "M&A"
+      ]
+    },
+    {
+      "title": "[thebell desk] VC가 넘긴 배턴, 자본시장의 역할 - thebell.co.kr",
+      "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxQRlVzeUdpRUxxTXFPb1o1VXpnR2tDSnlGSXA2cjlhVDJDdHA1blJuZHVVLTBZd0ZDRWlyVjhqWVlRQklUZDUyRjRqeWd4RFA1TDBQeGxES2JRNGl1R1RvVElTLUY5MC1QdG52N1pBbDdvRGNFZUJVaHM2OFlWYm9LU3U1NW16Yk1qT3Y0?oc=5",
+      "source": "더벨",
+      "published": "2026-05-12T13:15:54+09:00",
+      "summary": "[thebell desk] VC가 넘긴 배턴, 자본시장의 역할 thebell.co.kr",
+      "keywords": []
+    },
+    {
+      "title": "한샘, 건설 침체 속 '내실 경영' 빛났다 - 딜사이트",
+      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE9keTcxTldsNWRXTUwzWUNaeVNwTXZTMlBMX1lVUmJfTUpTYkdBZlNkaklVT19GUGdEQzcwcHdxUjZZYUFFWHQyZFNiNzBSYXc?oc=5",
+      "source": "딜사이트",
+      "published": "2026-05-12T13:12:17+09:00",
+      "summary": "한샘, 건설 침체 속 '내실 경영' 빛났다 딜사이트",
+      "keywords": []
+    },
+    {
+      "title": "한경 프리미엄9 - 한국경제",
+      "url": "https://news.google.com/rss/articles/CBMiSEFVX3lxTE80aVcxbm9HSUpiS3ZoYjRfem9NRUFTQW51SWlWekR2a2hWdWZ0Y21oTS1QVWhzcHZMWDVvT0dobWV1bUFoMjdmLQ?oc=5",
+      "source": "한국경제",
+      "published": "2026-05-12T13:09:49+09:00",
+      "summary": "한경 프리미엄9 한국경제",
+      "keywords": []
+    },
+    {
+      "title": "한화솔루션, 1조8000억 유상증자 전면 연기 … 금감원 정정 요구 영향 - 글로벌에픽",
+      "url": "https://news.google.com/rss/articles/CBMifEFVX3lxTE0wOHNvUGZKa3pnY2lGZmpIaTdpdVRCMWtPMmJOSV93NFVNVzBBbFFMbjA1dmNBM19uX0UwQ1RkMkFYYktvQ1ZyQ0NRd0VWdW05T0xaV2czODV2S0p5VmkwMjBmVVZ0T1duQUNXYWdpTngyZThHZHpnMC1SMDA?oc=5",
+      "source": "글로벌에픽",
+      "published": "2026-05-12T13:05:16+09:00",
+      "summary": "한화솔루션, 1조8000억 유상증자 전면 연기 … 금감원 정정 요구 영향 글로벌에픽",
+      "keywords": [
+        "유상증자"
+      ]
+    },
+    {
+      "title": "아이벡스메디칼 IPO 시동, FI 회수길 열린다 - 뉴스톱",
+      "url": "https://news.google.com/rss/articles/CBMib0FVX3lxTE5ONWY0bFNZZ2VyeldmTVBLanl2aXNITjI1Tkt0anluVGM1UVN3ZHRINjhUVmhjWUhxX1JDRmZlMnhzaE1VSUFJbXE5c1NQTy04QVRrTmkxaXc1TlM1LXNtMS0xTmIyN2k2TUtLU0JMbw?oc=5",
+      "source": "뉴스톱",
+      "published": "2026-05-12T13:00:15+09:00",
+      "summary": "아이벡스메디칼 IPO 시동, FI 회수길 열린다 뉴스톱",
+      "keywords": [
+        "IPO"
+      ]
+    },
+    {
+      "title": "직스에이아이, 경기혁신센터 시드 투자 유치·팁스 선정 - 머니투데이 - 머니투데이",
+      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE1Xb2NCX2F4NTktZEQyR0hSMnF0aGJFUExVamt0VExCZWU4eHRTbWVMa0ZCdGllZUMxWWMtV19Od3B6Yk5nYlJFY0lsV1N5OERJOHZsdWk2dTVCV3hrell6MnB5QmZsb0trMGfSAW9BVV95cUxQMkhoUG0tWVY4VzRQTU5SOTFteXQzTmE5NENhSkE3LWRWaGkzWGtKTVZOWlk1U0JnNldiaU9Cb1pHV2ZBYTF1YThiWW53VlpRbTgwMFJad1BGSy1nUkdzZGtUaGp2YXhROHgtcjAtZUE?oc=5",
+      "source": "머니투데이",
+      "published": "2026-05-12T13:00:00+09:00",
+      "summary": "직스에이아이, 경기혁신센터 시드 투자 유치·팁스 선정 - 머니투데이 머니투데이",
+      "keywords": [
+        "투자유치"
+      ]
+    },
+    {
+      "title": "공화당 의원들, OpenAI IPO 앞두고 샘 올트먼 사업 거래 조사 착수 - Investing.com 한국어",
+      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTFBGdGdYZ3N5NjN0cUZ3cnJJbzU4Y0psT1k4di1qbWJ3TmtJbUFtYlI4YWxvVzk4bV83VjBlRlcza3lzNFpzaUJ4VlVUMHQ2dWhMQ05uWnJOeHVJSHBmOGhsazBVVFB4eXI1YWtNcFlzUjE?oc=5",
+      "source": "Investing.com 한국어",
+      "published": "2026-05-12T12:43:00+09:00",
+      "summary": "공화당 의원들, OpenAI IPO 앞두고 샘 올트먼 사업 거래 조사 착수 Investing.com 한국어",
+      "keywords": [
+        "IPO"
+      ]
+    },
+    {
+      "title": "미래의학연구재단·젠엑시스, 바이오헬스 경영학교 6기 공동 개최 및 스타트업 실전 성장 전략 지원 - beSUCCESS",
+      "url": "https://news.google.com/rss/articles/CBMiRkFVX3lxTE1qUGNMbHN5N0FhUjc2M2l6bUlyS2NZajVsVUFuRWFCbnpkaFFNRmJJM2ZaeEFLQW53emJDbWRWYkVMTjVhTWc?oc=5",
+      "source": "beSUCCESS",
+      "published": "2026-05-12T12:41:31+09:00",
+      "summary": "미래의학연구재단·젠엑시스, 바이오헬스 경영학교 6기 공동 개최 및 스타트업 실전 성장 전략 지원 beSUCCESS",
+      "keywords": [
+        "투자유치"
+      ]
+    },
+    {
+      "title": "한화솔루션, 1조 8,144억 원 유상증자 일정 미정으로 변경 - Investing.com 한국어",
+      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTFBMWHRaNW43cWh6QTZ0elcwN0VrM0JyX1R2X19CS2dZRzFISktGOTRhZU1qRG43RHlrTGxtNER1anRrRHptRDNOcjhkc0syc0tUaHVlWmVFVXBNRFp1Qi1QdWVWb240dngzY0hMYUJkS1F3Q1E?oc=5",
+      "source": "Investing.com 한국어",
+      "published": "2026-05-12T12:31:00+09:00",
+      "summary": "한화솔루션, 1조 8,144억 원 유상증자 일정 미정으로 변경 Investing.com 한국어",
+      "keywords": [
+        "유상증자"
+      ]
+    },
+    {
+      "title": "갤럭시게이트, 2026년 1분기 실적 발표...당기순이익 1억 6,330만원 흑자전환 - Investing.com 한국어",
+      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE9sLUh5QnQ1T3U5cjdySzFENnhtX3ZXRE95Q0thWlgwbWFZaWxHMjQ3dnFoWE5KdVVSNHJRNU9mbWM3WGp6UnFhU0wxRGs4TThubUxSNVU3T2FMa1UtSlhmTGlibF8tRlhabHQ1bDM0U1JxVDg?oc=5",
+      "source": "Investing.com 한국어",
+      "published": "2026-05-12T12:31:00+09:00",
+      "summary": "갤럭시게이트, 2026년 1분기 실적 발표...당기순이익 1억 6,330만원 흑자전환 Investing.com 한국어",
+      "keywords": [
+        "실적발표"
+      ]
+    },
+    {
+      "title": "VCBF, 빈그룹 지분 전량 매각… “FPT는 장기 성장성 유지” - 굿모닝베트남미디어",
+      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTFBfX0l5bVh3MDNmSks2Q1dMWlFSMHV2MnFTSzJpaUhGNk1ZVTNUNnZJNHdOcTg3b0d3ZEVyekVuNGpVbkQzX3dtalNIc2dpS3FyN21adUhlUERHVi1zaGFsRDl5LURfX1EyMjItOExRWWE?oc=5",
+      "source": "굿모닝베트남미디어",
+      "published": "2026-05-12T12:15:42+09:00",
+      "summary": "VCBF, 빈그룹 지분 전량 매각… “FPT는 장기 성장성 유지” 굿모닝베트남미디어",
+      "keywords": [
+        "매각"
+      ]
+    },
+    {
+      "title": "제약바이오업계, 핵심 인재 붙잡기 '자사주 보상' 확산 - v.daum.net",
+      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTFBlYmdHWUt4TVlTLTdjek0yaUJpa3FfZnBUZm9Ld2tDNlA4YU40NHBYY1FwSVRLbEJWQ0NReUQtT3Nac3NsVGNmRjBJMkRvUVE?oc=5",
+      "source": "v.daum.net",
+      "published": "2026-05-12T12:15:05+09:00",
+      "summary": "제약바이오업계, 핵심 인재 붙잡기 '자사주 보상' 확산 v.daum.net",
+      "keywords": [
+        "자사주"
+      ]
+    },
+    {
+      "title": "[뉴스모음] 현대모비스 연쇄 사업부 매각, 그룹 경영권 승계 포석인가 外 - 딜사이트",
+      "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE9DRm9JN1ZxT2I4LWNpa3kwak05OVJURm41UmZCY2JhQm5sdmVNeDQ1eHhfNnEyU3prZ1hLRDhEZVEtOGtGalJnZzJaRlhKc0xpUTM3cTFVSXo?oc=5",
+      "source": "딜사이트",
+      "published": "2026-05-12T12:14:08+09:00",
+      "summary": "[뉴스모음] 현대모비스 연쇄 사업부 매각, 그룹 경영권 승계 포석인가 外 딜사이트",
+      "keywords": []
+    },
+    {
+      "title": "플레이위드코리아 김학준 대표, 자사주 10만 주 매입한다 - 게임메카",
+      "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE16eUg0Y3NjMndTRkRfbjVsRF9yUE1KRzhwUmJ1UEN5NGkzQXhwOWE5QnZScnR6R1VQMm41SGFEQkktWkJ1VW1ZZkY1LW52dFFRUWt1dEYyM0jSAVtBVV95cUxNX1k0QmZ4cXktQjlHbGFrSFVwSmg3LXVPVGdRVTB0cUxuYTNwd21tQ3pWYWFYSWJOR0tHMzkzMnduSjdSbUxMYVNXSXU1NmxoWVZkYTkzUG1fQVpR?oc=5",
+      "source": "게임메카",
+      "published": "2026-05-12T12:04:44+09:00",
+      "summary": "플레이위드코리아 김학준 대표, 자사주 10만 주 매입한다 게임메카",
+      "keywords": [
+        "자사주"
+      ]
+    },
+    {
+      "title": "오기형 “코리아 프리미엄, 지배구조 개혁에 달렸다” [KIW 2026] - 한국경제",
+      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE1PVlRCMGNaSVYwOG5nVjd4VGlERHlJelhjdE94T19XSTNqLXI1bjE3Mk5iWkZTTkkxWG9rang5d1Ria2tMNWltQnI1c0h1V0NGcmJXOU10U3hSd9IBVEFVX3lxTE1wa3A5TElUQXBmdGZfeXcxbF9mQ2JKYU9fMGZXVDhEVG9sRERMbXdVYVk0OTEtbWhzVWx0aXg0V1R3VURnVDM3aWxtdk4yc0VUS0VmYw?oc=5",
+      "source": "한국경제",
+      "published": "2026-05-12T11:59:18+09:00",
+      "summary": "오기형 “코리아 프리미엄, 지배구조 개혁에 달렸다” [KIW 2026] 한국경제",
+      "keywords": []
+    },
+    {
+      "title": "[공시모음] 아시아나IDT, 중대재해발생 外 - 딜사이트",
+      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTFBfeDZwc0g3NWhGSWtUUkNwd2hzeGZmU0ZMUDMyX05QUi1IcjhET3Y3WmxLWS1YNml0Z1VlLWZRTzZQUU5tTnBSdzFBdHRmc0U?oc=5",
+      "source": "딜사이트",
+      "published": "2026-05-12T11:56:47+09:00",
+      "summary": "[공시모음] 아시아나IDT, 중대재해발생 外 딜사이트",
+      "keywords": []
+    },
+    {
+      "title": "멘타트, 변호사 AI 서면 도구로 11억 시드투자 유치 - 디지털투데이",
+      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE8zbW80bjNNV3h1V0Y4ZEpCM3AtbGhnMnpNNVdqaWR6cUFvS0VEbEtZUlNGMDM5cUhCdWliUUFaRmdlUUc2TjNlY2hrRU5tcjBDS2pOQnlrbUNHYm1wNnFDS09LVDdSc2VxVDVxMGxyOWtsUGM?oc=5",
+      "source": "디지털투데이",
+      "published": "2026-05-12T11:54:00+09:00",
+      "summary": "멘타트, 변호사 AI 서면 도구로 11억 시드투자 유치 디지털투데이",
+      "keywords": [
+        "투자유치"
+      ]
+    },
+    {
+      "title": "이 대통령 “원시적 약탈금융” 비판에 금융사, ‘상록수’ 장기연체채권 매각키로 - 한겨레",
+      "url": "https://news.google.com/rss/articles/CBMiZ0FVX3lxTE5xVjNqazlJZjRBTm5RSXZsZV9jaVRVTUZyaXJqYWNVTmJRUlM5eXNFcFY0REc0ckJYUGRjMEN3cVJOSlo3OEVLZ014WHJiaXdJT25ISlJIWGlBM2Zlb2hCTGp1bmpfVFk?oc=5",
+      "source": "한겨레",
+      "published": "2026-05-12T11:53:00+09:00",
+      "summary": "이 대통령 “원시적 약탈금융” 비판에 금융사, ‘상록수’ 장기연체채권 매각키로 한겨레",
+      "keywords": [
+        "매각"
+      ]
+    },
+    {
+      "title": "[thebell note] 50주년 챙긴 새 최대주주 - thebell.co.kr",
+      "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxQY3JTVUdVbUx0SG5zV05ldGNTbURHWGNLLVBLMTZfYVdHUmJSYlVmQ2lwQkxOOUlXVUFJZjdEa2lGUDdrdGRqWndEU3drV1hHQ0kySXhBU3hxTmNNMHA5NmVqVndjZVY1WGl4MVlaY1h5OUdlbV91dUFGcno0MEZxSTJGM2hMWkFr?oc=5",
+      "source": "더벨",
+      "published": "2026-05-12T11:48:25+09:00",
+      "summary": "[thebell note] 50주년 챙긴 새 최대주주 thebell.co.kr",
+      "keywords": []
+    },
+    {
+      "title": "李 대통령 지적에 신한 하나 배드뱅크 채권 정부에 매각 - 국제신문",
+      "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxPZ0pkLXctam1zSVZnT1VMOTBZVEw2UlctQWYzWk1SdERBR3RseTZXVGF5b1l1X3ItWTRzU2xGd0MyVmNGZXEzcWh6OEdHZTU5YnZITW5IdjJUUGZSbWtsRFZOOXVMOHllTllpcDczUUJSOUF1cEJ4Wm5MYUFyZ2d1R3BNZmtVcUVkQW0xOWdaczYzVlN5?oc=5",
+      "source": "국제신문",
+      "published": "2026-05-12T11:48:00+09:00",
+      "summary": "李 대통령 지적에 신한 하나 배드뱅크 채권 정부에 매각 국제신문",
+      "keywords": [
+        "매각"
+      ]
+    },
+    {
+      "title": "“또 사고 쳤다”…어닝 서프라이즈를 쇼크로 둔갑시킨 토스증권 - v.daum.net",
+      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE1OREFnOVdLRDJNRW1ZejB6RFg4SUw3aUNIUUdRQldVMW9FNzk1OENMTmhPQ3dRc2pxaS1PWDd1MHhVaUFMSkg0UlB3VkdoZUE?oc=5",
+      "source": "v.daum.net",
+      "published": "2026-05-12T11:47:07+09:00",
+      "summary": "“또 사고 쳤다”…어닝 서프라이즈를 쇼크로 둔갑시킨 토스증권 v.daum.net",
+      "keywords": [
+        "어닝서프라이즈"
+      ]
+    },
+    {
+      "title": "케이블TV 1위 헬로비전 ‘허울뿐인 흑자전환’ - 에너지경제신문",
+      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE1HS3R6LVFXRmFVN242RkcwaE50azBsaElQR2xaT2NMRE9TQ2pxVWkzRXlHYmM5Ym9TQm8tNno4SjBYVWR4SFhIVkdUekZIS3RVMDVnMUJ2YXZOYVU?oc=5",
+      "source": "에너지경제신문",
+      "published": "2026-05-12T11:46:56+09:00",
+      "summary": "케이블TV 1위 헬로비전 ‘허울뿐인 흑자전환’ 에너지경제신문",
+      "keywords": [
+        "신사업"
+      ]
+    },
+    {
+      "title": "\"최소 2년 기다렸다\" 지분 매각 오픈AI 직원들 9.8조원 '돈 잔치' - 머니투데이 - 머니투데이",
+      "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE56TUlHQ3RhaHVqYXdzX2wxLWdaT21zaTRBejRuZ3FNY0RTV25rT09zcTQzbVV1X3VRallZc0NuaWM4Uk5lQlBDeHlxTmZYWmdOc09zRzQtU2Y1UFZ5d2Q1Z3ZBVUdOYjJf0gFuQVVfeXFMUFlQRUdUUmMxSldmeWNmOGxVdG5QSmNQT2ZjdGpYX3BzeTRiOGNzY2ZQb25Ob1RSS2tOMmNxVllKdTJRWlNZUl9wT1I5bFJIUXJqaHpYYlR4TW1XbUt5TThNU3NfeXk2cmRUcEUwbHc?oc=5",
+      "source": "머니투데이",
+      "published": "2026-05-12T11:43:45+09:00",
+      "summary": "\"최소 2년 기다렸다\" 지분 매각 오픈AI 직원들 9.8조원 '돈 잔치' - 머니투데이 머니투데이",
+      "keywords": [
+        "매각"
+      ]
+    },
+    {
+      "title": "이호현 기후부 차관 \"석탄·가스 대신할 ESS 시대…기가와트급 투자 필요\"[KIW 2026] - 한국경제",
+      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE9UTWU2VlZyQmRZdUpmZk1sLTItVk1xYmhrUDJjQW9fTmRqMlhiRUxvYlNXa01yNlAtb3AxcVB0eDBYY0RIdWpPRnVqdWFMeGtfSUkzRnFSQVBrZ9IBVEFVX3lxTE5kS0NGd2ZPWThFdEFRODBNckdSZXJtNGN5OXZCblczYmtMYWxuaGxTa2pockJfV1ZYN1dtNWxUME5QTjJ2dmZoc282X3FEMFNTT2tTTQ?oc=5",
+      "source": "한국경제",
+      "published": "2026-05-12T11:41:41+09:00",
+      "summary": "이호현 기후부 차관 \"석탄·가스 대신할 ESS 시대…기가와트급 투자 필요\"[KIW 2026] 한국경제",
+      "keywords": []
+    },
+    {
+      "title": "이 대통령 상록수 '약탈금융' 비판에 …은행·카드사 줄줄이 채권 매각 - 연합인포맥스",
+      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE9JNDlvNDVNaG9peDl1SHpHSzNrQmoyNUMzeHBqVllhZDVuSklvSy1mVXpVOEVqU205b0EtZnprWi01eFE5aDdtNDBvclFwOHRSWXpPMGR4ZTdkT2VrbkRQRFdmN1Z0YTZEalBCQ2ZvaUo?oc=5",
+      "source": "연합인포맥스",
+      "published": "2026-05-12T11:39:52+09:00",
+      "summary": "이 대통령 상록수 '약탈금융' 비판에 …은행·카드사 줄줄이 채권 매각 연합인포맥스",
+      "keywords": [
+        "매각"
+      ]
+    },
+    {
+      "title": "\"돈은 있는데 딜이 안 된다\"…M&A 막는 건 유동성 아닌 '가격' [인터뷰] - v.daum.net",
+      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE8wWWpyWm1QcWRxRms3N2dnQXc0ZWdyTmJaNVB6M1YxX1NpZVNNUFRwR3FEQlJaOG1UeEs0WUU2emFiNi04eUJURWtLZ0JONkU?oc=5",
+      "source": "v.daum.net",
+      "published": "2026-05-12T11:39:19+09:00",
+      "summary": "\"돈은 있는데 딜이 안 된다\"…M&A 막는 건 유동성 아닌 '가격' [인터뷰] v.daum.net",
+      "keywords": [
+        "M&A"
+      ]
+    },
+    {
+      "title": "\"출범 2년도 안됐는데 자본 2.2조\"…우리투자증권, 유증으로 제도권 도약 - 파이낸셜뉴스",
+      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE01OVdreGxsaWdXcVdYcGxjRFM0NVRwSXlDbENWWWdaRUo1WW4xWjNMM3k2Y3hUa25hX2w0ZFNGWFQxV0Z1b2cxcUxWUFJVOEhvbU9lS0FlZlRDZ9IBXkFVX3lxTE5ha0E0NGlnWG4yTWU4U3d3NzJ4cmdtUi1mTFZKOV9nOWlramxmZS1uQ3ljcVR2bGY2SzY5M1hjdXdUNEFvaENLVUVPUWI5c0tCVGVzWDNibEgtUzVTaEE?oc=5",
+      "source": "파이낸셜뉴스",
+      "published": "2026-05-12T11:38:51+09:00",
+      "summary": "\"출범 2년도 안됐는데 자본 2.2조\"…우리투자증권, 유증으로 제도권 도약 파이낸셜뉴스",
+      "keywords": [
+        "유상증자"
+      ]
+    },
+    {
+      "title": "'직매입 갑질' 의혹에 발목 잡힌 무신사…10조 IPO 빨간불 - 더팩트",
+      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE5nWEliZnFPSEJKQUNCZks5aWgtWXJHdnZHUjVkc2RtdFhSUE1PVVdJaDEzTkFDN3FaZjZhaHgzbU13WHlkbGluZUxqZmZTWjRId0V3aUdMa0NqUdIBVEFVX3lxTE1yYV9EOEhGVHlOOHpMdmFmMTNkX3lFcURzZjJUbVFIb1ZDckZEbk5zRDlUZWRSRjFFeDhrampkWHpEMTRNRE9YYjQwVkt3eUUxRkQzag?oc=5",
+      "source": "더팩트",
+      "published": "2026-05-12T11:38:26+09:00",
+      "summary": "'직매입 갑질' 의혹에 발목 잡힌 무신사…10조 IPO 빨간불 더팩트",
+      "keywords": [
+        "IPO"
+      ]
+    },
+    {
+      "title": "\"돈은 있는데 딜이 안 된다\"…M&A 막는 건 유동성 아닌 '가격' [인터뷰] - 파이낸셜뉴스",
+      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE1JbV94OXgyMHVwYlBUd1ltYUhlOEJ2OU1lRzJhX215SHMtYlVyX3BVYTlEMHRNbHZkV1d5ZnliNW1TNk85V283dVlHTEYxUFp5cWFtX0hrQ2FiZ9IBXkFVX3lxTE1hTlhzWWlhV0dWWUtZSm9PQU1QTVduMUFUenhtTDRoaXRxRGlvdEJ1Q0NUcjZ1cHBabTNuS3FOSlJieUZtdmdEc3d5ZlB4MW14THFURlJUVUJmd3BOQlE?oc=5",
+      "source": "파이낸셜뉴스",
+      "published": "2026-05-12T11:37:45+09:00",
+      "summary": "\"돈은 있는데 딜이 안 된다\"…M&A 막는 건 유동성 아닌 '가격' [인터뷰] 파이낸셜뉴스",
+      "keywords": [
+        "인수합병",
+        "M&A"
+      ]
+    },
+    {
+      "title": "피엠티, 유상증자 1차 발행가 확정...조달 규모 375억 원으로 상향 - Investing.com 한국어",
+      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTFBKZnNvdUtyMVJkRkFBM1E2eG1ubDh3dVNGQm5WTGRFNVJiM3hhMTJYZVREVUhRMXExckV6ZnlhV0ZWWXNyQ2plUUM0RnUzVGpkWFVERllUdUItUzZxSDhTRDVXUVRadjkwVmwtQ3lhYnVULVk?oc=5",
+      "source": "Investing.com 한국어",
+      "published": "2026-05-12T11:34:00+09:00",
+      "summary": "피엠티, 유상증자 1차 발행가 확정...조달 규모 375억 원으로 상향 Investing.com 한국어",
+      "keywords": [
+        "유상증자"
+      ]
+    },
+    {
+      "title": "SKC, 유상증자 최종 발행가액 주당 99,500원 확정...총 1,167억 원 조달 - Investing.com 한국어",
+      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE9pSGVTYWhhRElDM3p2a0dkUzZrNV9DUGlUV0JyRUdzckhZNnBvZmdpNElVZDYzbzlybGhFdzF5MjVBQW8tOTBuXzBDeGstTTJWYWNtOXZWS2Zra0lhR0RHT3BmV0t1emJkTlVZQXp1Q0hOenc?oc=5",
+      "source": "Investing.com 한국어",
+      "published": "2026-05-12T11:33:00+09:00",
+      "summary": "SKC, 유상증자 최종 발행가액 주당 99,500원 확정...총 1,167억 원 조달 Investing.com 한국어",
+      "keywords": [
+        "유상증자"
       ]
     },
     {
@@ -141,6 +1111,16 @@
       "summary": "에이치로보틱스, 2026년 1분기 실적 발표...매출 4억 3,654만원 Investing.com 한국어",
       "keywords": [
         "실적발표"
+      ]
+    },
+    {
+      "title": "김학준 플레이위드코리아 대표, 자사주 10만 주 매입…책임경영 강화 - v.daum.net",
+      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE1EWjZYdkhsWmp0cXg5TW93NC10TlZxMjMyVTRjOGNTZUN2NWxLOTNNUjJITHptdWhseENhdlRocjRZR0ZvMUNPOE1PMlRfLXM?oc=5",
+      "source": "v.daum.net",
+      "published": "2026-05-12T11:31:07+09:00",
+      "summary": "김학준 플레이위드코리아 대표, 자사주 10만 주 매입…책임경영 강화 v.daum.net",
+      "keywords": [
+        "자사주"
       ]
     },
     {
@@ -174,24 +1154,6 @@
       ]
     },
     {
-      "title": "지씨지놈, 초기 FI 엑시트 오버행 해소 '이젠 밸류업 시간' - thebell.co.kr",
-      "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxQcmRBR191dHAycGw5dEstZUVQQWZtUEJFUHVBV0xJRG1oeWM2ak9IQ0dISzR5QjMtSlBSVFpadkp4XzRZOVpMUjdEZDVFZVZjdTNrckZGRXNSQVNhdDFBaHk2WC1HZ0hFWlBhaGVZRDRhd012bVpTdWsxT0ktSUZ4TGtya1E2Ukk2SjN3?oc=5",
-      "source": "더벨",
-      "published": "2026-05-12T11:20:19+09:00",
-      "summary": "지씨지놈, 초기 FI 엑시트 오버행 해소 '이젠 밸류업 시간' thebell.co.kr",
-      "keywords": []
-    },
-    {
-      "title": "원텍, 자기주식취득 신탁계약 해지 결정 - 디지털투데이",
-      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE1YaE90dXFDSnlaN09Xc0FsR2tzY0NLTXFjcmNKTnRqWEJmVW1MNEdHWWI3cWhkemJEdWZlOTM2aG9aekgtMDAtX0VwRkNldjVadlRmeUhBTGFXN1RJS1NBOGNLR1ZpMnpobXo4bHFQSTJuZmc?oc=5",
-      "source": "디지털투데이",
-      "published": "2026-05-12T11:20:04+09:00",
-      "summary": "원텍, 자기주식취득 신탁계약 해지 결정 디지털투데이",
-      "keywords": [
-        "자사주"
-      ]
-    },
-    {
       "title": "하이엔드 체질 전환 나선 한샘, '키친바흐 강화·자회사 넥서스 합병' 승부수 - 뉴데일리 경제",
       "url": "https://news.google.com/rss/articles/CBMie0FVX3lxTE91cFQ5eEw2QjVaNDV3WDNTaDBIb2l1bDVBczJJa1RLc2ZiWTRVRWVfdEJ6WE9aNnRCaUx4TkNzZFJraFA3eFFmY1RDQU1WMUpKSHJ5eGZTclBWcU5fWWhzcExVTHZHN0tJMXpkZXNwSlAtRXViaVpmMmRxcw?oc=5",
       "source": "뉴데일리 경제",
@@ -216,26 +1178,18 @@
       "published": "2026-05-12T11:17:06+09:00",
       "summary": "CB 매각 대박 낸 스피어, 오버행 우려 나온 이유는 뉴스톱",
       "keywords": [
-        "매각"
+        "전환사채"
       ]
     },
     {
-      "title": "셀트리온, 프랑스 헬스케어 기업 지프레 인수 “대체 조제 대응” - 경향신문",
+      "title": "셀트리온, 프랑스 헬스케어 기업 지프레 인수 “대체 조제 정책 대응” - 경향신문",
       "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE5aQl96OW80N0ZFa09kQmpLcDJYZ2xPbEZ3S3g3c2ZzeUdoMXVFT0tQTy13TXFUcGlqbXJ3c2JBRDc3dm43NmxVbFVxdHB6RGpSRDRyOXNmY1F5d9IBX0FVX3lxTE9jemlFVEFjZkRtVWhueGNzbWZlc0pVSjlpXzhiVno5NDI3S1BFanJ4QWhETnRPUkRqWWEwek9FNWY3cHRtRVg0ODZiMGZIYjRlZEdzb3VfUkRGLUpRc3l3?oc=5",
       "source": "경향신문",
       "published": "2026-05-12T11:16:00+09:00",
-      "summary": "셀트리온, 프랑스 헬스케어 기업 지프레 인수 “대체 조제 대응” 경향신문",
+      "summary": "셀트리온, 프랑스 헬스케어 기업 지프레 인수 “대체 조제 정책 대응” 경향신문",
       "keywords": [
         "인수합병"
       ]
-    },
-    {
-      "title": "KKR, 한·일 탱크터미널 회사 패키지 매각 추진 - thebell.co.kr",
-      "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxNRGl2ZWNFd0NweWVmS095ZEpBNzE2aGJPWlBlelZUbHFsY2tmQVE1ejhZY3FaMFRST1dxRXdhSjBSSVZJTXdVRjlfamdybDdSSDMxS0VEbUcwbHdqOTVWQ01GM3FLMXd4MGNJZjFwY0NkRUhFM1lMbGFOUU1STzhSanV4TmxHaTlEU0dF?oc=5",
-      "source": "더벨",
-      "published": "2026-05-12T11:13:46+09:00",
-      "summary": "KKR, 한·일 탱크터미널 회사 패키지 매각 추진 thebell.co.kr",
-      "keywords": []
     },
     {
       "title": "주요 공시(07:00~11:00) - thebell.co.kr",
@@ -254,12 +1208,14 @@
       "keywords": []
     },
     {
-      "title": "[팀블라인드 IPO] 난이도 높은 해외기업 상장, 미래에셋증권 부담 - thebell.co.kr",
-      "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxPNEp0MzJOd0dDVzZuTGR0ejU5T2lVYUp1ZXV6b2p0OHZ6VzFaenN2ai1PQUNHbkRSODEtT0xoYk5hMkhpNlhGdkZ4ckFNbWlJNHVCTTVVbGJOM2J6amE5S1RGWEE3SDFRR3Z6U05hNHd4SEVueDB0bkJzclBteEtPRGJOSlVaYmlQbmhn?oc=5",
-      "source": "더벨",
-      "published": "2026-05-12T11:12:15+09:00",
-      "summary": "[팀블라인드 IPO] 난이도 높은 해외기업 상장, 미래에셋증권 부담 thebell.co.kr",
-      "keywords": []
+      "title": "NHN, 1분기 매출 11.9% 성장…167억 규모 자사주 취득·소각 추진 - 세종의소리",
+      "url": "https://news.google.com/rss/articles/CBMiZ0FVX3lxTE5vY0E3dFM5eU1XRmFHT2hLMkF6UjZDZXFGWjU2SkhsV2ZVZEhpeUNBbHlEVDZOVkt1eU9jY1lld3NSREozZ0hONlRLb2EwbDZaTVNNMWJHUjRVRXpQNlBkZzgtc3F1dlE?oc=5",
+      "source": "세종의소리",
+      "published": "2026-05-12T11:12:29+09:00",
+      "summary": "NHN, 1분기 매출 11.9% 성장…167억 규모 자사주 취득·소각 추진 세종의소리",
+      "keywords": [
+        "자사주"
+      ]
     },
     {
       "title": "[컨콜-미래에셋증권] 이강혁 경영혁신 대표 \"스페이스 X 상장시 1조3000억 이익 발생\" - fetv.co.kr",
@@ -280,16 +1236,6 @@
       "keywords": [
         "인수합병",
         "M&A"
-      ]
-    },
-    {
-      "title": "신한카드, '상록수' 채권 새도약기금에 매각…李 대통령 “원시적 약탈금융” 지적에 - 오피니언뉴스",
-      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTFBMZ2V4c2x0R1JWdTRwYmxRUl9ZNU43SWpWVlBqQlppLTBYU29UVWM1UXJub28yNXdibF9mNnAxb2w2cGdUeXBmVEFiaWpUNlE3aTVKcHZOb3ZYeHpHSTctZjZ0MTVzekY1UXotdWFKTVI?oc=5",
-      "source": "오피니언뉴스",
-      "published": "2026-05-12T11:06:20+09:00",
-      "summary": "신한카드, '상록수' 채권 새도약기금에 매각…李 대통령 “원시적 약탈금융” 지적에 오피니언뉴스",
-      "keywords": [
-        "매각"
       ]
     },
     {
@@ -339,16 +1285,6 @@
       "keywords": []
     },
     {
-      "title": "신혜성, 논현동 꼬마빌딩 매각…4년새 ‘시세차익 6.5억원’인데, 손해 본 이유? - 헤럴드경제",
-      "url": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE5uaUNtenFCZmVGaTRPR0tXQnpYVTQxeUFlLXVQb0xOLTE0ZmJ1UnVxMlBaU3JsUm8yTmZSZ3M1cnRtenRpRDljQTJIb0ZoUzJESFl1eHR3?oc=5",
-      "source": "헤럴드경제",
-      "published": "2026-05-12T11:00:47+09:00",
-      "summary": "신혜성, 논현동 꼬마빌딩 매각…4년새 ‘시세차익 6.5억원’인데, 손해 본 이유? 헤럴드경제",
-      "keywords": [
-        "매각"
-      ]
-    },
-    {
       "title": "SKC, 유상증자 신주 발행가 9만9500원 결정 - 블로터",
       "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE5DYWxnbmZqcXBCUl9zcGFjZlFjQkZvcDJoc0l5TUZiRGpBcXFaNWlsMGxFaExaOWRrSjJ3MzJ1cktCcTF5RTV1VXVGVmYzOTZ0YTdqNjV3YmdYd0RTWnNrSGRRTE15enox0gFsQVVfeXFMTWJtb21GcTNrRTJnQ2tqTEdtZDFSSUtqb1lJbG4yaEhQbTRhNEZhRlJtY2Zud2FydElyOW04dzJqS1RyNE9NLVA3ZVdxOVJDbU1GTXVUakZMMTJFOW4yQzByRVRpN3gxVU5Sd0Zh?oc=5",
       "source": "블로터",
@@ -365,8 +1301,7 @@
       "published": "2026-05-12T10:58:18+09:00",
       "summary": "코스모로보틱스, 11일 코스닥 상장…“웨어러블로봇 글로벌 리더 도약” 바이오타임즈",
       "keywords": [
-        "상장",
-        "IPO"
+        "상장"
       ]
     },
     {
@@ -384,34 +1319,6 @@
       "published": "2026-05-12T10:57:53+09:00",
       "summary": "더존비즈온, IFRS 18 대응 위한 전국 세미나 개최 딜사이트",
       "keywords": []
-    },
-    {
-      "title": "[미국-이란 전쟁] 유가 급등에 운반비 부담 확대…K뷰티 수익성 '압박' - thebell.co.kr",
-      "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxPTjd3T1R0MFV5dVo2WExDakk1ZWNMMFkwUHlfVE1NR1VDWVRIYUJsczVFY3V1RE9iUkhVNjQ5TVdDRVo3Tk9uZVZoeEpuMG9mVXNQSFdjcGprS2RPU0lGRDNXUWhodEkyY01sSWk0VmZvamNUR2xfMGR3UVJmMHNJdGdCMjZmUjUzYXp3?oc=5",
-      "source": "더벨",
-      "published": "2026-05-12T10:56:57+09:00",
-      "summary": "[미국-이란 전쟁] 유가 급등에 운반비 부담 확대…K뷰티 수익성 '압박' thebell.co.kr",
-      "keywords": []
-    },
-    {
-      "title": "\"변호사 서면 작성, AI가 초안 짠다\"…리걸테크 멘타트 11억 투자 유치 - 공감신문",
-      "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE82U2pueWpuNG5WREhpVGxvVnV5V1g0OUhTUS11dEJKb09sVm9JLWpWdnkweDhodG83dFZacnBkajJVWjZydjU0MGZOS25fV2pFS0dVczZfX0MxUG9Idk5LV0RTeU15by1N?oc=5",
-      "source": "공감신문",
-      "published": "2026-05-12T10:56:14+09:00",
-      "summary": "\"변호사 서면 작성, AI가 초안 짠다\"…리걸테크 멘타트 11억 투자 유치 공감신문",
-      "keywords": [
-        "투자유치"
-      ]
-    },
-    {
-      "title": "신한카드, 상록수 보유 장기연체채권 전액 매각키로 - 글로벌이코노믹",
-      "url": "https://news.google.com/rss/articles/CBMihAFBVV95cUxQeW1SQVFXNjFNbGVTdDczcG01a1VWSjlfRFlWamhZM2RUcnI0cHdKMzhfcGFWUHlEeTBhZW9NcC1wVTAxMllRWDEtS2FaeklhcUczQVRzLTIxYndIQ0k4V2dnelBPUW1mNFRBQWpXRDFnS2paU2FtWlVhSnBDMURtVUhIbWo?oc=5",
-      "source": "글로벌이코노믹",
-      "published": "2026-05-12T10:56:13+09:00",
-      "summary": "신한카드, 상록수 보유 장기연체채권 전액 매각키로 글로벌이코노믹",
-      "keywords": [
-        "매각"
-      ]
     },
     {
       "title": "폭스바겐 미국 전기차 브랜드 '스카우트', 美 증시 상장 검토 - 더구루",
@@ -434,12 +1341,15 @@
       ]
     },
     {
-      "title": "[컬리 IPO] 상장 재도전 앞두고 주관사단 소집…분위기는 '신중론' - thebell.co.kr",
-      "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxPamp1Znk5clllbDJQNWxtUkl1bnh0Sks0MXZpS0FlWS1Nc1JrWHVsRWdDZm9lNklGb3ZNQVBpQnlBWDFzSWhfd2MxN2RTNGI4ajJMaUh3SmJIZktrRWJVZFhSRGlkWXFiSFQyXzIxY2tfTDFMV2tIQjlwOFRPREpadnBNM3pTMVAt?oc=5",
-      "source": "더벨",
-      "published": "2026-05-12T10:51:40+09:00",
-      "summary": "[컬리 IPO] 상장 재도전 앞두고 주관사단 소집…분위기는 '신중론' thebell.co.kr",
-      "keywords": []
+      "title": "[thebell's view] 승계 비용 13조…'상장·합병·지주사' 정의선의 치트키는 - 네이버 프리미엄콘텐츠",
+      "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxOM2MwNkFQLUlFOUJpYWE0eS1ENC13dnJDcFUtR2t2ekJ6TFlCOVJqUm5NMFJMdHFBYWEwS2pVWG1VY0x4dzJuS1JmQXd1enpadmpleTdhTnZETUF3UU9nXzQzVFVITkl6SDExVWJnbVZCeXhMZzNNYkRQYTE5ZHRBQg?oc=5",
+      "source": "네이버 프리미엄콘텐츠",
+      "published": "2026-05-12T10:50:00+09:00",
+      "summary": "[thebell's view] 승계 비용 13조…'상장·합병·지주사' 정의선의 치트키는 네이버 프리미엄콘텐츠",
+      "keywords": [
+        "상장",
+        "합병"
+      ]
     },
     {
       "title": "라온시큐어, '2026 블록체인 AI 해커톤' 기술설명회 개최 - 딜사이트",
@@ -460,16 +1370,6 @@
       ]
     },
     {
-      "title": "삼영이엔씨 회생절차·인가 전 M&A 두고 '갑론을박'…\"불공정 매각\" vs \"적법 절차\" - 네이트",
-      "url": "https://news.google.com/rss/articles/CBMiU0FVX3lxTFAyUXByU2Rka3ZPWENiWFlORXFTRDhHMFUzTzEwMHBYcjdMR1pTWW5IRzd4T0pGTnRWRkwwQ19zT0JEMG5NQWxRSFhSMGtLcW1GT2Fv?oc=5",
-      "source": "네이트",
-      "published": "2026-05-12T10:39:00+09:00",
-      "summary": "삼영이엔씨 회생절차·인가 전 M&A 두고 '갑론을박'…\"불공정 매각\" vs \"적법 절차\" 네이트",
-      "keywords": [
-        "M&A"
-      ]
-    },
-    {
       "title": "투야, 2026년 1분기 안정적인 실적 발표... 주가 소폭 상승 - Investing.com 한국어",
       "url": "https://news.google.com/rss/articles/CBMib0FVX3lxTE1jdGhWQm5qSnZTQWU2aXpleDlUcEdja2piYm5ZbTV6OE9YS1FWWjdzMGlnZzZnVDNFLTBxZG9BR18td0xZbkhRRTg3aDk1djNKZksyVU1ZRXdhZXNyaEZfV2JiTjEtRk1CX0N4UnNhdw?oc=5",
       "source": "Investing.com 한국어",
@@ -477,6 +1377,18 @@
       "summary": "투야, 2026년 1분기 안정적인 실적 발표... 주가 소폭 상승 Investing.com 한국어",
       "keywords": [
         "실적발표"
+      ]
+    },
+    {
+      "title": "삼영이엔씨 회생절차·인가 전 M&A 두고 ‘갑론을박’… “불공정 매각” vs “적법 절차” - 브릿지경제",
+      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE9ndW5fdVcxM3FUYm92b3lNX25XS2NyOVFlLTZXQXBvdXBkNkl0TEF0a080QVBFbXRPQy02a3FaMGRnMnppWDFWbTNibjJ2TWZIR0tHSVg4Nm1rdw?oc=5",
+      "source": "브릿지경제",
+      "published": "2026-05-12T10:37:00+09:00",
+      "summary": "삼영이엔씨 회생절차·인가 전 M&A 두고 ‘갑론을박’… “불공정 매각” vs “적법 절차” 브릿지경제",
+      "keywords": [
+        "인수합병",
+        "M&A",
+        "매각"
       ]
     },
     {
@@ -510,16 +1422,6 @@
       ]
     },
     {
-      "title": "건설사 R&D 전략 '극과 극'···대우·롯데 '확대' VS 현대·DL '축소' - 서울파이낸스",
-      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE5POFdQcHhldFlfQ091S2k4MEszeXdITzZ1Rlp0Qk51UFJTcThaczNZYjNxTkZva0ZBVGhtRmlieW9tOGxJV3VBSVNvakpuODNMQUhvdncxelNDWWhNbFE5YzhCNFZ1NzhYSUE?oc=5",
-      "source": "서울파이낸스",
-      "published": "2026-05-12T10:33:56+09:00",
-      "summary": "건설사 R&D 전략 '극과 극'···대우·롯데 '확대' VS 현대·DL '축소' 서울파이낸스",
-      "keywords": [
-        "신사업"
-      ]
-    },
-    {
       "title": "신풍, 2026년 1분기 실적 발표...매출 60억 원, 지류유통 11.4% 성장 - Investing.com 한국어",
       "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTFAxOGdDYXpfc0JrVFB1UEV1WUtGMlVaUHBMV2ZyRzRPbnoyQktHeExNOXBqTkN0ZktlWXdGSVFMNFp2dzBnRmpqUFdWaGVoSlVrVzcyNXdYbEZ3VDAyZjFrZUdXN2kwamN4VkMxbEVxZURKMGs?oc=5",
       "source": "Investing.com 한국어",
@@ -550,14 +1452,6 @@
       ]
     },
     {
-      "title": "[티앤이코리아 IPO] 기평 문턱 넘었다…코스닥 예심청구 '속도' - thebell.co.kr",
-      "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxPclZqaHllUDRNczZTTWdXc0ZIeEo2TEtPYWM2YWRZRFJBaG5tSUhjR1hJT0dLVlVVS3JlTzcwcTVnN0ZxeDdhZHJTZ0ZCTXlMUEZEUEFiYmdBeTVZdTFwVXBzUnJ1eDNSU2NfMGtvTjNzbVpBVEVGWmpJMUVhSVlQc1Jham9XTGoxNWdZ?oc=5",
-      "source": "더벨",
-      "published": "2026-05-12T10:27:07+09:00",
-      "summary": "[티앤이코리아 IPO] 기평 문턱 넘었다…코스닥 예심청구 '속도' thebell.co.kr",
-      "keywords": []
-    },
-    {
       "title": "베타 테크놀로지스 CAO 마크 헌터, 6,704달러어치 주식 매각 - Investing.com 한국어",
       "url": "https://news.google.com/rss/articles/CBMie0FVX3lxTE54OGtBQjllYWdlVmd3ZkYwM1J0SFUwWmVNX1EzN21wdk1wcU9GVXdlNXlLYzRjUjFuclpwSE9mVEtWaDhrWVRfRFFEUGxhUzc3MURIeElYTVdqMlhfNEp1ZEZwbUN5aEFESW9TVGlicVF4ZzJUYkVFamJrbw?oc=5",
       "source": "Investing.com 한국어",
@@ -578,14 +1472,6 @@
       ]
     },
     {
-      "title": "[Policy Radar] 중복상장 심사 가이드라인 이달 나온다… IB업계 '촉각' - thebell.co.kr",
-      "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxNN0s4WmZKT0h0bVdmUzZpNmpGVURUbjVraTZYMm10TkRtZmVmQXd4UXY4Z0VSa1VmYl9Xc2FMMThkLVh5QlFLd3dXa0FTdWFfbV9CSXhOd3E5Y3pUYTNZVGNEMUlXMXZYVEpZX01RVDBRM0VMaXhRdC1QUFUyNk16cExGalJqRU1jUFhV?oc=5",
-      "source": "더벨",
-      "published": "2026-05-12T10:25:58+09:00",
-      "summary": "[Policy Radar] 중복상장 심사 가이드라인 이달 나온다… IB업계 '촉각' thebell.co.kr",
-      "keywords": []
-    },
-    {
       "title": "IPO 전 ‘잭팟’ 터진 오픈AI 직원들…AI 붐이 만든 9조 원 현금화 - mstoday.co.kr",
       "url": "https://news.google.com/rss/articles/CBMibEFVX3lxTE5rVjJ3dy0yOHhVWEx2X3gzMmhhTmdYeGdIWlc2bkF6bTBmdWFDbnhfU19xbVRiTUFXZXppMC1PZHd3cHJ6Q0RZanZicEJPYWZuNGhxdWJDRFE4QVljZUJTcWFxZHhNWlNJOW02RQ?oc=5",
       "source": "mstoday.co.kr",
@@ -604,26 +1490,6 @@
       "keywords": []
     },
     {
-      "title": "DXC 테크놀로지 CEO 라울 페르난데스, 자사주 249,512달러 매입 - Investing.com 한국어",
-      "url": "https://news.google.com/rss/articles/CBMie0FVX3lxTE9TWlRaRlMzbGlwYkFkWGhlZTdybThHZHFWcEpfQThURjVGZWxuSkxmd2JlMVp1RjA5MVBiNndVRzNqY2dQdkRHVUJpbm9NeHdfM1JTaGNxbi1rTThrMWxpeTV2WVFhTVBEZUJkbXc5ODNPeEp6Vmh1ZXhURQ?oc=5",
-      "source": "Investing.com 한국어",
-      "published": "2026-05-12T10:21:00+09:00",
-      "summary": "DXC 테크놀로지 CEO 라울 페르난데스, 자사주 249,512달러 매입 Investing.com 한국어",
-      "keywords": [
-        "자사주"
-      ]
-    },
-    {
-      "title": "코스모로보틱스 주가 장중 '상한가'까지 올라, 상장 뒤 이틀 연속 초강세 - 비즈니스포스트",
-      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE5GZUNkZ1V1NUNEUUoybVJib3E1NXoyNHZyOVZQWnI2OGE4N25NOG5lZUc1OTUyX0dxYm5CN3U0b0RvRldyNWxwSEZwV3NHNWJZZ3lfR1luWnBsUEhBUWJmdmhuLUc4WE5hUzNlZHloRHRZWjQ?oc=5",
-      "source": "비즈니스포스트",
-      "published": "2026-05-12T10:19:35+09:00",
-      "summary": "코스모로보틱스 주가 장중 '상한가'까지 올라, 상장 뒤 이틀 연속 초강세 비즈니스포스트",
-      "keywords": [
-        "상장"
-      ]
-    },
-    {
       "title": "신한카드, 대통령 지적에 상록수 채권 전액 새도약기금 매각키로···“더 일찍 헤아리지 못해 송구” - 경향신문",
       "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE1uRHp0ZmxzTXoxeFhyb3BhbVk5MEJTT2FDbHlSSkhWN2NwdFJDenVuam13UUhjTnRtbUdfWkdVbXJBS21ua3VGaGl4NzFvbXFOOHpGQmc1RUJFZ9IBX0FVX3lxTE1vbjU3c0poNzd1SFBtZnRUanhCNmdXR09nRVZRX25UdWJHekJXakY3QnlTZGpJMV9tTGNvLXRIcVZZTC1CcTZVYks3eTJCbm9iRndBaXI5YzNNYVp3QVgw?oc=5",
       "source": "경향신문",
@@ -631,6 +1497,16 @@
       "summary": "신한카드, 대통령 지적에 상록수 채권 전액 새도약기금 매각키로···“더 일찍 헤아리지 못해 송구” 경향신문",
       "keywords": [
         "매각"
+      ]
+    },
+    {
+      "title": "[특징주] 현대차그룹주, 보스턴다이나믹스 美 상장 기대감.. 동반 '상승' - 글로벌이코노믹",
+      "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxNdXpEbjlvN3VxTVVLMlcwMFhxOVQzQUhYQllPR2pOUmR1Z3piVHUwUDhITDBJLXo3cE1NUWdIMmlmakdPY2RhV0V6NjhWU0lsVWFnbnpYTHFuZFFqQ3FfZjEwOUk5cFQxYU44V3diSV9maG1KN1hJZWNfYncyeGs5XzgzVE1zWUQt?oc=5",
+      "source": "글로벌이코노믹",
+      "published": "2026-05-12T10:12:35+09:00",
+      "summary": "[특징주] 현대차그룹주, 보스턴다이나믹스 美 상장 기대감.. 동반 '상승' 글로벌이코노믹",
+      "keywords": [
+        "상장"
       ]
     },
     {
@@ -666,12 +1542,14 @@
       ]
     },
     {
-      "title": "한경 프리미엄9 - 한국경제",
-      "url": "https://news.google.com/rss/articles/CBMiSEFVX3lxTE80aVcxbm9HSUpiS3ZoYjRfem9NRUFTQW51SWlWekR2a2hWdWZ0Y21oTS1QVWhzcHZMWDVvT0dobWV1bUFoMjdmLQ?oc=5",
-      "source": "한국경제",
-      "published": "2026-05-12T10:04:05+09:00",
-      "summary": "한경 프리미엄9 한국경제",
-      "keywords": []
+      "title": "카카오페이증권, IPO 주관사 참전 'IB-리테일 연결' - 딜사이트",
+      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTFBMbkxEaXFCTlhTeEItbVVfVmtsODZxMXk0RFUwNWlPZDFvUDBqbGRtU3N2SGZBTEtlV3pyNzZnbzRVLVl6bF9YLTRISGJqamc?oc=5",
+      "source": "딜사이트",
+      "published": "2026-05-12T10:00:16+09:00",
+      "summary": "카카오페이증권, IPO 주관사 참전 'IB-리테일 연결' 딜사이트",
+      "keywords": [
+        "IPO"
+      ]
     },
     {
       "title": "\"알테오젠, 키트루다SC 매출 본격화…특허 이슈는 사업과 별개\" - 한국경제",
@@ -709,16 +1587,6 @@
       "summary": "[특징주] 코스모로보틱스, 상장 첫날 따따블 후 '상한가' 직행 글로벌이코노믹",
       "keywords": [
         "상장"
-      ]
-    },
-    {
-      "title": "펄스 바이오사이언스 CEO 라바이올렛, 자사주 295,350달러 상당 매입 - Investing.com 한국어",
-      "url": "https://news.google.com/rss/articles/CBMie0FVX3lxTE1nRDVRRFlCR244YW1lVV9lXzJ6a1JQbjB5VFVWNjdVdWlpYzVCYUQxb1dDVjB1QW8xZkRwUTZyaWNJTDBwaWZxMWF3NHFYcmVXZ2Z4UHBnaW1CclJkeDVtZk9ReUk4b040RXY3WW5XR2R3cGs4a0llcmUwaw?oc=5",
-      "source": "Investing.com 한국어",
-      "published": "2026-05-12T09:59:00+09:00",
-      "summary": "펄스 바이오사이언스 CEO 라바이올렛, 자사주 295,350달러 상당 매입 Investing.com 한국어",
-      "keywords": [
-        "자사주"
       ]
     },
     {
@@ -816,8 +1684,7 @@
       "published": "2026-05-12T09:40:49+09:00",
       "summary": "딜라이트룸, 글로벌 학습 앱 ‘노지’ 인수 뉴스웨이브",
       "keywords": [
-        "인수합병",
-        "합병"
+        "인수합병"
       ]
     },
     {
@@ -871,26 +1738,6 @@
       ]
     },
     {
-      "title": "신한카드, '상록수 보유' 장기연체채권 전액 매각 - 더트래커",
-      "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTFBzVE5QenpjQ3F6N2hUZmxnQ2IwQzR3TG9tM2JXVVJHSjJZMjM5dTJ3UEFBTXRXalpBWEt6aE1zcExKempJSGl1ZjA1YjJkZHpObWRoSGtmelk?oc=5",
-      "source": "더트래커",
-      "published": "2026-05-12T09:32:38+09:00",
-      "summary": "신한카드, '상록수 보유' 장기연체채권 전액 매각 더트래커",
-      "keywords": [
-        "매각"
-      ]
-    },
-    {
-      "title": "미래에셋운용, 'TIGER 구글밸류체인 ETF' 신규 상장 - 아시아경제",
-      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE5nVE1SaFFKbW5JaGtNR09pV2pUSUE2MVZtZ0FEeWtDNDQ2RzJSdjZLQVdiYW41OU80SHlKUTJtbTRHcHlEZkpoOW1GVG0yY3VJeDI3Q1gwQ1VlajhKTVpJMA?oc=5",
-      "source": "아시아경제",
-      "published": "2026-05-12T09:32:17+09:00",
-      "summary": "미래에셋운용, 'TIGER 구글밸류체인 ETF' 신규 상장 아시아경제",
-      "keywords": [
-        "상장"
-      ]
-    },
-    {
       "title": "삼영에스앤씨, 2026년 1분기 실적 발표...매출액 30.5억원 - Investing.com 한국어",
       "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE54SzRWWHVwRHVKTVV3eXJsdDc0Sjd5aWFra0hiZExvSFdIQVJiMWZvV2k3ck5LVFN5WXZoLVdFWHZqcFYwTmRPNHExX3dBU1NiZUZVUFE4LURvS3Y3dkw0RnlmWmdvRnJ3bTV4WUFobExQaUE?oc=5",
       "source": "Investing.com 한국어",
@@ -898,16 +1745,6 @@
       "summary": "삼영에스앤씨, 2026년 1분기 실적 발표...매출액 30.5억원 Investing.com 한국어",
       "keywords": [
         "실적발표"
-      ]
-    },
-    {
-      "title": "딜라이트룸, 글로벌 학습 앱 ‘노지’ 인수… 딜라이트허브 통한 글로벌 앱 M&A 확대 - 투데이안",
-      "url": "https://news.google.com/rss/articles/CBMiXkFVX3lxTE1Tbk1wRnlYZ0VkV19vVV9STVM3QzV5c3FiWmZfbTEwX3JuQXdhbTU3S29WNlNpWGoxWkdHLVlKZzVZY2sxOUJQRGlJWTA3UFQ5RVZHVHZhVTN2MHVQS2c?oc=5",
-      "source": "투데이안",
-      "published": "2026-05-12T09:30:00+09:00",
-      "summary": "딜라이트룸, 글로벌 학습 앱 ‘노지’ 인수… 딜라이트허브 통한 글로벌 앱 M&A 확대 투데이안",
-      "keywords": [
-        "M&A"
       ]
     },
     {
@@ -923,12 +1760,32 @@
     },
     {
       "title": "올커넥, AI엔젤클럽 등 3곳서 투자유치 성공 - 약업신문",
-      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE5tWmZ5VThhUkxRaVNSVEN0WVZnR3lwSE1maE9aNEM1OTFKYms4bnRrQUJUYV9hNTEtVVBONHRkX0FBUGFYUlpPb0xmTmxsUXZ4bV9QN0JKeU14NUFRUEIzcHlPdHFWYklrX1FVR245Q3J4cXc?oc=5",
+      "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxQS1JUd3RBcFBWQzlNN3JOeGRvelNTMlhZR1dKR1kxcTU0b29WOWN1cGtqS3VaNEpRUHFIMTBENHVoYjB5X0VtajVQZ0ozbkpPLWFrRk1TaTA0NHRrd1luNkhvYklWUWdTaGJZWFNWZ2EyT0xqYjhXZDRGUmZGbGUzX0NVc242QWxnTGM4ZmNKZlFQemc?oc=5",
       "source": "약업신문",
       "published": "2026-05-12T09:29:00+09:00",
       "summary": "올커넥, AI엔젤클럽 등 3곳서 투자유치 성공 약업신문",
       "keywords": [
         "투자유치"
+      ]
+    },
+    {
+      "title": "[단독] 신혜성, 논현동 꼬마빌딩 55.5억 매각…\"손해 보고 팔았다\" - 네이트",
+      "url": "https://news.google.com/rss/articles/CBMiU0FVX3lxTE9lM1ZrRlprajJoLWxzUi1LQU5RTTZSeGNCbjd6M21RdEd3UmltM1RFcEZxRExRZmFwdF9IQmxMeGpPMnpzbGNucjNaNHFkMWZPdXdN?oc=5",
+      "source": "네이트",
+      "published": "2026-05-12T09:26:00+09:00",
+      "summary": "[단독] 신혜성, 논현동 꼬마빌딩 55.5억 매각…\"손해 보고 팔았다\" 네이트",
+      "keywords": [
+        "매각"
+      ]
+    },
+    {
+      "title": "신혜성, 논현동 꼬마빌딩 55.5억 매각…\"손해 보고 팔았다\" - 한국경제",
+      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE5yVXoyUTdWbTA0UGNxVXRCT01lamtxTHl1Q0Z5anZnb0FDellTVXMtakdEQXZ1Ymd1QlZQczBIWFJLc1RJLVlxTlAzQlRMMUNyWFVTWFBCT05ZUdIBVEFVX3lxTFBPSG9nQVRFUzVoMkdhaWdsaVNYUWR6QmYwcVFNbmxvZ3hyalU3WFNsTmV2YnhQREhYa0ZLWUlYMkhzNlh4XzRMQWdYWWE5eUxYWm9jUw?oc=5",
+      "source": "한국경제",
+      "published": "2026-05-12T09:25:13+09:00",
+      "summary": "신혜성, 논현동 꼬마빌딩 55.5억 매각…\"손해 보고 팔았다\" 한국경제",
+      "keywords": [
+        "매각"
       ]
     },
     {
@@ -978,42 +1835,12 @@
       ]
     },
     {
-      "title": "[i-point] 에피소드컴퍼니, 칸영화제 초청작 '군체·도라' 투자 - thebell.co.kr",
-      "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxON3NSWUdsSFhWcHJXSE1YcUpYb1laczl6cU5MTmpmWC1RcUg1aFpiSlNfMHpibEpWR0dUSUR3MDlURmx5TVl4b0I3dGRhZ2prVXkwZ2tOcjdSMjZlalg4V0lFZzJ6Y2hQSDQ5X25GdmVzX1d4Mlh2dXF6ZE0ySnNIVldvZXZsd0VIdllJ?oc=5",
-      "source": "더벨",
-      "published": "2026-05-12T09:12:09+09:00",
-      "summary": "[i-point] 에피소드컴퍼니, 칸영화제 초청작 '군체·도라' 투자 thebell.co.kr",
-      "keywords": []
-    },
-    {
-      "title": "셀렉타 바이오사이언스 CEO, 자사주 $24,998 매입 - Investing.com 한국어",
-      "url": "https://news.google.com/rss/articles/CBMie0FVX3lxTFBWNGZlV0p3Q3gtZU05YlhkcHRoczJkTlRybnktdlk2SW5rRFJ1X1lLYzE2cEF5bklMRnlveDdUbWc3OHp0cVVUeHFwUVhiMnhQUXg3dnBpcDBXcHJsSnZnaVRmM19pLUp1VS1UNUN2dDE5aEhZa1hsSW1PQQ?oc=5",
-      "source": "Investing.com 한국어",
-      "published": "2026-05-12T09:12:00+09:00",
-      "summary": "셀렉타 바이오사이언스 CEO, 자사주 $24,998 매입 Investing.com 한국어",
-      "keywords": [
-        "자사주"
-      ]
-    },
-    {
-      "title": "셀트리온, 佛 '지프레' 인수?\"약국 영업망 확보·신사업 진출\" - 네이트",
-      "url": "https://news.google.com/rss/articles/CBMiU0FVX3lxTE1FMHctUmxlWnVocE1ESURQNGgxNlczOUlSaHRsNXlhUWJIems1bVczX1dNS1dtenVJbVBnX1l6bHNobENHVGhUcDdZcm95MTQwckdv?oc=5",
-      "source": "네이트",
-      "published": "2026-05-12T09:12:00+09:00",
-      "summary": "셀트리온, 佛 '지프레' 인수?\"약국 영업망 확보·신사업 진출\" 네이트",
-      "keywords": [
-        "신사업"
-      ]
-    },
-    {
-      "title": "자사주로 지배력 강화한 NXC…오너 지분 69%→76% - 딜사이트",
-      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE5rVk5NdWp6UDJOcDJzckYtdFBrMk1zQUVnVGM4cFl6LUh4RElqRWpEZzZfd0Qwem1ZZjlRSHdDcl9Ca2U2M3JiSDIwc0txZWs?oc=5",
+      "title": "[제이알리츠 사태] 2.8만명 외면한 법정관리에…이방주 책임론 - 딜사이트",
+      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE1IQXF4VDk0SzdGNmxRWHE1Q3FYV2YtMUFhWTAwc3FHdEhPUEFjTGhlbk56dndiVUsxLXVVcEhsNzJnZ2dieTIwR1l5VnZHWDA?oc=5",
       "source": "딜사이트",
-      "published": "2026-05-12T09:11:15+09:00",
-      "summary": "자사주로 지배력 강화한 NXC…오너 지분 69%→76% 딜사이트",
-      "keywords": [
-        "자사주"
-      ]
+      "published": "2026-05-12T09:15:14+09:00",
+      "summary": "[제이알리츠 사태] 2.8만명 외면한 법정관리에…이방주 책임론 딜사이트",
+      "keywords": []
     },
     {
       "title": "셀렉타 바이오사이언스 COO, 24,998달러 규모 자사주 매입 - Investing.com 한국어",
@@ -1021,6 +1848,16 @@
       "source": "Investing.com 한국어",
       "published": "2026-05-12T09:11:00+09:00",
       "summary": "셀렉타 바이오사이언스 COO, 24,998달러 규모 자사주 매입 Investing.com 한국어",
+      "keywords": [
+        "자사주"
+      ]
+    },
+    {
+      "title": "자사주로 지배력 강화한 NXC…오너 지분 69%→76% - 딜사이트",
+      "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE1oMi15Tzh4MXBrMDlGaGplejhvYThwNmRyRGliRWg3UlZpbUFZcWdiOWJSOGl3enV6SzdMU2t3LWgwTDFzRFFYdmwwWDJCSTJCNVBWMGFPeG8?oc=5",
+      "source": "딜사이트",
+      "published": "2026-05-12T09:10:15+09:00",
+      "summary": "자사주로 지배력 강화한 NXC…오너 지분 69%→76% 딜사이트",
       "keywords": [
         "자사주"
       ]
@@ -1056,29 +1893,13 @@
       ]
     },
     {
-      "title": "TYM, 현지 맞춤형 신모델 적중…영업익 132% 껑충 - 딜사이트",
-      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE5rQy1YT3d6N08wV1Foa2VBVS0ySFYyRkRjN1FPQm9FbEZsbm45TjBwTU5TZmZGa09pV2psV191QUFYVXhHNFczQXp0UkpnMk0?oc=5",
-      "source": "딜사이트",
-      "published": "2026-05-12T09:08:39+09:00",
-      "summary": "TYM, 현지 맞춤형 신모델 적중…영업익 132% 껑충 딜사이트",
-      "keywords": []
-    },
-    {
-      "title": "장재훈 현대차그룹 부회장, '자동차의날' 금탑산업훈장 - 딜사이트",
-      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE9ZQkZOdGNTcmJWa09BamxnV29mR0hWVFRES0x2bEhRQlIxNFRiRUx4eUVDTjdqSU5zU0VvWkl0QktfVVRhcFlmay1KS2N0UUk?oc=5",
-      "source": "딜사이트",
-      "published": "2026-05-12T09:08:37+09:00",
-      "summary": "장재훈 현대차그룹 부회장, '자동차의날' 금탑산업훈장 딜사이트",
-      "keywords": []
-    },
-    {
-      "title": "피스피스스튜디오, 코스닥 상장 절차 돌입…글로벌 확장 속도 - v.daum.net",
-      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE41QXEydlRmQTBZbmVoZmYwUUhGNmRISHEtQWoybzBMZzBmdmtiTVBCdTZjcFMzUlpYWkdKWjRqeTdDTEU2YV9qY1NUOU1oWFk?oc=5",
-      "source": "v.daum.net",
-      "published": "2026-05-12T09:03:07+09:00",
-      "summary": "피스피스스튜디오, 코스닥 상장 절차 돌입…글로벌 확장 속도 v.daum.net",
+      "title": "셀트리온, 佛 ‘지프레’ 인수⋯“약국 영업망 확보·신사업 진출” - 브릿지경제",
+      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE45Qm1Fc2o3ZllLaXNyZ1NGS3k3YnB5OU5VWnNYUTdfZjBXaHVtMV9BcVBwUnBvYkdvUTRuaVZFSFpieFBqRDV5SGlGWWI3M0ZJVXBNTVFhOVMtQQ?oc=5",
+      "source": "브릿지경제",
+      "published": "2026-05-12T09:09:00+09:00",
+      "summary": "셀트리온, 佛 ‘지프레’ 인수⋯“약국 영업망 확보·신사업 진출” 브릿지경제",
       "keywords": [
-        "상장"
+        "신사업"
       ]
     },
     {
@@ -1089,6 +1910,16 @@
       "summary": "음원 IP 기반 엔터 ‘미드나잇웨이브’, 시드 투자 유치…팁스 선정 와우테일",
       "keywords": [
         "투자유치"
+      ]
+    },
+    {
+      "title": "카카오페이증권, IPO 주관사 참전 'IB-리테일 연결' - 딜사이트",
+      "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTFB4MC1EWW5ONUxEU3E4eW01MGM5Y0FxcUdZMFhPcGNrWktKTXliVDVhS3RCQW42Yi14OWFZNmZMUVo2ZUdrOGZ1aDEtSWhrclFaeVRJd3JMNi0?oc=5",
+      "source": "딜사이트",
+      "published": "2026-05-12T09:00:17+09:00",
+      "summary": "카카오페이증권, IPO 주관사 참전 'IB-리테일 연결' 딜사이트",
+      "keywords": [
+        "IPO"
       ]
     },
     {
@@ -1112,14 +1943,32 @@
       ]
     },
     {
+      "title": "NXC, 1.2조원 규모 자사주 취득...정부 \"좋은 매각 사례\" - 인벤",
+      "url": "https://news.google.com/rss/articles/CBMiXkFVX3lxTE91TkdQZi1rMjZQSVJ2d1VHMjc5aVdHX3lNUnNNUWJKaGlRbWZDMHBJeUNwQjEweDd4emN5UmUtOVhQNkNCaEFLNnA0QlQtZ0Y2VmlzMFdkT0tfRWdRVmc?oc=5",
+      "source": "인벤",
+      "published": "2026-05-12T09:00:00+09:00",
+      "summary": "NXC, 1.2조원 규모 자사주 취득...정부 \"좋은 매각 사례\" 인벤",
+      "keywords": [
+        "자사주"
+      ]
+    },
+    {
       "title": "실리콘투, 사모펀드 오버행 머리에 이고 실적 발표 - 스마트투데이",
       "url": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE9NM2tJU3ZaQVdlMDNySjFQNFZ6NkpGdHlEblk1QlRWc1pxcm16Ty1icDBYN2UwQUYtVndhcmpfRmZhRlFOWUg3cG9WYWFrNkV2bGlzWVg1dGRGc20wZl9j?oc=5",
       "source": "스마트투데이",
-      "published": "2026-05-12T08:58:52+09:00",
+      "published": "2026-05-12T08:58:00+09:00",
       "summary": "실리콘투, 사모펀드 오버행 머리에 이고 실적 발표 스마트투데이",
       "keywords": [
         "실적발표"
       ]
+    },
+    {
+      "title": "딜사이트 - 딜사이트",
+      "url": "https://news.google.com/rss/articles/CBMiO0FVX3lxTE00dV9BTEhWZlRDd3R1WWJjV3AtV1lsd2xPODh0MW51TDZueXBHUnJLUjB5eXV1Tklsb0Zr?oc=5",
+      "source": "딜사이트",
+      "published": "2026-05-12T08:55:24+09:00",
+      "summary": "딜사이트 딜사이트",
+      "keywords": []
     },
     {
       "title": "[고고IPO] ‘돈 버는 이커머스’ 증명한 컬리…IPO 로드맵 속도 낸다 - 디지털데일리",
@@ -1150,16 +1999,6 @@
       ]
     },
     {
-      "title": "대선조선, 우선협상대상자에 부산 'SB선보' 선정···매각 본궤도 오른다 - 서울파이낸스",
-      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE0yd0NmLTdrVFdZX25kNmJYaTNzNTA2NlBQaUtUUXF2T2pyRFBtNjVYSWpvUE9BRzg5NDNLeWVxNWpHT2tLeDVTRFgzY3pSYkc4eTJldGQ3UV9qdWJ4Q2ROVjBadDZoc3I4NEE?oc=5",
-      "source": "서울파이낸스",
-      "published": "2026-05-12T08:52:12+09:00",
-      "summary": "대선조선, 우선협상대상자에 부산 'SB선보' 선정···매각 본궤도 오른다 서울파이낸스",
-      "keywords": [
-        "매각"
-      ]
-    },
-    {
       "title": "씨어스, 1분기 매출 325억·영업이익 139억...어닝 서프라이즈 - 팜이데일리",
       "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE1YT1RkX1dTekljdFctY0NiWXZfaG9Ib1BfWjJnMDFFcFFDanFVUVlxOGtqU3RPekFJOHZXZDhsdlVFVVZ4YXNOYWE2b0VQUk1fZTd1NmpxZ0w1SW9wN19hMnJ3Z0xiaXdRYjYxTjdB?oc=5",
       "source": "팜이데일리",
@@ -1170,16 +2009,6 @@
       ]
     },
     {
-      "title": "[위클리오늘] 광양경자청ㆍ광양시 소식(5.12) - 위클리오늘",
-      "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE5zUFBtTjM2emtYeTRob0tiYXJRajcyX2VKbFRpZWJYRXJCd1A4ZGdjUDhKb0hOVzVfcGp5TEY0REpYNUVLNm5DUjZaeUIzbUhpc2ZhTzR3UnJPbjhSeUR6Z3FsdWRDdVJod0g5SFhR?oc=5",
-      "source": "위클리오늘",
-      "published": "2026-05-12T08:42:43+09:00",
-      "summary": "[위클리오늘] 광양경자청ㆍ광양시 소식(5.12) 위클리오늘",
-      "keywords": [
-        "투자유치"
-      ]
-    },
-    {
       "title": "웹보드 규제 풀리니 게임 매출 폭발···NHN, 167억 ‘자사주 소각’ - 이뉴스투데이",
       "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE1kOE1nc1ZmWTBVZ2FZMG9NcUlwaXpwM0FJLUtOSUpSV2NyU2hERUJySkpnczBJZnU2NFFKdHlJdGhGN1Nub20zSHdDY2tLM3pXZEFlTXJ4YWNmN0F1QWVkeDlFY3k5U2djTUpBMW9ERVfSAXRBVV95cUxOdUtGbElrQ2NZSXJaT1RkaFpsTl9aTl9HYWVGOGtTeTNYNnNMQlBUU2R5cVgxS2tQSjVxTkFfb3ZmWHJpa0xWRVJGZ2VoQ3FLUHd1Q1pxVFlLcmtMaGpsckZtX0ZnU3EwN1oxUkZhWndoUlJ6eg?oc=5",
       "source": "이뉴스투데이",
@@ -1187,16 +2016,6 @@
       "summary": "웹보드 규제 풀리니 게임 매출 폭발···NHN, 167억 ‘자사주 소각’ 이뉴스투데이",
       "keywords": [
         "자사주"
-      ]
-    },
-    {
-      "title": "셀트리온, 프랑스 '지프레' 인수…유럽 약국망 확대 승부수 - 서울경제TV",
-      "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE5iUDg4U2JWRUxpOUJXbWxkRjlseTlrNHlmQlVhTUJaUFhyd1l1Nm1iSkIxcnJNXy16bThoRno5VW5TOGhxMUZ0WUx4bU1Zc3pkQzRseWZyVjFHZ1c2TFdTejJjXzA?oc=5",
-      "source": "서울경제TV",
-      "published": "2026-05-12T08:41:10+09:00",
-      "summary": "셀트리온, 프랑스 '지프레' 인수…유럽 약국망 확대 승부수 서울경제TV",
-      "keywords": [
-        "인수합병"
       ]
     },
     {
@@ -1230,16 +2049,6 @@
       ]
     },
     {
-      "title": "민낯 드러난 상장리츠, 구조적 취약성 개선 시급 - 뉴스프리존",
-      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE9vTS05LS1zNXJ0bnZzTnR1WWQtelh6anVZcmNMWkNVUVlFWVZVUXhpX1hIYzUtWTZ2SGRqaGNBWUwtUkIydnFVSGF2akFWbGJyaG1oS0xFTk5UTjJOTU5kc2Z5LWdUQzNhd21hNmVzQTZRTjDSAXdBVV95cUxOT1VVbk9BVi04N2h4THRlRkFPTGdFQm9Xbm9hcWRXNnQzcXk5RnZKalRYV0k4YjlkYlNfdUREdXE4ZUM0YlRZcEJHdTNzbnVBNWNIUGdCSFJXSmtuMGF1U29aQzdacTZDMkd0cWtYZ3JMSzVrQ1Z1MA?oc=5",
-      "source": "뉴스프리존",
-      "published": "2026-05-12T08:31:41+09:00",
-      "summary": "민낯 드러난 상장리츠, 구조적 취약성 개선 시급 뉴스프리존",
-      "keywords": [
-        "상장"
-      ]
-    },
-    {
       "title": "롯데·예별손보, KDB생명까지 연내 매각 '사활'…성사 가능성은 - 연합인포맥스",
       "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE5tc05EYnRONXVFV1cybWhOdGhQR2JuVGJjYUJEZTlXTEZFdmJGNmswM1BXUmhaelMwT1Z3b3ZDekRFYWpfWFN5b1dSM24tUU5ZbHpmLWMyUGtuUkZ1QTlMNks1WUdlbXM2QVZIaTVnUkfSAXRBVV95cUxPOGZoaURMa0lpeUwtWlJWTV9PbmRxSjQ3RU9iUXlzejJHanh5b3cwVFg2NkVON3NDVGdIay1QM2tad1I4NFdvTEVtRnJUdkExdFlHY051a0l3cy1wYklyZHliWFNNVnlqNXZTaTY1Ym5yVjEzYQ?oc=5",
       "source": "연합인포맥스",
@@ -1270,13 +2079,13 @@
       ]
     },
     {
-      "title": "셀트리온, 프랑스 헬스케어 기업 ‘지프레’ 인수...약국 영업망 확보 - 약업신문",
-      "url": "https://news.google.com/rss/articles/CBMib0FVX3lxTE54ZVVJbXYwY09MU0R5QzdiZWU5NERkYjVBU0w0S3dfSGRlNTBuUExhWGVvQUVCdXd2QV9GUzJOUkE1SGNlbk52TDlXY2s2Ql9Gd3VPaDRnb0cyd1NFZE9fTmNTNHhOcFVEX1d4MlJTQQ?oc=5",
-      "source": "약업신문",
-      "published": "2026-05-12T08:26:00+09:00",
-      "summary": "셀트리온, 프랑스 헬스케어 기업 ‘지프레’ 인수...약국 영업망 확보 약업신문",
+      "title": "대진첨단소재, '7배 매출' 자회사 흡수…내재화 전략 '승부수' - 딜사이트",
+      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE1PeHJ4eEh5VEI1cGFxdXE1RnlLRGtSQXFpb05CNU5sakJyV0FWdnhaYWhEbjJ1bmluWEE3Zkw2SWtjZkdad0VyMXp3N0VxWUE?oc=5",
+      "source": "딜사이트",
+      "published": "2026-05-12T08:25:13+09:00",
+      "summary": "대진첨단소재, '7배 매출' 자회사 흡수…내재화 전략 '승부수' 딜사이트",
       "keywords": [
-        "인수합병"
+        "합병"
       ]
     },
     {
@@ -1320,14 +2129,6 @@
       ]
     },
     {
-      "title": "자사주로 지배력 강화한 NXC…오너 지분 69%→76% - 딜사이트",
-      "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE54bllGc1VwWnBsMU9Zd3NHNE1OV0dueEdEUGNnc2ZGR3B4QTFLeDJuUE9hUmpwYmdfcDJ0cTFjaUc1SDY2Q2sxOXRqSUVkNV93VGhEXy1ZQUc?oc=5",
-      "source": "딜사이트",
-      "published": "2026-05-12T08:10:45+09:00",
-      "summary": "자사주로 지배력 강화한 NXC…오너 지분 69%→76% 딜사이트",
-      "keywords": []
-    },
-    {
       "title": "더 트레이드 데스크 (The Trade Desk), 2026년도1 분기 실적 발표 - 매드타임스",
       "url": "https://news.google.com/rss/articles/CBMibEFVX3lxTFBMUTRZSnJQb1RtdFRzUGs1a3NTMWh3ZVN0anNLZ1dKX0k1U0MzWUR4b1IyZUZJcEpQZ09qWENTWGg2eU1nRmtzYXRMMWVXX3U3RmU3ZUg3QTZuYkhVV0hFcEpwSXV1WWViNEpMTw?oc=5",
       "source": "매드타임스",
@@ -1336,22 +2137,6 @@
       "keywords": [
         "실적발표"
       ]
-    },
-    {
-      "title": "딜사이트 - 딜사이트",
-      "url": "https://news.google.com/rss/articles/CBMiO0FVX3lxTE00dV9BTEhWZlRDd3R1WWJjV3AtV1lsd2xPODh0MW51TDZueXBHUnJLUjB5eXV1Tklsb0Zr?oc=5",
-      "source": "딜사이트",
-      "published": "2026-05-12T08:02:25+09:00",
-      "summary": "딜사이트 딜사이트",
-      "keywords": []
-    },
-    {
-      "title": "[풀필먼트 돋보기] [두핸즈] 6개월 초과 채권 '100% 상각'…클린 재무 승부수 - 딜사이트",
-      "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE40RFBVN1dMalRnU2tiblZSeUowcU0xbnBRVmxMeElJSEM4N2J5bEhLYXlFbzVEUzJ6UlkxQnlNMkpjZnpzWmlyQ0Izc2hZR2JwOTlBUVowY00?oc=5",
-      "source": "딜사이트",
-      "published": "2026-05-12T08:02:09+09:00",
-      "summary": "[풀필먼트 돋보기] [두핸즈] 6개월 초과 채권 '100% 상각'…클린 재무 승부수 딜사이트",
-      "keywords": []
     },
     {
       "title": "방산업체 매매·인수합병시 반드시 필요한 절차는[이현호의 방산!톡] - 네이트",
@@ -1364,14 +2149,6 @@
       ]
     },
     {
-      "title": "[시행사 실적점검] [화이트코리아] 실적 공백 '타격'…안산 홈플러스로 반전 노린다 - 딜사이트",
-      "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE56RnR1eWVrOHpLdXlQMTViSUZLeVMtSEJzOE9LMGU2QzBBZjcta2VjdmJjNU5CS0VvNWxvdmtsdXZ1SUJiTVUwZFh3T1Q3YUxEU1c1dUh4SEo?oc=5",
-      "source": "딜사이트",
-      "published": "2026-05-12T08:00:17+09:00",
-      "summary": "[시행사 실적점검] [화이트코리아] 실적 공백 '타격'…안산 홈플러스로 반전 노린다 딜사이트",
-      "keywords": []
-    },
-    {
       "title": "카카오·케이뱅크 \"실적은 괜찮은데\"...증권가 \"밸류 정당화 관건은 신사업\" - 청년일보",
       "url": "https://news.google.com/rss/articles/CBMiZ0FVX3lxTE9wdzd0dURGeEstSzlFRzlOWElnXy0tdXh0Wm9IbnlpSVhEQ2FYSWZnaVlob19yTFVSQm9uLVJ4V2xUbDMwUVRZS2RXZlhtWTJRZUl3SldTNmsxUlNzQ2pORVNiQVl6cmc?oc=5",
       "source": "청년일보",
@@ -1379,6 +2156,26 @@
       "summary": "카카오·케이뱅크 \"실적은 괜찮은데\"...증권가 \"밸류 정당화 관건은 신사업\" 청년일보",
       "keywords": [
         "신사업"
+      ]
+    },
+    {
+      "title": "방산업체 매매·인수합병시 반드시 필요한 절차는[이현호의 방산!톡] - 서울경제",
+      "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE02TDhUTmRsYjNBa3NfeUF3cnpmWDY2ZktubUdGMTBMOWM3MF9WRzIzUUFiOE5KXy1kd29NOTJWNTZORV9UTVFuTlEzMUhiX2YtcFHSAVNBVV95cUxONkU3aE9EQWIyS3hqWEx5TmRMbnhNeVVFUDJSM0tCelV0ZElGLTV0cURkWVJoOE56VndTdy1LR0VmZkY5dXE3Y0x0em96c0ZJeFo5VQ?oc=5",
+      "source": "서울경제",
+      "published": "2026-05-12T08:00:00+09:00",
+      "summary": "방산업체 매매·인수합병시 반드시 필요한 절차는[이현호의 방산!톡] 서울경제",
+      "keywords": [
+        "인수합병"
+      ]
+    },
+    {
+      "title": "[페니트리움바이오 유증] ①이상한 타이밍과 주가, 금감원 지적 똑닮았다 - 스마트투데이",
+      "url": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE5BTWJ6dFFmUVJLNHdkQmU4Wk5mREp0MUVXbFA5ODdSRnZnZzU0Rzl5ZU1NblBCVVRQYUJVeXNwMy1hNUhwbzJTbU0tUThjZ3pnRlQxMnBlSzdjMm9FX05V?oc=5",
+      "source": "스마트투데이",
+      "published": "2026-05-12T08:00:00+09:00",
+      "summary": "[페니트리움바이오 유증] ①이상한 타이밍과 주가, 금감원 지적 똑닮았다 스마트투데이",
+      "keywords": [
+        "유상증자"
       ]
     },
     {
@@ -1410,24 +2207,6 @@
       ]
     },
     {
-      "title": "빈시 파트너스, 2026년 1분기 실적 발표: 마진 확대 속 이익 47% 급증 - Investing.com 한국어",
-      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTFBBMWtuS1RWdVVialA3YVFTcnNwdGxaUjR6bUxadlRtSmFwOEgtckpUeVNycWpQMW5IbHRyMklQVTRQMjVMdjdnY2kzMldoWlRaVWdJVDlKR3N2eXNZM3lxN00wbVdTTVZPbWlpOElrams?oc=5",
-      "source": "Investing.com 한국어",
-      "published": "2026-05-12T07:47:00+09:00",
-      "summary": "빈시 파트너스, 2026년 1분기 실적 발표: 마진 확대 속 이익 47% 급증 Investing.com 한국어",
-      "keywords": [
-        "실적발표"
-      ]
-    },
-    {
-      "title": "증착기 수주 호조…선익시스템, 4년만에 우량기업부 복귀 - 딜사이트",
-      "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE92ZXVnbDJ5OEhOS3pJMU5tWEVwMkdYU1lxUXliWThxT1BiaXRtZHZkNWpObjRXX3VNMmtFX2xic1hlUTFrS2pmdW14UF8xSWExZm11eE4tSng?oc=5",
-      "source": "딜사이트",
-      "published": "2026-05-12T07:43:06+09:00",
-      "summary": "증착기 수주 호조…선익시스템, 4년만에 우량기업부 복귀 딜사이트",
-      "keywords": []
-    },
-    {
       "title": "셀트리온, 佛 헬스케어 ‘지프레’ 인수…추가 M&A도 검토 - 더구루",
       "url": "https://news.google.com/rss/articles/CBMiXkFVX3lxTE9xSE81X3BpYWVzSzh0Nk5wUWNIZzJlSFNQUjNNOFpUOEFaTWZQRENpeXNQSlE3NlBuS3ZZNXRrUVRzWl84ZkhmbEg4WmdaT2RpSFkyR0YxNWRmZVBiblE?oc=5",
       "source": "더구루",
@@ -1438,23 +2217,13 @@
       ]
     },
     {
-      "title": "램웨스턴 CFO, 40만9천 달러 상당 자사주 매입 - Investing.com 한국어",
-      "url": "https://news.google.com/rss/articles/CBMie0FVX3lxTFA3b2x1SjZjSUJZNVZlT0hlRWI4STJoSUhFbVI5MUpBczhhbHNtVlBYMFhybDVLUGFKSXZjTGpOWk5YY21KdzR1ZVJhQmNULVJNVE5UVk81TlVHdWJHX3VOYnEtUFZQZ2E4Ynk1TnNrVW1RMXdqdkRSNGFoUQ?oc=5",
-      "source": "Investing.com 한국어",
-      "published": "2026-05-12T07:41:00+09:00",
-      "summary": "램웨스턴 CFO, 40만9천 달러 상당 자사주 매입 Investing.com 한국어",
+      "title": "세레브라스, 美 IPO 규모 확대…최대 48억달러 조달 추진 - 알파경제",
+      "url": "https://news.google.com/rss/articles/CBMiXkFVX3lxTE84ZEN4ZmRxRHV2OF9fNm4tUFVieG1JQzY4WFJpR1FtSWRlUUV4TkI1clFTNUV4bTllX3RrUWE0YVlfckxtZW1sSGw4cFc1TGFpdDloaXk1dmNveUJFLWfSAW5BVV95cUxOQ3o5Ync3TXhSWlU3MElvLVk1ZlV2X001SVpWLXVTaHBEMnZFVUZUQTVIaHY2b1JuSnlURVJ4bjU4RXRSNDJIN2ZCaHdTUm9Xampia0RoUnRyOG5sR2swcldsbFNBMmZKOU5zTTZDQQ?oc=5",
+      "source": "알파경제",
+      "published": "2026-05-12T07:40:07+09:00",
+      "summary": "세레브라스, 美 IPO 규모 확대…최대 48억달러 조달 추진 알파경제",
       "keywords": [
-        "자사주"
-      ]
-    },
-    {
-      "title": "APEI 2026년 1분기 실적 발표: 사상 최고치 기록, 마진 16.7%로 확대 - Investing.com 한국어",
-      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE11b0M2MFVkZlF4SGxIRV9jSm1lZXJJaTNFUndKa0pLYllIalVjYkhXVmFjay1kLS14X1BkbXlWZ0VGd1Rmd1Z5RERJTWRrRDJfc3A2RHZsVG5MZWt5cjdYSzB5LXB6SGp2UXZpNzJ0OG8?oc=5",
-      "source": "Investing.com 한국어",
-      "published": "2026-05-12T07:36:00+09:00",
-      "summary": "APEI 2026년 1분기 실적 발표: 사상 최고치 기록, 마진 16.7%로 확대 Investing.com 한국어",
-      "keywords": [
-        "실적발표"
+        "IPO"
       ]
     },
     {
@@ -1463,24 +2232,6 @@
       "source": "더벨",
       "published": "2026-05-12T07:34:37+09:00",
       "summary": "[News Briefing] 이사회도 건너뛰고… 4대 금융, 너도나도 \"전북 가겠다\" thebell.co.kr",
-      "keywords": []
-    },
-    {
-      "title": "K92 Mining 2026년 1분기 실적 발표: 매출 급증, 주가 3.46% 상승 - Investing.com 한국어",
-      "url": "https://news.google.com/rss/articles/CBMib0FVX3lxTFBBT19QSE42dkRvT2ZyX2pQZWplVmxqd21Ra0hzSTVkTzlveHMzYnp5bVRZS2V2NVFMY2d3eDFWaXZNYUYzbmloZXVWS1NGR01CZndTVXA1SVp5Q2NOTTlYUUY5Tkx6R3pWLVpKYlMzSQ?oc=5",
-      "source": "Investing.com 한국어",
-      "published": "2026-05-12T07:26:00+09:00",
-      "summary": "K92 Mining 2026년 1분기 실적 발표: 매출 급증, 주가 3.46% 상승 Investing.com 한국어",
-      "keywords": [
-        "실적발표"
-      ]
-    },
-    {
-      "title": "[기자수첩] 차량 5부제의 역설 - 딜사이트",
-      "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTFBkNEVXRjVnLV8yd1liV0hwa3pMY3d3UHVMSnJfaU9WWFRwM1BwUkFRM1Q3WGVNSjc4c1hZU2NUNjg5b09wZkJMRGRRZ0NrSlZYME5XZ3VqYWU?oc=5",
-      "source": "딜사이트",
-      "published": "2026-05-12T07:25:13+09:00",
-      "summary": "[기자수첩] 차량 5부제의 역설 딜사이트",
       "keywords": []
     },
     {
@@ -1494,6 +2245,16 @@
       ]
     },
     {
+      "title": "한전기술, 원전 이어 해상풍력까지…완도금일 수주 기대 부각 - 프라임경제",
+      "url": "https://news.google.com/rss/articles/CBMibEFVX3lxTE5ZX192MzhOWUJPWlJrV1VZM0JmRU5Bd2w4a2VISEQ2NWNTNXpPbnhXeEJMZ3NaU09JbHNwZnJQdm11U29vRzNzRVV1cDFjZl8zS3M4OXE0M25ZWWd3S3A0OXg5b0tSa2FLMkFJWg?oc=5",
+      "source": "프라임경제",
+      "published": "2026-05-12T07:20:08+09:00",
+      "summary": "한전기술, 원전 이어 해상풍력까지…완도금일 수주 기대 부각 프라임경제",
+      "keywords": [
+        "신사업"
+      ]
+    },
+    {
       "title": "[이 시각 세계] 오픈AI 직원들 '대박'‥자사주 9조 6천억 원 매각 - MBC 뉴스",
       "url": "https://news.google.com/rss/articles/CBMiekFVX3lxTE9BbmIwZUQ0dkZGSHo0aW5PaTBwTUdVZkpRT09CNkdGY01XTWEzbkVwWV95aW1qT3hVdVBBTFM4SjdUTWF5SmROOEExQnF2eDdWdlotQ0ZCaEJNVEtQdHlGVFFQNFVnSE1aTHVwdHlDWkw5ZUVDTTRyWFpB0gF6QVVfeXFMUDYtZUtjM19KVHZ2d3ZWQ3MteVFBZm43ZUJUcGJUbkFaa2FjVy02ZU5ndGh1ZWFneXY5QUNDNGJwWEJLUTNwYU5IWFhJVDBycUFZRTJQQnJrZE9vc0pPdmZFMlNsMGx0RXJZS2VGeEpKTTlNVXlCZXV4VkE?oc=5",
       "source": "MBC 뉴스",
@@ -1504,22 +2265,6 @@
       ]
     },
     {
-      "title": "[150조 국민성장펀드] [간접투자 1차] 침묵 깬 1세대 거물…스카이레이크 vs 에이티넘 격돌 - 딜사이트",
-      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTFAyU0ljQlRKSTA0RE9vOTc2Ty1JeUNhUjVYeHRibHR0Vmpaak1tMU9CLUFlc3JEcTY2WGJzSTQxY0ZDZ3JwenNNX0ktYXZwUlE?oc=5",
-      "source": "딜사이트",
-      "published": "2026-05-12T07:10:15+09:00",
-      "summary": "[150조 국민성장펀드] [간접투자 1차] 침묵 깬 1세대 거물…스카이레이크 vs 에이티넘 격돌 딜사이트",
-      "keywords": []
-    },
-    {
-      "title": "'힐데스하임' 원건설, 매출 증가세 속 수익성 급감 - thebell.co.kr",
-      "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxPb25lVF9LVngzRzR4ejFqazVlUC0xV0ptZnlBUE8xQTFxUjQ3MnR2d3c0V0s5Zm4xbnZxM2VtVHRjbEpadC1kNE1KNC1yRVZLMGFnTEcxUE0zOGlYcEtsd2tiVTRJNWpfMk1HUk5zUXNZNDdjaFJCU0Fpb3JfSjhzaGdhSFVQTzJW?oc=5",
-      "source": "더벨",
-      "published": "2026-05-12T07:03:00+09:00",
-      "summary": "'힐데스하임' 원건설, 매출 증가세 속 수익성 급감 thebell.co.kr",
-      "keywords": []
-    },
-    {
       "title": "'외형 성장' 선진엔지니어링, 수주 목표 달성 재도전 - thebell.co.kr",
       "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxPWUdlUzZZSDZPdThuSF9PUjJtSUtaXzZua1RwNmpkTXFsTDRSZFBXSGpPdXRSM3F1c2dVUnFnRC01TWJNTlNSWTJXeGE5dnRYZlFuSWMwenM5VGtaWndPQnhSazM4TWhGcFlSLW1WeFJWSTBJU25aUXAtY0YxUVNqaVhRSzh2U1E0?oc=5",
       "source": "더벨",
@@ -1528,26 +2273,8 @@
       "keywords": []
     },
     {
-      "title": "[디벨로퍼 리포트] 넥스플랜, 에테르노 성과…'외형·수익성' 다 챙겼다 - thebell.co.kr",
-      "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxQT01LdGhBem4yd2FwandqQ2U3RXUtQmh2emR0SEZRbFR6TFJxcE1fT24yaFRIMTEzcV9EVFQ4MENac3B0RjJ3eTdMaGdKMmRXUHUzcXJDUzZGYnUxSnd2bjVoSVFqdHgySVhjNzBPS2xMRXh3cEU3Mm9uTnowVXI2dkdvWmRxM0Y5?oc=5",
-      "source": "더벨",
-      "published": "2026-05-12T07:02:59+09:00",
-      "summary": "[디벨로퍼 리포트] 넥스플랜, 에테르노 성과…'외형·수익성' 다 챙겼다 thebell.co.kr",
-      "keywords": []
-    },
-    {
-      "title": "[AI의 종목 이야기] SMIC의 8.8조 규모 인수합병 승인, '과창판 신기록' - 네이트",
-      "url": "https://news.google.com/rss/articles/CBMiU0FVX3lxTFBzcU5Hc2NmZHBRS3lmd2lBcHl5TERvYVJZMDFLV2FabmxVNERuTTU4QnozYU5NN01hZXpBa0FYU1BhbzlIandUTVVGV0t1eEplNGVZ?oc=5",
-      "source": "네이트",
-      "published": "2026-05-12T07:01:00+09:00",
-      "summary": "[AI의 종목 이야기] SMIC의 8.8조 규모 인수합병 승인, '과창판 신기록' 네이트",
-      "keywords": [
-        "합병"
-      ]
-    },
-    {
       "title": "[이슈&논란] 마리오쇼핑, 단기차입금·계열대여·파생상품 손실·신사업 적자·배당중단 관련 13개 질의…“일시적 회계·미래투자·책임경영·헤지차원” 해명 - 뉴스스페이스",
-      "url": "https://news.google.com/rss/articles/CBMiY0FVX3lxTFBzS19xQ1A0OVdZcGU1RVN3U2J4a3J1b2JyVkNZTy1IVjBYUVFrRGxseUJSbklkcDB5OTlWWWtSWll6OWJRU2dVTWpyR2dab0RieU5DbWpVTUNJRFFWUGRjU0NXQQ?oc=5",
+      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE13SjM5R2cxOTA5Rk5TQ1lfSGVSdUtUVTFramlnRlptak4yTm56RERJWVVGSFIzTEFxVFFoTDdlandtS2VGUFZyc2xfaXVDSzZQY21JOU8xOGRVTGx2UjIyNw?oc=5",
       "source": "뉴스스페이스",
       "published": "2026-05-12T07:01:00+09:00",
       "summary": "[이슈&논란] 마리오쇼핑, 단기차입금·계열대여·파생상품 손실·신사업 적자·배당중단 관련 13개 질의…“일시적 회계·미래투자·책임경영·헤지차원” 해명 뉴스스페이스",
@@ -1556,51 +2283,13 @@
       ]
     },
     {
-      "title": "[건설사 체력점검 – 현대엔지니어링②] 리스크 낮췄다…대신 실적이 비었다 - 뷰어스",
-      "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE03SWtUYnlnYWhJNDZKalNDTFpKNXVYcGVPT1VIU19LemNQS2NPLUxobU9Rd0ZHbnE1dEtuSHZFbElxZ1hVajBYWnNteGNkeGFIb3Q0cXdRZ0E?oc=5",
-      "source": "뷰어스",
-      "published": "2026-05-12T07:00:53+09:00",
-      "summary": "[건설사 체력점검 – 현대엔지니어링②] 리스크 낮췄다…대신 실적이 비었다 뷰어스",
+      "title": "[The Numbers] 마리오쇼핑, 영업이익 20% 급감·순이익 2945만원 '충격'…단기차입금 1405억에도 특수관계자 385억원 대여 '갸우뚱'·신사업까지 모두 '적자' - 뉴스스페이스",
+      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE5kcjlGekZsM2I2dlBLR01CaGFaUW9TaTh3aGRTYU9hM1FTNUFwMEJpVVF2d003MlF3TGRRZURnV0hGNDkxdGo3V1V1M0pMV0ZKdDA4VTBsMk1SelFvd0p0SA?oc=5",
+      "source": "뉴스스페이스",
+      "published": "2026-05-12T07:00:02+09:00",
+      "summary": "[The Numbers] 마리오쇼핑, 영업이익 20% 급감·순이익 2945만원 '충격'…단기차입금 1405억에도 특수관계자 385억원 대여 '갸우뚱'·신사업까지 모두 '적자' 뉴스스페이스",
       "keywords": [
         "신사업"
-      ]
-    },
-    {
-      "title": "'증권에 RWA 몰아주기' 시동…TF 만들어 고민하는 금융지주들 - 인베스트조선",
-      "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPSTRmajktWV9kUWstZ3pHRkNSSHduQ2VZalo3RXRKOG1YRUxSd2traTJXUnNJSEtZRTRXRUx3Z3lHSlZqRG0tMEdZdTVRWENNTlZvTnFPS1NpV3dGSUZzcWNxdUNqQjVUdl9BRjlEdDFSbVV5NHZaaGh5RlVaUkNMQU1pWQ?oc=5",
-      "source": "인베스트조선",
-      "published": "2026-05-12T07:00:45+09:00",
-      "summary": "'증권에 RWA 몰아주기' 시동…TF 만들어 고민하는 금융지주들 인베스트조선",
-      "keywords": []
-    },
-    {
-      "title": "[글로벌전략] [미래에셋증권] 글로벌 거물로 성장, 투트랙 통했다 - DealSite경제TV",
-      "url": "https://news.google.com/rss/articles/CBMiVkFVX3lxTFBQQ1B6UmpYUlI0MGx4TGo3UjVMRk9rOFUyeWM1RUJUWndIMnc4R1pBVzdPTkpJZlZLSGpmampVOV9yckpIb05BV2JNRlVKdzVOZ1IyTUVB?oc=5",
-      "source": "DealSite경제TV",
-      "published": "2026-05-12T07:00:22+09:00",
-      "summary": "[글로벌전략] [미래에셋증권] 글로벌 거물로 성장, 투트랙 통했다 DealSite경제TV",
-      "keywords": [
-        "인수합병"
-      ]
-    },
-    {
-      "title": "[AI의 종목 이야기] 中 체화지능 기업 Vbot, 1083억 투자유치 성공 - 뉴스핌",
-      "url": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE5KQ3ZtQlRRSmJ3eEpScFpGMy1jcHBFV3Bvb09EUUZEd29EazY1aU9WZnVnSW1PR0xRS09YWndJUV94cnphNUZyZFFkLTNaX1BJcG9vWlJCTG9kUWpH?oc=5",
-      "source": "뉴스핌",
-      "published": "2026-05-12T07:00:00+09:00",
-      "summary": "[AI의 종목 이야기] 中 체화지능 기업 Vbot, 1083억 투자유치 성공 뉴스핌",
-      "keywords": [
-        "투자유치"
-      ]
-    },
-    {
-      "title": "[150조 국민성장펀드] [간접투자 1차] M&A 단 한 자리…회수 실적 앞세운 중견 PEF 격돌 - 딜사이트 플러스",
-      "url": "https://news.google.com/rss/articles/CBMiVEFVX3lxTE5qb3JjWkNUUUNEb3JMX1hjZnZ4SUk1eHh5R1Y3dlM3bVdQcWNpSy1Gb0dfcjJxWm14bzRrZ0NLZlJFMUkxUnFia0ZqQTJ2QnVkN05xRg?oc=5",
-      "source": "딜사이트 플러스",
-      "published": "2026-05-12T07:00:00+09:00",
-      "summary": "[150조 국민성장펀드] [간접투자 1차] M&A 단 한 자리…회수 실적 앞세운 중견 PEF 격돌 딜사이트 플러스",
-      "keywords": [
-        "M&A"
       ]
     },
     {
@@ -1615,12 +2304,14 @@
       ]
     },
     {
-      "title": "[코스닥 매물 스코프] 비투엔 경영권 거래 '반쪽 마무리'…FI 잔금 미납 - 딜사이트",
-      "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE1ncE9rX2NCN0E1aGM0Qm5ZRDNvR0JjQkpxTUoyVEhoM2kyVVRTaG1jZ3Y3NUpkZXZBRWxLQ0NIb2U1UjZmTEFwbms0c29XMnFoNUhVRnlNV2c?oc=5",
-      "source": "딜사이트",
-      "published": "2026-05-12T06:50:16+09:00",
-      "summary": "[코스닥 매물 스코프] 비투엔 경영권 거래 '반쪽 마무리'…FI 잔금 미납 딜사이트",
-      "keywords": []
+      "title": "무신사, IPO 준비 본격화…하반기 예심 청구 '속도' - 네이버 프리미엄콘텐츠",
+      "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxQbEhLSGc3N0ZReUk5ZVkyQV83NENMSHdQTldfQkVXLVRmQklETlFsWEN0dFo5Qll3Z2x2ZjBMSGtfS2tINURHaDZsdlh4aGpmM0RlZzFMVUxSeU1uVEpmYTdJMkV0ckNlWEpwMUQwT09JVXdIQWdFYXhOUmVQeGxvTw?oc=5",
+      "source": "네이버 프리미엄콘텐츠",
+      "published": "2026-05-12T06:50:00+09:00",
+      "summary": "무신사, IPO 준비 본격화…하반기 예심 청구 '속도' 네이버 프리미엄콘텐츠",
+      "keywords": [
+        "IPO"
+      ]
     },
     {
       "title": "\"돈 버는 AI가 진짜\"…산업 특화 AI 기업 IPO 러시 [AI 클로즈업] - 디지털데일리",
@@ -1643,16 +2334,6 @@
       ]
     },
     {
-      "title": "서울유니온약품 매각 부지 새 주인 ‘제이앤티팜’ - 데일리메디",
-      "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTFBQOWlFR2wwYXJIb0pzU1BUVXNlOGlLZlZUUlhsOU12bG9PMTJBNE5yU2lQR2x4QThkV3lCZ041UkY4ZmFpS0JTVTczek1ucHBTOWRhTW1GWjZuX3ZXRG9GWm8xbTA1b0Vx?oc=5",
-      "source": "데일리메디",
-      "published": "2026-05-12T06:26:00+09:00",
-      "summary": "서울유니온약품 매각 부지 새 주인 ‘제이앤티팜’ 데일리메디",
-      "keywords": [
-        "매각"
-      ]
-    },
-    {
       "title": "[토론회] “‘자사주 소각 의무화’ 발맞춰 세법 체계도 ‘자본거래’로 재정립해야” - 세정일보",
       "url": "https://news.google.com/rss/articles/CBMibEFVX3lxTFBidEtpSEUxR2hpSE53RFVQdHVrX2RMUGdWbzE4V20yUVZ4WTVPc1ZReG5YOWctdmkxSUlEOVRJeFlZMDVqMkNQc3NZWld1b1dTdmZxcXEzcm13dU1aNWh3SFdCdWJRZjlnNktwRQ?oc=5",
       "source": "세정일보",
@@ -1663,21 +2344,12 @@
       ]
     },
     {
-      "title": "[150조 국민성장펀드] [간접투자 1차] 침묵 깬 1세대 거물…스카이레이크 vs 에이티넘 격돌 - 딜사이트",
-      "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE1PbjdPNTBJa0hUU0tUNS1uS1lfd2xUaGgyajBfY3FNYzVUSWpUd3VZZEl6b0RfNUswQXRENThvak5yVHRVNnN0X1QxeFpiUk9aNVVKLWxTZ3Y?oc=5",
-      "source": "딜사이트",
-      "published": "2026-05-12T06:10:16+09:00",
-      "summary": "[150조 국민성장펀드] [간접투자 1차] 침묵 깬 1세대 거물…스카이레이크 vs 에이티넘 격돌 딜사이트",
-      "keywords": []
-    },
-    {
       "title": "크래프톤, 1.7조 M&A 승부수 통했나?...사업구조 다변화로 매출·영업익 30%대 급증 전망 - 소비자가 만드는 신문",
       "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE10T2dsRWV4LUZQVm84eWV6UjdURlE5MWhUb2NuaHpJR2xDaU81cUhEYzVIV2J5ZGtWVkRBZDByQTNGMW9mQUxYV29hSl9VM0d2czJxdHZyci1oaERBd1pkVzR1RWs3bXpsblB2TjBPeFBVZ0E?oc=5",
       "source": "소비자가 만드는 신문",
       "published": "2026-05-12T06:10:00+09:00",
       "summary": "크래프톤, 1.7조 M&A 승부수 통했나?...사업구조 다변화로 매출·영업익 30%대 급증 전망 소비자가 만드는 신문",
       "keywords": [
-        "인수합병",
         "M&A"
       ]
     },
@@ -1700,14 +2372,6 @@
       "keywords": [
         "합병"
       ]
-    },
-    {
-      "title": "'단기수익 대신 투자' 아모레 에스트라, 글로벌 연착륙 드라이브 - 딜사이트",
-      "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE9iN0RfUmtBTXpYVGZ0RVhhMWFtbExfeWRBdGh0YlowV2lMV3dRSWItLUpoMEUyMXc0R0ppNWVMQW9OMWxpY3VvcjRIbEUtMEJFOUdsY1B2M0g?oc=5",
-      "source": "딜사이트",
-      "published": "2026-05-12T06:00:16+09:00",
-      "summary": "'단기수익 대신 투자' 아모레 에스트라, 글로벌 연착륙 드라이브 딜사이트",
-      "keywords": []
     },
     {
       "title": "“다운라운드보다 공모가 더 낮다”… 매드업·FI, 상장 후 성장에 베팅 - 조선비즈 - Chosunbiz",
@@ -1760,16 +2424,6 @@
       ]
     },
     {
-      "title": "필수인 투자중개 인가땐 '금융업' 분류…스타트업, VC 투자 못받아 생존 경고등 - 이데일리",
-      "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxNdzd5LWJ1TjJmbEVoc0NfZ0Z6RmZuajUxemZLemZhSUwyWmZxVk0zc3FuVVl3LTRfZlVVSWJlS2NNcFpKWWJnTllhdlNzZHlvVTM3eTdDZHFuNVBGbzVzNDlpa3JjT0I5eVRiYVN3ZmMxUkFMT053ZTNoRUx1a3RKbw?oc=5",
-      "source": "이데일리",
-      "published": "2026-05-12T05:12:03+09:00",
-      "summary": "필수인 투자중개 인가땐 '금융업' 분류…스타트업, VC 투자 못받아 생존 경고등 이데일리",
-      "keywords": [
-        "투자유치"
-      ]
-    },
-    {
       "title": "글로벌 성장·주주환원·신사업…美뭉칫돈 잡은 KT&G - 네이트",
       "url": "https://news.google.com/rss/articles/CBMiU0FVX3lxTFAtaHg2YUdQME9TWUdJVkhxR1JVaTZFbkpqazVkaVJ4U3RtR0U4UTZzRm9JSUxhZEFmRnFwVk80VmlMeXRmam05UGVEbHA1M18tVjdJ?oc=5",
       "source": "네이트",
@@ -1787,6 +2441,16 @@
       "summary": "정부, NXC 물납주식 일부 재매각… '1兆' 세외수입 확보 - 머니투데이 머니투데이",
       "keywords": [
         "매각"
+      ]
+    },
+    {
+      "title": "48조 ‘세레브라스’ 상장… 제2의 엔비디아? 거품 판별할 숫자 3가지 - 글로벌이코노믹",
+      "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxPUmpFdFN4RXA5VTg2VzZ0TmlLckNCUk1TdS0yTk9Kcy1iNzMwTENhRHk4UGg4c0s1MU1Qc0pWX1hXZ3ZFdTJEM3BPUW1pRS1OVHR0Y2xDWVFEYWlqTER1YzFha3JZNXhDNDAwbTJFZS1ybTZXcEtOaXFtcndwNjN6RmtQMmZJVVdO?oc=5",
+      "source": "글로벌이코노믹",
+      "published": "2026-05-12T03:35:00+09:00",
+      "summary": "48조 ‘세레브라스’ 상장… 제2의 엔비디아? 거품 판별할 숫자 3가지 글로벌이코노믹",
+      "keywords": [
+        "상장"
       ]
     },
     {
@@ -1817,16 +2481,6 @@
       "summary": "시스코시스템즈, 실적 발표 앞두고 목표가 상향 소식에 주가 강세 마켓인",
       "keywords": [
         "실적발표"
-      ]
-    },
-    {
-      "title": "경남제약, 펫·주류 사업 추가…레모나 회사의 변신 - 데일리팜",
-      "url": "https://news.google.com/rss/articles/CBMiUEFVX3lxTE1SVEdKN0JCenRkV0RKcmlYNER4cm53bFFNcDRMMjRGLXhXU290WGxCeTQxSzkxMkZUQjgxd2IxbUYyM01UT3VaOGMySFhmbk4w?oc=5",
-      "source": "데일리팜",
-      "published": "2026-05-12T02:30:24+09:00",
-      "summary": "경남제약, 펫·주류 사업 추가…레모나 회사의 변신 데일리팜",
-      "keywords": [
-        "신사업"
       ]
     },
     {
@@ -1867,26 +2521,6 @@
       "summary": "유니레버-맥코믹 650억달러 식품 합병…투자자들 “ESG 기준 유지하라” 압박 ESG비즈니스리뷰",
       "keywords": [
         "합병"
-      ]
-    },
-    {
-      "title": "[朝鮮칼럼] 부동산은 ‘나쁜 투기’, 주식은 ‘착한 투자’인가 - 조선일보",
-      "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxObUlRVEE0cFpISXRuMEc0Zm10TEdsMXJfM0VvMFc4UlpPSVZhdEJvRzBxVUtyLTgyd2JOeEJoYmJSUmJaenlFQVJlRmgtc3ZBUVkwYkVuU29tNl92RHBfNVd0ZDAxc3lrbk5vR01mYk9BT0U5ZndwMUFPM3JoRDJnc2s0V3h6cFpRZ25R?oc=5",
-      "source": "조선일보",
-      "published": "2026-05-11T23:55:00+09:00",
-      "summary": "[朝鮮칼럼] 부동산은 ‘나쁜 투기’, 주식은 ‘착한 투자’인가 조선일보",
-      "keywords": [
-        "유상증자"
-      ]
-    },
-    {
-      "title": "점점 더 가까워지는 네이버와 컬리 - 바이라인네트워크",
-      "url": "https://news.google.com/rss/articles/CBMiTEFVX3lxTE1JSGsyemx0MU0xVTVfX0JiNkNJWE5BaDZGY3lLdDRJSE13eUtTakZ1N0gyMW1oTjZMYWZhUmJ0WjRYSVQ0a2ZqVTNjTHQ?oc=5",
-      "source": "바이라인네트워크",
-      "published": "2026-05-11T22:57:27+09:00",
-      "summary": "점점 더 가까워지는 네이버와 컬리 바이라인네트워크",
-      "keywords": [
-        "유상증자"
       ]
     },
     {
@@ -1961,13 +2595,13 @@
       ]
     },
     {
-      "title": "NHN, 167억원 규모 자사주 매입 후 소각 - 이데일리",
-      "url": "https://news.google.com/rss/articles/CBMigAFBVV95cUxPX2pKWmlnQTVyallleDViSzZCRnhFYmtyd3NkTlUxT2dWSjhYQjlsVlhWa282LTBtc2ltUW51MmRpWXFrdjRFcnlDSXl4SGZFQzIwVGgxaXVOR2FIRlZtcDk4Y2I1emlsXzJiNk9kaXg5aUR2RHZHOHFZR2dMR25iYg?oc=5",
-      "source": "이데일리",
-      "published": "2026-05-11T21:46:11+09:00",
-      "summary": "NHN, 167억원 규모 자사주 매입 후 소각 이데일리",
+      "title": "에볼루션 메탈스, 1억 달러 전환사채 발행…주식 희석 우려로 약세 - 매일경제",
+      "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE13azNLMFBHcHJ0VjlQaWtDYnpSOFN2UGJja2ctZl9wOFM5RW84MHM1NFBMUTBJa2ZfNFlUdjFZSTc0NHN1Z25FVFRoTWw2bVFMQ0E?oc=5",
+      "source": "매일경제",
+      "published": "2026-05-11T21:51:16+09:00",
+      "summary": "에볼루션 메탈스, 1억 달러 전환사채 발행…주식 희석 우려로 약세 매일경제",
       "keywords": [
-        "자사주"
+        "전환사채"
       ]
     },
     {
@@ -1986,16 +2620,6 @@
       "source": "한국경제",
       "published": "2026-05-11T21:29:53+09:00",
       "summary": "휴온스랩, 그룹 상장 계열사와 합병 추진 한국경제",
-      "keywords": [
-        "합병"
-      ]
-    },
-    {
-      "title": "소니다시니어리빙, CHP 합병 후 순손실 4,123만 달러 기록…2026년도 적자 전망 - 매일경제 마켓",
-      "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTFBWYkc0TDdZbDYtakV5RTJCQjkwZkJsZ1RfYjFkOUJfc0tZT2dqYnFFeGx6bVkyZXV2TVgtbUtwdGxqLTZoWm9YOUtFQzVTOUtvaWc?oc=5",
-      "source": "매일경제 마켓",
-      "published": "2026-05-11T21:10:23+09:00",
-      "summary": "소니다시니어리빙, CHP 합병 후 순손실 4,123만 달러 기록…2026년도 적자 전망 매일경제 마켓",
       "keywords": [
         "합병"
       ]
@@ -2048,16 +2672,6 @@
       "summary": "더블유씨피, 1분기 실적 발표… 업황 저점 통과하며 회복 사이클 진입 확인 전기신문",
       "keywords": [
         "실적발표"
-      ]
-    },
-    {
-      "title": "하나은행, 기술보증기금과 20억 출연 M&A 금융지원 협약 - 퍼블릭뉴스통신",
-      "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTFBFYmFaU3FsMGhCcHpmQlVIc2ozbHFqVm1aeGNPeEthb1czZ3ptanFVcnRLSVNhdVpFR0VvSHkzQVpRcmYzTGE2TXIxZktnT2F6MzRLbzBCcGxoenY2V3ZZTzZkVFpYaG41MmFJ?oc=5",
-      "source": "퍼블릭뉴스통신",
-      "published": "2026-05-11T20:00:09+09:00",
-      "summary": "하나은행, 기술보증기금과 20억 출연 M&A 금융지원 협약 퍼블릭뉴스통신",
-      "keywords": [
-        "M&A"
       ]
     },
     {
@@ -2117,24 +2731,6 @@
       ]
     },
     {
-      "title": "푸른저축, '오너 2세' 주신홍 대표 지배력 강화 - thebell.co.kr",
-      "url": "https://news.google.com/rss/articles/CBMie0FVX3lxTE5YbkE0TXVkYjdQMHo3c1JJQ21CVHVoRTVSTElrT3dDcHJPc2gzallRMmxqUHpsWGxKX1ZNb0h4bWN1cGJlWDNnakpCVXI3T0FBckUwSDlaU24tNHgyR01NUG51OW95TE1ZdkdkYjJsZE1yYmZleWxZVVRsUQ?oc=5",
-      "source": "더벨",
-      "published": "2026-05-11T18:47:01+09:00",
-      "summary": "푸른저축, '오너 2세' 주신홍 대표 지배력 강화 thebell.co.kr",
-      "keywords": []
-    },
-    {
-      "title": "NXC, 1.2조원 규모 자사주 취득...정부 \"좋은 매각 사례\" - 인벤",
-      "url": "https://news.google.com/rss/articles/CBMiXkFVX3lxTE91TkdQZi1rMjZQSVJ2d1VHMjc5aVdHX3lNUnNNUWJKaGlRbWZDMHBJeUNwQjEweDd4emN5UmUtOVhQNkNCaEFLNnA0QlQtZ0Y2VmlzMFdkT0tfRWdRVmc?oc=5",
-      "source": "인벤",
-      "published": "2026-05-11T18:35:52+09:00",
-      "summary": "NXC, 1.2조원 규모 자사주 취득...정부 \"좋은 매각 사례\" 인벤",
-      "keywords": [
-        "자사주"
-      ]
-    },
-    {
       "title": "NHN, 자사주 167억어치 취득 후 소각…\"주주가치 제고\" - 연합뉴스",
       "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE5CMEZEWjRiVzdmVVh2aU1MNmczSGxyZ1hILXlMV2JnRkVqa3hSUkc4eDdkdTBIcnQ4YXYxWkw1b3ZQNUZuTHlKckdQcWJuNjl0MEh0Mm84S3R2YzjSAWBBVV95cUxPOFRZbU9vZDNadmx3bkNlZjYtSjlmX1dGX1NrMFBoaFFEcU9uOFdfWHVFajVCUkg3bUN1Y2dVSmJnWlJhNVRDVGF6VFFNME8xQ1dQSnVST0RUUnNkVjJHUFI?oc=5",
       "source": "연합뉴스",
@@ -2145,14 +2741,12 @@
       ]
     },
     {
-      "title": "합병 위협에 캐나다군, 30년 만에 최대 모병 - 부산일보",
-      "url": "https://news.google.com/rss/articles/CBMidEFVX3lxTE5EaUN4MGg1Sk1Xamdmb3NCSVYwYzJGRXhmaEFlUGFqejZURmJRTjcxV3NXbHctTV9zRGJyVWtrUmRYc01laU1JbzYwbGdWYjZIZ3NudGVmU0RScUpwdUZYT2ViLTR1dDNmNlg5ZVd3ekxtdG9k?oc=5",
-      "source": "부산일보",
-      "published": "2026-05-11T18:12:02+09:00",
-      "summary": "합병 위협에 캐나다군, 30년 만에 최대 모병 부산일보",
-      "keywords": [
-        "합병"
-      ]
+      "title": "[thebell interview | 기술이전 스토리] 큐라클, 빅파마 아닌 뉴코 맞손 왜? \"반환 리스크 줄인 선택\" - thebell.co.kr",
+      "url": "https://news.google.com/rss/articles/CBMie0FVX3lxTE5YQmxzUl9mMmtWQmUtX3M1UzZUREQySmU3Qm4zN3lLNUxMVUdMbkItWU9saEoydVJfZDVCdmNWVW5zeWFSc0ZBRE5jVmZqb3p2LXd5TzFQMFZCamp1eFhMYWgtX3pxeTlzZUJvTG96VXM3dXUwYUUyQnhtSQ?oc=5",
+      "source": "더벨",
+      "published": "2026-05-11T18:14:56+09:00",
+      "summary": "[thebell interview | 기술이전 스토리] 큐라클, 빅파마 아닌 뉴코 맞손 왜? \"반환 리스크 줄인 선택\" thebell.co.kr",
+      "keywords": []
     },
     {
       "title": "[딜 인사이드] '거래정지' 디에이테크, 액면가 유증…적정성 도마 위 - 네이트",
@@ -2185,16 +2779,6 @@
       ]
     },
     {
-      "title": "NHN, 167억 규모 자사주 취득 후 전량 소각…\"주가 안정·주주환원\" - newsis.com",
-      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE54ZHpBeThFYlF6SzBGdmN0TThub193SDNweno1dG9oRzUwVlhPbExESUxFR1psVWE5b0xvdHNqeDlCVERuaEd3a0Uyem5ETmJMc3lhMW0xU0ZLNUJidVdNUtIBeEFVX3lxTE9ZTXVBUVdscmFFYlJjdDlINUVsT2Q1WHVJQ3hnSWM3WWFlX003WFJ2M0ZWdEMyUjFsOXFIWEJQN2d5elk1UHAyNXk4NWp4N1Fnb2d6c3pCa0xwUzUzNnp2akdNNGxTSzBhLVRFbHd1ZFhSdWgtWkpHVg?oc=5",
-      "source": "newsis.com",
-      "published": "2026-05-11T17:52:03+09:00",
-      "summary": "NHN, 167억 규모 자사주 취득 후 전량 소각…\"주가 안정·주주환원\" newsis.com",
-      "keywords": [
-        "자사주"
-      ]
-    },
-    {
       "title": "대선조선 다시 매각 절차… 우선협상대상자에 `SB선보` - 부산일보",
       "url": "https://news.google.com/rss/articles/CBMidEFVX3lxTFBBQVlMMHU1YU03dF9LOU5uS1lKYlZnQ3lwX1E0aWVpY2ZPY241MmhFSjF6M1NVVVUtdVlobmN4Sl9EX2FlVVJtWGs0YzBuSHZIclhLU3VKTHhzRVhnUzFFVlRfVmRXX1BOWWxxd2wzQ2J0QnZ2?oc=5",
       "source": "부산일보",
@@ -2215,13 +2799,21 @@
       ]
     },
     {
-      "title": "미 상장 '한국ETF' 하루만에 6000억 유출...\"한국 매도신호는 아냐\" - 머니투데이 - 머니투데이",
-      "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE5jdURUaG5uc3p3ZTBlY3dtRmVFbzZpQTZ1WVFZQWtXZEFLVUZmaHNxWUI0dnFGVnJTU0ZMam1LckgzV1NyWEl5WFV0aHpWNUZuZFlnZHdMVlU5Y284LUJSMzl4ZV9SNkJI0gFuQVVfeXFMTW1KWl9DTlo5SUFQLU82RGdjbE41U2VTU2YwT3FoQ1cxZjh3dHZqWnJfcUF4bzlldTRwUnB2SWJhazNKOWF6M3g1anpjNnVOLUZ4THR3RldRRW9Gd05xU1dhUG13SlJHS1VXekt2blE?oc=5",
-      "source": "머니투데이",
-      "published": "2026-05-11T17:36:09+09:00",
-      "summary": "미 상장 '한국ETF' 하루만에 6000억 유출...\"한국 매도신호는 아냐\" - 머니투데이 머니투데이",
+      "title": "\"재산 지키고 분쟁 막는다\"…'상속 필수템' 입소문에 '뭉칫돈' - 한국경제",
+      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE1JUUpBZnRFc0t0TzQ5Rm9XbEQ1YXB0NHlCeTZqeTRJdnduTTBTMHBjSXEwQjc2SjQtbC0yc3lLLXRQX2p1R1BaT2NwNE1yaVRzQ3VtLUlmSFpVUdIBVEFVX3lxTE1QcjZsdEExX1ZrQlBqdDlhdWRLdWo5dEEyU0dpMTlYS21FeU1iU0Z0X29UblhSc1Znam5GX1J3dW1HS1k0UVV0ZUQtWGh0R0tQeDlxbg?oc=5",
+      "source": "한국경제",
+      "published": "2026-05-11T17:38:37+09:00",
+      "summary": "\"재산 지키고 분쟁 막는다\"…'상속 필수템' 입소문에 '뭉칫돈' 한국경제",
+      "keywords": []
+    },
+    {
+      "title": "[포스트 IPO]① 기술특례 법차손 규제 완화…복지부vs거래소 동상이몽 - 블로터",
+      "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTFBGNEo0THN5azhLOXRxd3plbWZsQ2FObktkSUpUUUJVLW5CUVg5VThMSGVlZGkzSTRjVjdzWkVxWGdYNms2WFpIWnJRd3dLY2M5Y25VMy11WDZDRVR4d0lQQWduakU3RVpq0gFsQVVfeXFMTVd2X0VzakQzSkJ6ZHVNMFdtZjBrRlp3WkVxV2hBd1VMYTVETTJ0RGZ0SEFFdU16RUsyaWNnaXlwaHI3Q3Y0QU8zN2VtazlWVEYya1dCT0RrV0p3ckhXSjQyWDg3a1dYeTkwQkhJ?oc=5",
+      "source": "블로터",
+      "published": "2026-05-11T17:37:35+09:00",
+      "summary": "[포스트 IPO]① 기술특례 법차손 규제 완화…복지부vs거래소 동상이몽 블로터",
       "keywords": [
-        "상장"
+        "IPO"
       ]
     },
     {
@@ -2263,16 +2855,6 @@
       "keywords": []
     },
     {
-      "title": "전사 타운홀 미팅 개최한 KG에코솔루션..바이오선박유 신사업 추진 - dailycar.co.kr",
-      "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTE9jZEJlTGtfdUdwRjJkM0c5ZExLa1lhQ3hMY3NhYjZITUxia0JfSkU3YXNNcnloVEdoVmJNYUQ0dS1NS3psOUkyZ3gzUm1iSUt6aVFtR29BamgydHBoZ241VHVZWXM3RmIxdHM0dXVPd01GZXFvblE?oc=5",
-      "source": "dailycar.co.kr",
-      "published": "2026-05-11T17:30:26+09:00",
-      "summary": "전사 타운홀 미팅 개최한 KG에코솔루션..바이오선박유 신사업 추진 dailycar.co.kr",
-      "keywords": [
-        "신사업"
-      ]
-    },
-    {
       "title": "'매각 무산' 예별손보, 한달 만에 재입찰 - 한국경제",
       "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE5CZHhmQVpSOS13cjJEWXk3eW5ZOEYyZFhGX1FJWFhyYkc3bDlSZzh0bEcyNWZHdjB0TW5tdmZKU0h1a1owd1U0QnN3NXRyRVNMdmY5RlAtOGtCQdIBVEFVX3lxTFBvcW1hOHBSVFM2Rm1YUFVuQ05WNzJzMkJPaFNjdFpXLXNLUEp2ZS1aVUx1bnpWeUxXZS1jcmZhcFVlUEdldFRRY2NCdTZMZzQ5TzFlXw?oc=5",
       "source": "한국경제",
@@ -2290,16 +2872,6 @@
       "summary": "[금융 Pick] 기보-하나은행, M&A 중소기업 금융지원 ‘맞손’…657억원 규모 협약보증 공급 라이센스뉴스",
       "keywords": [
         "M&A"
-      ]
-    },
-    {
-      "title": "NH아문디, ‘HANARO 미국AI메모리반도체TOP4+ ETF’ 상장 - 농민신문",
-      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE5oaE1DMlpDOEFlcVh4eUN0V3FKb08tMmpXVy1saUNoOE9MV3FCNjBGLXk2b0dFMEVKMTBGQVlHSExEWDBFV05rN21qNk9wWHFOWFBfVzBPWEhBZw?oc=5",
-      "source": "농민신문",
-      "published": "2026-05-11T17:27:00+09:00",
-      "summary": "NH아문디, ‘HANARO 미국AI메모리반도체TOP4+ ETF’ 상장 농민신문",
-      "keywords": [
-        "상장"
       ]
     },
     {
@@ -2410,16 +2982,6 @@
       "keywords": []
     },
     {
-      "title": "아이벡스메디칼시스템즈, 코스닥 상장 예비심사 신청 - 연합뉴스",
-      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTFAxeUEtSXB4b2J1UnVjTG83V2k2UmlzT1JxQ3VNbloxWXFXNVg2VzgyS0ZqSUw1NFA4QzRPejFLTTRfel80MTRNZzlKUHZFSW5zeklMb1VTcU1GU2vSAWBBVV95cUxPQmxtNEZHOGZMVlBYczdWZ3FCLW1hbkpRUTR1ZUsxM1NkRXhOZ1lVbDAzejBPVzFxQi0xcWkyek0weWE5MTRuRGk4LS1PRDFhSDdLSG5vZHltcmN1OE0xMzc?oc=5",
-      "source": "연합뉴스",
-      "published": "2026-05-11T17:02:21+09:00",
-      "summary": "아이벡스메디칼시스템즈, 코스닥 상장 예비심사 신청 연합뉴스",
-      "keywords": [
-        "상장"
-      ]
-    },
-    {
       "title": "더함파트너스의 뷰티 M&A, ‘10조’ 구다이글로벌 키웠다 - 뉴스톱",
       "url": "https://news.google.com/rss/articles/CBMib0FVX3lxTE5laHpYVzRQdk8tb2Rwdm85TUpsLVJCLWdUNDRiZERyWElkc2hvYVM2MnpNMnBSUjBoV0xETDFVeVFsVHpweGh1UWVGTVBqU3o5LUJRVHV0M1EzZ0FJX1FIMDg4ZzNVVEh1YVhNZm9nMA?oc=5",
       "source": "뉴스톱",
@@ -2500,34 +3062,6 @@
       ]
     },
     {
-      "title": "하나은행-기보, 기업승계·기술혁신 협약... M&A 지원 - 파이낸셜신문",
-      "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE0tcTJVUk9sZE45VmtFQjZjNGFycFg4VFpzc2tjOHVnX3RsVmNtdkp5WG9XejE3V1hnVHZnT1dNb3c1QnVic0pVRk5BT2tEQ0I4dVF4amdnYlZrMHBGZFJvMmJNMERRS3VmbElF?oc=5",
-      "source": "파이낸셜신문",
-      "published": "2026-05-11T16:48:59+09:00",
-      "summary": "하나은행-기보, 기업승계·기술혁신 협약... M&A 지원 파이낸셜신문",
-      "keywords": [
-        "M&A"
-      ]
-    },
-    {
-      "title": "황선오 금감원 부원장 \"한화솔루션 유상증자 소명미비시 정정요구 계속 할 것\"[월례 간담회 전문] - 한국경제",
-      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTFBlcWhjcFlTM2puOWtqa2c2QXZ6NW1PTkNQeTI1bjFzYWJXQkMxZGtfbTVkUjNyQ0JTWEliWGZRWEhyVk9sc2ZoNnZheHMtYm92eU92U28tWFFJd9IBVEFVX3lxTFBEdThPT1A0amRUQTFzZ09oTGZmdW9DclpZdFVGMlE2UDczWWE2SGhRZFFqTlFqbXFRdUsyYVRTS3hxN3RxVVJaLWE1MDQ0emhQbjJaNQ?oc=5",
-      "source": "한국경제",
-      "published": "2026-05-11T16:42:54+09:00",
-      "summary": "황선오 금감원 부원장 \"한화솔루션 유상증자 소명미비시 정정요구 계속 할 것\"[월례 간담회 전문] 한국경제",
-      "keywords": []
-    },
-    {
-      "title": "롯데웰푸드, 1분기 어닝서프라이즈… 카카오 원물가 완화·인도 사업 고성장 - S저널",
-      "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE1mTWxmTzBCb2tfX3NoR2tqR1N6alhzdHNlWTB2ZkJiejJXYTlFR2VnTFJuaWJobXhuNUFzblNZVW1UQkkzSnltUHNmWjVIcG9wMlUyTERLUmNjd2NVZ0FBN2pFX28xVkNtSHdmZFR3?oc=5",
-      "source": "S저널",
-      "published": "2026-05-11T16:42:39+09:00",
-      "summary": "롯데웰푸드, 1분기 어닝서프라이즈… 카카오 원물가 완화·인도 사업 고성장 S저널",
-      "keywords": [
-        "어닝서프라이즈"
-      ]
-    },
-    {
       "title": "삼성증권, 1분기 순익 4509억 ‘어닝 서프라이즈’(종합) - 뉴스투데이",
       "url": "https://news.google.com/rss/articles/CBMiXkFVX3lxTE44VU1aSno4ck92Wlgzc2IwRl9MLU9qQndVMjdHVDcweXUwMkhNM0E2bzM5NmEwQzRjOGtNRzdzQnhBMnBLWGJVeTNwSWEyUFNxWkN3R0g4NmJKTlBDT3c?oc=5",
       "source": "뉴스투데이",
@@ -2545,16 +3079,6 @@
       "summary": "삼성증권, 1분기 순이익 4500억원 돌파…역대 최대 ‘어닝 서프라이즈’ 헤럴드경제",
       "keywords": [
         "어닝서프라이즈"
-      ]
-    },
-    {
-      "title": "상장 첫날 ‘따따블’ 코스모로보틱스…단숨에 로봇 대장주 우뚝? - v.daum.net",
-      "url": "https://news.google.com/rss/articles/CBMiRkFVX3lxTE1JYm85ZEh0M01RUXJwSVZfWEJWc1JVN2xIcm45NW1WRVhjOTlRSmdwVHF2Ui1sNFdfWmFkY25DU3BqMGtNZ0E?oc=5",
-      "source": "v.daum.net",
-      "published": "2026-05-11T16:35:15+09:00",
-      "summary": "상장 첫날 ‘따따블’ 코스모로보틱스…단숨에 로봇 대장주 우뚝? v.daum.net",
-      "keywords": [
-        "상장"
       ]
     },
     {
@@ -2648,16 +3172,6 @@
       ]
     },
     {
-      "title": "삼성증권, 1분기 영업익 6095억원 ‘어닝 서프라이즈’…WM·IB 동반 성장 - 투데이e코노믹",
-      "url": "https://news.google.com/rss/articles/CBMiZ0FVX3lxTFBlTFVkbE12bzBBVlRBRG5Hb1NlRTFoX2V1VDYtOE1Zc1N6c0M4elprX3VnNThhaDZqNHhNbVBDbXd1cllfWGdjbGhoZGdfdkJvem13OThfNzRvN2JVQndZUFFmOG9ZZ00?oc=5",
-      "source": "투데이e코노믹",
-      "published": "2026-05-11T16:14:18+09:00",
-      "summary": "삼성증권, 1분기 영업익 6095억원 ‘어닝 서프라이즈’…WM·IB 동반 성장 투데이e코노믹",
-      "keywords": [
-        "어닝서프라이즈"
-      ]
-    },
-    {
       "title": "SIMPAC, 합병무효 소송 대응 계획 발표 - 디지털투데이",
       "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE45dGl5eGJ0Y0J0MEVTbllMNnlXQlU5RENFLVI3elI4QllzZHlUZHU5VHEzeUc1TGlBckpXd1hrTmJLZTBCMlJHVVhnV21Rc19lMHphalFQbHUyV0dzN2dSQmZvMmoxR242Y0pUYlNyTWluMWM?oc=5",
       "source": "디지털투데이",
@@ -2665,16 +3179,6 @@
       "summary": "SIMPAC, 합병무효 소송 대응 계획 발표 디지털투데이",
       "keywords": [
         "합병"
-      ]
-    },
-    {
-      "title": "반도체 훈풍 탄 멜콘…시장 시선은 사이클보다 '고객 다변화' [IPO 엑스레이] - v.daum.net",
-      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE9iMU96eUl0cGgxdVVJUjM2RUVOU1hWOFFOdE0zaUs4T2FfWmZXZnFlTUJJMW50UlRVMVR6d3hXTW1qdzZBRjFCbnpVVDhWMTA?oc=5",
-      "source": "v.daum.net",
-      "published": "2026-05-11T16:10:05+09:00",
-      "summary": "반도체 훈풍 탄 멜콘…시장 시선은 사이클보다 '고객 다변화' [IPO 엑스레이] v.daum.net",
-      "keywords": [
-        "IPO"
       ]
     },
     {
@@ -2688,13 +3192,13 @@
       ]
     },
     {
-      "title": "대성하이텍, 100억 CB 발행해 방산·로봇 신사업 가속...전환가 9688원 - 데이터투자",
-      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE5vZE1pcUtwNkZGeUpCS2UwdV9mLVZtRmZQRWdqTi1YSG55MndhQ1ZNSVhkcmdfSjhnMFUxRmw1TU52QjEzbk9PYUF0NkVORTJWd1p2cmhoaU5qdkE4TmsyMEZzcm1wblY1N0xVS0dvdmJNeDA?oc=5",
-      "source": "데이터투자",
-      "published": "2026-05-11T16:03:47+09:00",
-      "summary": "대성하이텍, 100억 CB 발행해 방산·로봇 신사업 가속...전환가 9688원 데이터투자",
+      "title": "\"이젠 돈 버는 컬리\"…1분기 영업익 13배·IPO 재시동 기대감 - v.daum.net",
+      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE04a0o2Vzc4VW1uRlBMV3ppdmVwbGVtZG9ZWlhzRXZhaVFpYzBJYXNHbHBZaEdTUmJSYVFkVTcxYkRsOWRjSlAxVjIyTlM5Mnc?oc=5",
+      "source": "v.daum.net",
+      "published": "2026-05-11T15:55:15+09:00",
+      "summary": "\"이젠 돈 버는 컬리\"…1분기 영업익 13배·IPO 재시동 기대감 v.daum.net",
       "keywords": [
-        "신사업"
+        "IPO"
       ]
     },
     {
@@ -2708,33 +3212,13 @@
       ]
     },
     {
-      "title": "스페이스X IPO 임박…대구 와이제이링크 `우주 밸류체인` 부각 - 매일신문",
-      "url": "https://news.google.com/rss/articles/CBMiYkFVX3lxTE5lQjFqNGtocHA2b3BFQ2lRZzlSeXFxaGZQd2tSVjhWYU1odU13a3BLTWk4bWNicWRiUVhVLV9qUDdEVDRwVnR4emVoMWQxRl95d3VfTW4yZzA5SldBUUw0U29R?oc=5",
-      "source": "매일신문",
-      "published": "2026-05-11T15:46:17+09:00",
-      "summary": "스페이스X IPO 임박…대구 와이제이링크 `우주 밸류체인` 부각 매일신문",
+      "title": "코스모로보틱스, 상장 첫날 400% 상승하며 화려하게 데뷔 - 로봇신문",
+      "url": "https://news.google.com/rss/articles/CBMibEFVX3lxTE9EblpMeVota3B3Z3dLZnJ6QTEyV0pHSnFNNjdtRS14aFJjRW9qTHNOeTgxYWZlX1JKRmt5SmRSdGloX3dhd05nNjdCeGRJajdROUNjWHhNTXRKakpxYkRzei1LSHFrNVMtUzJDXw?oc=5",
+      "source": "로봇신문",
+      "published": "2026-05-11T15:44:47+09:00",
+      "summary": "코스모로보틱스, 상장 첫날 400% 상승하며 화려하게 데뷔 로봇신문",
       "keywords": [
-        "IPO"
-      ]
-    },
-    {
-      "title": "컬리, 1분기 영업이익 242억원 '역대 최대'…\"IPO 속도낼 것\" - MTN 머니투데이방송",
-      "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTFBseTRxYk8xbWJMQk9LblgtbHdkdHE5N0hSeTdPQ2FuMmxVRDRLeERMc2JGTmRRN3RZaGlYZjlSR0t5Rlh4RHlBR3p4aF9uZG02TXRGWDE4T3kweS1rbDFOZFcxTm0?oc=5",
-      "source": "MTN 머니투데이방송",
-      "published": "2026-05-11T15:46:01+09:00",
-      "summary": "컬리, 1분기 영업이익 242억원 '역대 최대'…\"IPO 속도낼 것\" MTN 머니투데이방송컬리, 1Q 영업익 242억원 ‘역대 실적’…“IPO 속도낸다” 쿠키뉴스컬리, 1분기 영업익 13배 '껑충'⋯IPO 재도전 공식화 v.daum.net",
-      "keywords": [
-        "IPO"
-      ]
-    },
-    {
-      "title": "금융시장 진출 발판으로… 저축은행 M&A 시장 ‘들썩’ - dt.co.kr",
-      "url": "https://news.google.com/rss/articles/CBMiTkFVX3lxTE1tN19qNEtFS2E3OGZlYUJZN0FXWVZoREI3eG9hX0tWWC10VVZ6QXVyU25RYU80YzVGTFZMNF9sakhwcGdyVUlNX2oycEVfZw?oc=5",
-      "source": "dt.co.kr",
-      "published": "2026-05-11T15:42:37+09:00",
-      "summary": "금융시장 진출 발판으로… 저축은행 M&A 시장 ‘들썩’ dt.co.kr",
-      "keywords": [
-        "M&A"
+        "상장"
       ]
     },
     {
@@ -2748,16 +3232,6 @@
       ]
     },
     {
-      "title": "\"KB스타리츠, 선제 조기상환과 유상증자로 단기대응 잘해...지속관리와 재무부담 완화 필요\" - 더트래커",
-      "url": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE5BRDVPXzNqTGlob0xmSFZVVV9ldmw4ZTNpbU5rQXI5cHhJSzVBTWJ0T0ZEY0Z1MjUwTFF6NXFmbjkyZkhteTkxNTlZR2QyQkRCUThIWVBseVQ?oc=5",
-      "source": "더트래커",
-      "published": "2026-05-11T15:36:48+09:00",
-      "summary": "\"KB스타리츠, 선제 조기상환과 유상증자로 단기대응 잘해...지속관리와 재무부담 완화 필요\" 더트래커",
-      "keywords": [
-        "유상증자"
-      ]
-    },
-    {
       "title": "‘6조 뭉칫돈’ 코스모로보틱스...상장 첫날 ‘따따블’ [IPO톡톡] - v.daum.net",
       "url": "https://news.google.com/rss/articles/CBMiRkFVX3lxTFBodG81MXRySzJZZ1NwMUkwQ2RmbGx5bkhmMjJ0dmoxak42Wm1iWGJkeWZ6cGRWMWJPaWVTVGktNEVqTTZIX0E?oc=5",
       "source": "v.daum.net",
@@ -2768,11 +3242,11 @@
       ]
     },
     {
-      "title": "필웨이, 김성진 대표 최대주주 단일화…책임경영 강화 및 AI 기반 성장 예고 - 네이트",
-      "url": "https://news.google.com/rss/articles/CBMiU0FVX3lxTE5hN0x2elpiQ1g3ZjdEemkxSnl6a1hJX1VMNHQwMjBFcTRseFk3NS0wRWtDVmV3NEZKR05IMnU3djZxYmhXOTNPMkVOYVdrUDlteXpv?oc=5",
-      "source": "네이트",
-      "published": "2026-05-11T15:28:00+09:00",
-      "summary": "필웨이, 김성진 대표 최대주주 단일화…책임경영 강화 및 AI 기반 성장 예고 네이트",
+      "title": "필웨이, 김성진 대표 최대주주 단일화…책임경영 강화 및 AI 기반 성장 예고 - 스포츠월드",
+      "url": "https://news.google.com/rss/articles/CBMiYkFVX3lxTFB1T1U4b2JWWUY4VjZmRnFleXNLRVhBWFVQS3I3LXZKZlVyT0J3bjE5S21lbGF0Z0ZJdjFRb3lWdTNlMlNmMEROZ2ZFLXpJX0xJbUJ4UFBTTjI5aE9VNHdsZzR3?oc=5",
+      "source": "스포츠월드",
+      "published": "2026-05-11T15:27:11+09:00",
+      "summary": "필웨이, 김성진 대표 최대주주 단일화…책임경영 강화 및 AI 기반 성장 예고 스포츠월드",
       "keywords": [
         "지분인수"
       ]
@@ -2786,44 +3260,6 @@
       "keywords": [
         "합병"
       ]
-    },
-    {
-      "title": "아티크론, Pre-A 30억 원 투자 유치…메모리 중심형 AI 반도체 IP 고도화 본격화 - 전자신문",
-      "url": "https://news.google.com/rss/articles/CBMiTkFVX3lxTFBUdnptZjc0QTRLVThoOXpvSU0wZk9fNnoydWx6cThvTEZJajBXSThfeVQtTWJNQW8xSzR0RlZUSjRZUXNlNjNlREpLYVl3QQ?oc=5",
-      "source": "전자신문",
-      "published": "2026-05-11T15:18:06+09:00",
-      "summary": "아티크론, Pre-A 30억 원 투자 유치…메모리 중심형 AI 반도체 IP 고도화 본격화 전자신문",
-      "keywords": [
-        "투자유치"
-      ]
-    },
-    {
-      "title": "다각화 마무리, 다음 스텝은 내실 중심 '새 판 짜기' - 톱데일리",
-      "url": "https://news.google.com/rss/articles/CBMiUEFVX3lxTE1BZGhCVEFNTGlvWVBSVFRlaUhTSGRJMTgtLS1ZSFR0MzVNSWdmUkxtc3JaQVFJQTlBX0dVaGdRU2NuS2NGYlJFeFJFbzNmTW9Z?oc=5",
-      "source": "톱데일리",
-      "published": "2026-05-11T15:16:00+09:00",
-      "summary": "다각화 마무리, 다음 스텝은 내실 중심 '새 판 짜기' 톱데일리",
-      "keywords": [
-        "인수합병"
-      ]
-    },
-    {
-      "title": "김신성 알톤 대표, 자사주 5만주 장내매수 - newsis.com",
-      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTFBsR2dBSE83MVg0dXRobDhtZ1pSaWx0NzFBTEZOY21qQ0Y1UTVCSkpYNjZiLWJ2SmJ4NGs2d0Y0V0tOeFJEY2RNWDE4Q215cGp5eFY5c01BT3pONkZxNEZXUQ?oc=5",
-      "source": "newsis.com",
-      "published": "2026-05-11T15:13:32+09:00",
-      "summary": "김신성 알톤 대표, 자사주 5만주 장내매수 newsis.com",
-      "keywords": [
-        "자사주"
-      ]
-    },
-    {
-      "title": "\"애플 보고있나\"…삼성전자가 3년 만에 내놓은 신제품의 정체 - 한국경제",
-      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE9QVm5vVE5vdjNXaFlleE5EOWpfd1lNcGo3T3RXUVpfMGJJTzhvMjJtWHlqdEFITXA4enUxclAxMFg2bVQycDBIWmljU05QSVZkbmswTjdfX2F4Z9IBVEFVX3lxTE9IdHVmOFVSRWJUaWdkek5RZl9KQ2dfU1NuUWw1RjdULUcySWVEdnBYSWxNV2l3TnI2cjhnM2JheEd4WEtEdmF0X1ZtMFFERnhvUFFNbA?oc=5",
-      "source": "한국경제",
-      "published": "2026-05-11T15:07:42+09:00",
-      "summary": "\"애플 보고있나\"…삼성전자가 3년 만에 내놓은 신제품의 정체 한국경제",
-      "keywords": []
     },
     {
       "title": "45년 메종글래드제주 카지노업체에 매각 추진 - 제주의소리",
@@ -2840,28 +3276,20 @@
       "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE53MlFTMktka1hNWFIxVlhjcWc2YjJGR1ZrSDEzSEo4VlZwR0F2T0lxaTVIRmFaOUNsdnhiTk1Gd3VyVGpNNEtkVEtrQVphU3ByS1JSa3FjMXBQMW9fNmduMNIBeEFVX3lxTE9BNmFnaXF2OEhWejJwWTZQNmZ5N1B5c0Y0RllLSno0Rjl3OFNJazM4NDRBUDVhaDk0bG1tbTZiY0FfY09uVmdyR2RuVGxhcndCWWpiOFEyNFh6cmhSMEZoX3BNWHh5WmE4SzFmRGpxaF9ndU9ZTEhxRw?oc=5",
       "source": "newsis.com",
       "published": "2026-05-11T15:00:00+09:00",
-      "summary": "금감원 \"한화솔루션, 유상증자 외에 자금조달 방법 정말 없나\"[일문일답] newsis.com금감원, 한화솔루션 유증 엄정 심사 “정보 제대로 기재 안할 시 계속 정정 요구” 서울경제황선오 금감원 부원장 \"한화솔루션 유상증자 소명미비시 정정요구 계속 할 것\"[월례 간담회 전문] 한국경제금감원 \"한화솔루션 유증 설명 부족…계속해서 정정요구 가능\" v.daum.net금감원은 왜 한화솔루션 유상증자 계획 2번 반려했나 데일리안금감원 \"한화솔루션 유증 설명 부족, 계속 정정요구 가능\" - 머니투데이 머니투데이",
+      "summary": "금감원 \"한화솔루션, 유상증자 외에 자금조달 방법 정말 없나\"[일문일답] newsis.com금감원 브리핑 하루 만에... 한화솔루션 유상증자 '무기한 연기' 오마이뉴스금감원 정정요구 받은 한화솔루션 \"유상증자 일정 미정\" 연합인포맥스",
       "keywords": [
         "유상증자"
       ]
     },
     {
-      "title": "금감원 \"한화솔루션 유상증자, 유동성 리스크·실적 근거 부족\" - ebn.co.kr",
-      "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE5uSlAzOXExZ25EQkVfVmxyWGluNVpUQ3UzVEhTUFVVeVlTVFNfUXIyTkNHNlJta0JNQnJHOHJwZ3pBalpmQWg5dTlkN1Fad01ERHFhaThnY21iWWFXTGMzSVNHSUstQlZk?oc=5",
-      "source": "ebn.co.kr",
-      "published": "2026-05-11T15:00:00+09:00",
-      "summary": "금감원 \"한화솔루션 유상증자, 유동성 리스크·실적 근거 부족\" ebn.co.kr",
+      "title": "컬리, 올해 1분기 영업익 242억원…IPO 재탄력 - 지디넷코리아",
+      "url": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE9zaTZqS1dwMlpqR0FRMEhBVGJ1LWd4aVFaS2o5b25ocEZzMTQ5QnY5clNQOW1KTkRzNVg0Vngtb2E1SnpRdVBFTUVWQWp3am90eTl4M3dn?oc=5",
+      "source": "지디넷코리아",
+      "published": "2026-05-11T14:57:09+09:00",
+      "summary": "컬리, 올해 1분기 영업익 242억원…IPO 재탄력 지디넷코리아",
       "keywords": [
-        "유상증자"
+        "IPO"
       ]
-    },
-    {
-      "title": "마트야 데이터센터야…'관세 역풍' 올라탄 솔루엠, 美 리테일 시장 확장 나선다 - 한국경제",
-      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTFBwcVFaMWppQk8ybnFfenJkcFdsYnRKcDQxRVc1Vmk3b25pZko0Y2dXZ1AxTGdVb05rNDRRU01ISkhDOXBfeFMzVkJ0WWEyM3R4dTFkMjFzV1hJUdIBVEFVX3lxTE1HbUUzRm5hYkxKemgzOWFsUUdpZmZ4ancycXc0UXR5eVNoWUlubEVHa2JJR3lWckUyeXo0TnlacFRyNUhCX29URU9wVDNjUWlxVnBCZw?oc=5",
-      "source": "한국경제",
-      "published": "2026-05-11T14:59:55+09:00",
-      "summary": "마트야 데이터센터야…'관세 역풍' 올라탄 솔루엠, 美 리테일 시장 확장 나선다 한국경제",
-      "keywords": []
     },
     {
       "title": "지니틱스, 로봇 IC 신사업 확대 - 금강일보",
@@ -2905,21 +3333,19 @@
       ]
     },
     {
-      "title": "스파크바이오파마, 315억 규모 프리PO 투자 유치…상장 절차 본격화 - 와우테일",
-      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE83X2VqWXBqMGdFckJVcWRSVjlpdHVGcVVCMGU5SVRyODRnRzJyLUFqS09VMUNZUzFBdW5kWFVBbWZ6aFNON0wzd2g5RzlkNms?oc=5",
-      "source": "와우테일",
-      "published": "2026-05-11T14:39:48+09:00",
-      "summary": "스파크바이오파마, 315억 규모 프리PO 투자 유치…상장 절차 본격화 와우테일",
-      "keywords": [
-        "투자유치"
-      ]
+      "title": "우리證, 내년 1조원 자기자본 추가 확충 추진…증권사들 앞다퉈 증자 - 인베스트조선",
+      "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxQRW1Ed1JYU2ctLUY5VlVlTjIxZF9LTzVnRmMxd01xeF9MaWdHbzEyUHN1bW5GVkRtTjlhN1BCcEg2aGVLTHdDYXBJbE5xcHJCYjV1WWU5TjRBaUlZOFNzUEUtbTBndGlvREg2WjhrcFpsQkFGTENvbEdwVGtnSklST0ZrNA?oc=5",
+      "source": "인베스트조선",
+      "published": "2026-05-11T14:38:00+09:00",
+      "summary": "우리證, 내년 1조원 자기자본 추가 확충 추진…증권사들 앞다퉈 증자 인베스트조선",
+      "keywords": []
     },
     {
-      "title": "증시 중복상장 금지로 ‘코리아 디스카운트’ 끝낸다 - 동아일보",
-      "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTE9uRm5NUGJ5cWVPUVVNNjhOZzJpak44b052SDhYOFlpd0F1MHUtNlNFd1BOeGJUVHM1Mk1NSDdTOGJwZU1GSWdoNDZpNV9kMG9paFRJYUxYZ2g0aG9qdzE0aVlnVVR6RzRfelNqZU10dVVDd0REWXfSAWZBVV95cUxOWlJ4QkRvOElaRE9sZTZZSUhjMVYwZktwOS1HWUE0TEFPcTR3TE1jZnBFel8zZ0lQVWUzZFlEVE9ydWdtRTNMMWlxYnRVbkR6NE9nTWNpalhFX1U5dkpXV1g2bVk4MEE?oc=5",
-      "source": "동아일보",
-      "published": "2026-05-11T14:26:00+09:00",
-      "summary": "증시 중복상장 금지로 ‘코리아 디스카운트’ 끝낸다 동아일보",
+      "title": "증시 중복상장 금지로 ‘코리아 디스카운트’ 끝낸다 - v.daum.net",
+      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE05aVFDOUZiWUhzRTVEUnE0TElIb19LWHlzcjcwbHlNbXdiYmtmYkxnaXFVRWEzcU5CcGdrV19zaktzREprb1NhaGE1RGV3UmM?oc=5",
+      "source": "v.daum.net",
+      "published": "2026-05-11T14:29:00+09:00",
+      "summary": "증시 중복상장 금지로 ‘코리아 디스카운트’ 끝낸다 v.daum.net",
       "keywords": [
         "상장"
       ]
@@ -2945,27 +3371,6 @@
       ]
     },
     {
-      "title": "광양경자청, 중국 투자 유치 본격화 - 브릿지경제",
-      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE1DUE5xZ3hCYngtYzFiZG4wQ3RoYUFwUTNsWWVyTVFqSUVwY21XSTRtWENKN25YVWhnd1FvLVR0aFk1R1dfaW41cmw4bll3N3hITURFdFhWemlUdw?oc=5",
-      "source": "브릿지경제",
-      "published": "2026-05-11T14:03:00+09:00",
-      "summary": "광양경자청, 중국 투자 유치 본격화 브릿지경제",
-      "keywords": [
-        "투자유치"
-      ]
-    },
-    {
-      "title": "[홈플러스 M&A] 익스프레스 매각 이후 시나리오 '갈림길' - 블로터",
-      "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE1pQVpwT1Z5VkRDakhydmc3eWpQWlg5X2FtRlctRlFtQ1pZdmFmT3pTNDc1eGZQX1lWLUN6dVlERUVrWVl2ZEMzcjFNOW9VUTgwaWtONVd6aG54dmFjcDdOTF9vYVJ6NWJD0gFsQVVfeXFMTWxJNjliUmlFTTh2ajlYeVF1RVI1dnJjb3dGZ3paUWZOTGs2clFTRVpjUmdHWjJwaktIMVJWMW93dXNxenNjNnlCV2xVWnBFMlAzOUIycVpXVEctUkttOGdZRF9sYXFkUDZXaG9m?oc=5",
-      "source": "블로터",
-      "published": "2026-05-11T13:47:18+09:00",
-      "summary": "[홈플러스 M&A] 익스프레스 매각 이후 시나리오 '갈림길' 블로터",
-      "keywords": [
-        "M&A",
-        "매각"
-      ]
-    },
-    {
       "title": "에쓰오일 1분기 1.2조 영업익 ‘어닝 서프라이즈’ - 중소기업신문",
       "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE90bThDRXlLRVF6THNfbjZkWWswU09fb2FoT0FFNlVaT3NlVnFMMzMxRmd2bVBoMEE1NVJWakNsLXpzMUJFLU1rVXNQbGJWVnktYUZuQ2RJX1I2V0NNZF96eFhLTm9XRHV0V1ZOWlV3?oc=5",
       "source": "중소기업신문",
@@ -2973,16 +3378,6 @@
       "summary": "에쓰오일 1분기 1.2조 영업익 ‘어닝 서프라이즈’ 중소기업신문",
       "keywords": [
         "어닝서프라이즈"
-      ]
-    },
-    {
-      "title": "하나은행, 기술보증기금과 맞손…기업승계·M&A 금융지원 강화 - 오피니언뉴스",
-      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE5qdnBLMG5NY3lwUmM3NjgtZllhQmhJQW1SRFJ2bjl6aVRlalh1WmNvdFRkMHBZTUxVRFFocHkza3QyN1hBMjlMRlZ2cTBNQUxxZEtXOFVMRU1Jd05tRnAwaXJCcXNXWGllaDBYcFppOWs?oc=5",
-      "source": "오피니언뉴스",
-      "published": "2026-05-11T13:45:08+09:00",
-      "summary": "하나은행, 기술보증기금과 맞손…기업승계·M&A 금융지원 강화 오피니언뉴스",
-      "keywords": [
-        "M&A"
       ]
     },
     {
@@ -2996,13 +3391,13 @@
       ]
     },
     {
-      "title": "[주간투자동향] 찬스, 47억 원 규모 투자 유치 外 - 동아일보",
-      "url": "https://news.google.com/rss/articles/CBMib0FVX3lxTE9kcjB2dDVEdzVHbjlzSnhCbzFyQ09BQmlWc3UzaHVKNGdSdFA3V29JZzRNYWZ5Zzdmd0NxVjh4cGN3ME10cmt3OVhkQWMtNklzRC0yQ1VFYjBFckVtVFhFM2NHeUs0ZXljNXl0cWpaY9IBZkFVX3lxTE5BS1FYTVpqaHFEV1A4S0RObzc0OUhfYkpUaWJHQkx6MXJEdHpmdWl0Sy02SVhOa2htVGt1ZzVPU3d2azdFNWFlaEkxWkxSVEwwZVU4M05HRzE5cnRhQXh1b192TzF2dw?oc=5",
-      "source": "동아일보",
-      "published": "2026-05-11T13:30:08+09:00",
-      "summary": "[주간투자동향] 찬스, 47억 원 규모 투자 유치 外 동아일보",
+      "title": "[특징주] 현대오토에버, 신고가 경신... 보스턴다이내믹스 美 상장 기대감 - 금강일보",
+      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE51eGtqYUZTRFVmY2RZZndFWjVRM3N3c0ZMSlR2UVdoVUR6QXh4MjNqZkFtUmxnYzhWNDRTd05CRGI3SDRSQkhuQ1V2MnJEcG81UmkwbjUyblAxV2ZKbENLWDZVRnNwcHdiNlE?oc=5",
+      "source": "금강일보",
+      "published": "2026-05-11T13:42:08+09:00",
+      "summary": "[특징주] 현대오토에버, 신고가 경신... 보스턴다이내믹스 美 상장 기대감 금강일보",
       "keywords": [
-        "투자유치"
+        "상장"
       ]
     },
     {
@@ -3011,16 +3406,6 @@
       "source": "경향신문",
       "published": "2026-05-11T13:27:00+09:00",
       "summary": "스페이스X, ‘신형 스타십 완전체’ 첫 공개…상장 앞두고 오는 15일 우주로 경향신문",
-      "keywords": [
-        "상장"
-      ]
-    },
-    {
-      "title": "미래에셋, 'TIGER 구글밸류체인 ETF' 상장…엔비디아 대항마 뜬다 - 연합인포맥스",
-      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE1NMXhQTE9qQWtfbXFuaWtlNVEtTmo2enpPRmVjU1B6TVIzMUlxcEZNSVd1RlQtQ3FJUlo3LWVqR0JBeVVvT2s0Nk50dWhHdkhQbEFPR2o1dEs2RnJkcXMzS0JpbDR1YUJYMDZ2LWZfMkE?oc=5",
-      "source": "연합인포맥스",
-      "published": "2026-05-11T13:21:24+09:00",
-      "summary": "미래에셋, 'TIGER 구글밸류체인 ETF' 상장…엔비디아 대항마 뜬다 연합인포맥스",
       "keywords": [
         "상장"
       ]
@@ -3046,26 +3431,6 @@
       ]
     },
     {
-      "title": "흥국화재 예별손보 M&A '도전장'…업계 7위 도약하나 - 아시아타임즈",
-      "url": "https://news.google.com/rss/articles/CBMiXkFVX3lxTE50bXdTSUtoNzhRaGVNUWpBamdqS0VhdHdndnJiOGpzMnpaV2FIYTA0TzZaVHZIVFlJeUxxRV9FOFZrR0NpYmxnWVRCem8xdE80QmttOHdFRExMenVBV2c?oc=5",
-      "source": "아시아타임즈",
-      "published": "2026-05-11T12:51:00+09:00",
-      "summary": "흥국화재 예별손보 M&A '도전장'…업계 7위 도약하나 아시아타임즈",
-      "keywords": [
-        "M&A"
-      ]
-    },
-    {
-      "title": "강원도, 폐광지역 투자유치위원회 개최 - 전국매일신문",
-      "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE9YYm1vVnB5V1J6blhteS02eVNqSi1JVG5mMEVEbElmXzJMOEg0MUFWYm9oWnFLZmZhdFFoaDkxWVZsVEpwQjctXzBfbDFjUnViRUMxU0E1YUMzVVFRMEdTVnMwa2trcjdvZkQ3Zmh3?oc=5",
-      "source": "전국매일신문",
-      "published": "2026-05-11T12:50:20+09:00",
-      "summary": "강원도, 폐광지역 투자유치위원회 개최 전국매일신문",
-      "keywords": [
-        "투자유치"
-      ]
-    },
-    {
       "title": "기보, 하나은행과 인수합병 금융지원 ‘맞손’ - 주간한국",
       "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTFBUN29OalNuREs2SGU4RE9jb0d2alQtM2RTOGpPMFZySjdmeHVqbjFub015VjZIMkxnbHVwdUZTYW5BWlFVa1loTWVab2E3WjBQakZRQTlkbmpSNlluN3BXTEt4dDM3RWM1c2E3WjB5LTHSAXRBVV95cUxNMmJuSkRjYnVhcTQ4YWFJVFlwSWwxVi1Eb0NMTGZfTnBMN1AzU2hZSEdBaVA4OEZrbmhUcm13QUhVMUYtcVB6SFM0emxaZmZXRnJfaF92elFCazB6Zl9WMTh1ZjdKX2NQc1BMVExZeGp6TnVKZA?oc=5",
       "source": "주간한국",
@@ -3074,6 +3439,16 @@
       "keywords": [
         "인수합병",
         "합병"
+      ]
+    },
+    {
+      "title": "“중복상장 막아 코리아 프리미엄 조성” - 문화일보",
+      "url": "https://news.google.com/rss/articles/CBMiUEFVX3lxTE9JbDNITGxhaHc0cllIZk1mTFhBWVpXRFVVdmZLMHkwZFhhd01VdkVNZWF5bUdKejB6VzZ6UjZ0SU4wODJtMThoMG55R2J1NDZo?oc=5",
+      "source": "문화일보",
+      "published": "2026-05-11T11:44:44+09:00",
+      "summary": "“중복상장 막아 코리아 프리미엄 조성” 문화일보",
+      "keywords": [
+        "상장"
       ]
     },
     {
@@ -3097,24 +3472,6 @@
       ]
     },
     {
-      "title": "에쓰-오일, 1분기 영업익 1.2조 ‘어닝 서프라이즈’ 유가 급등에 웃었다 - 에너지코리아뉴스",
-      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE5vS0tueEhtLTFBN2JGUlJEa3hvQzZ6bmViQVpkajNaMkxpMmYwdHFaVWFOTkJzTURweFlUVGRENm01ZzZLTmxFalBfQjFaeDJOWlVSQmZZc2hHUjRhcTRNSEpIbnpsZHo4TTdpdFdJeHc?oc=5",
-      "source": "에너지코리아뉴스",
-      "published": "2026-05-11T11:27:27+09:00",
-      "summary": "에쓰-오일, 1분기 영업익 1.2조 ‘어닝 서프라이즈’ 유가 급등에 웃었다 에너지코리아뉴스",
-      "keywords": [
-        "어닝서프라이즈"
-      ]
-    },
-    {
-      "title": "코스피 7800선 돌파에 하락 출발한 원·달러 환율 - 한국경제",
-      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE84X040WENjMWpwS2FxZUNTUG9TRS1TYWhyc21FQ0hvWkRCRUw1b0NZbGphVmNqSnF1dmlxdERNVjJ4TXJLREFFcHNISlV4XzNiY0VWMndoUVJrUdIBVEFVX3lxTFByMTMwbnl4ZVo2ZkVpWUQ4LUVkOFM1SnJVNVNwbWdVRi1WOUczN1dxSWxHUVVDV1Y4TTRWZ1pYc1RhVmMyVzN6V052aXRVandaWEtjMQ?oc=5",
-      "source": "한국경제",
-      "published": "2026-05-11T11:27:09+09:00",
-      "summary": "코스피 7800선 돌파에 하락 출발한 원·달러 환율 한국경제",
-      "keywords": []
-    },
-    {
       "title": "충북개발공사, 신사업 아이디어 공모전 개최 - gukjenews.com",
       "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTFB3Ry1KN2ctZjVTTUpCUm1pSExyM0tsc3UwODdsQWJmbkxCcW9Md1BaQjdibFNWWnpxdG9qWUlOWERBSTBYUTFzWEdBZm5ka2RnT283U3hwV3JBdGhiRURYMXRicWRFM1RSeDAxUE5n?oc=5",
       "source": "gukjenews.com",
@@ -3135,16 +3492,6 @@
       ]
     },
     {
-      "title": "\"세레브라스 IPO 공모가 높일듯…주문 쇄도\" - 매일경제 마켓",
-      "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE9XQkZGSzNKX1MwekItdkd1Q1ZVand2Yll0SFJoVThDRXpKcW1aWHB0M0ZCWThXZnVDTW1aTndLX3FEaWpEZFlJUW1Ub3VYWFY0UEE?oc=5",
-      "source": "매일경제 마켓",
-      "published": "2026-05-11T10:50:41+09:00",
-      "summary": "\"세레브라스 IPO 공모가 높일듯…주문 쇄도\" 매일경제 마켓",
-      "keywords": [
-        "IPO"
-      ]
-    },
-    {
       "title": "현대로템, 항공대 손잡고 신사업 우주산업 박차 - 연합인포맥스",
       "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE1DdXladVhZSmZpWi1qQlAzaXNYY3VTczgwMFBubWJaT3NkcmNrY1F1YTZTclBtdUZlS2doV2YwZHR5anlqcDZUTlVEdm9ZbFVaekNVNzBnekg5amhTSzNsM3FLUFZiMnEtOEVRby00T1E?oc=5",
       "source": "연합인포맥스",
@@ -3162,16 +3509,6 @@
       "summary": "빅테크 인공지능 투자 확대는 주주에게 역효과 분석, \"자사주 매입과 배당금 지급 여력 감소\" 비즈니스포스트",
       "keywords": [
         "자사주"
-      ]
-    },
-    {
-      "title": "하나은행-기보, 중소기업 승계•M&A 금융지원 ‘맞손’…657억 규모 - 브릿지경제",
-      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE5wa0dFaXNZS2liTFlUTWdITE5iX3hhSlprSmR3RUtVVkpqRVVGOVg1b1pmUlJNQ3oxN2RKV1hOZktKXzZSQnZQTDY5R0lHNThFdFBoV01tT0pZdw?oc=5",
-      "source": "브릿지경제",
-      "published": "2026-05-11T10:42:00+09:00",
-      "summary": "하나은행-기보, 중소기업 승계•M&A 금융지원 ‘맞손’…657억 규모 브릿지경제",
-      "keywords": [
-        "M&A"
       ]
     },
     {
@@ -3215,6 +3552,16 @@
       ]
     },
     {
+      "title": "코스모로보틱스, 상장 첫날 공모가 4배 '따따블' - newsis.com",
+      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE1rNTVQRDFITFJnTXpzY0c4cU9RRGlyS3hsLThGSzR2c0hCU1ZZWEtmbksya0VGSzJMVXU1NmFaZ1dtR0NGbHgtWUdXbGI5d1hpMHYtQTRSd0c1ZEo2b0J4WNIBeEFVX3lxTE1yWkdtRVRfTUZPZEY3UEZBNFE0T1ZDWEdubUx5RFlIYXNLbzhLUnRSSDJvZVo2SDVkSjFvdV9nSF94djZBbTdyd2ZDellBbUlBRjZZeWlMSXE1Ym9oWl83TUNzOV9rLTE3VWtxQnMtbldVYVc3UzNzTw?oc=5",
+      "source": "newsis.com",
+      "published": "2026-05-11T10:18:57+09:00",
+      "summary": "코스모로보틱스, 상장 첫날 공모가 4배 '따따블' newsis.com",
+      "keywords": [
+        "상장"
+      ]
+    },
+    {
       "title": "재영솔루텍, 1Q 영업익 91억 '사상 최대'…로봇·모빌리티 신사업 추진 - 머니투데이 - 머니투데이",
       "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE5ISDRWSjJteWRJT0VGYkxPal93R1VsRXFkc2x6VzlKeFkwVlBjNnA5S29OSzlLdGFHSEdGLV82cHBISHRXWW1kVFNaMGU0M1B3ZGdWQjJQVXBDWERyNy11QzBLUVpoUmwz0gFuQVVfeXFMT2VVT1QyX3VrckVMTzd6UVlmdUxOVmY3bEFXaG5SbFhCek5WVzVwX3JRVzZKYmtSWWlzT2pSQlpDc201a25oem56UUpLNkNQZlIyYk1XN19VQWtuVVBabUp0UmY3dG41bUM5NU92X2c?oc=5",
       "source": "머니투데이",
@@ -3235,12 +3582,14 @@
       ]
     },
     {
-      "title": "방산수출 통계 기준 재정립 필요한 이유 - 한국경제",
-      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE5yOHhlMk12RTlTT2R5enU0NkJjTTFEMFB2R2JlT0lYSDB6T3ZscFpYMjQtOWFZd0ZleUFYd2R4ekVhd1lFZEZLdjhKcGk5YldtX2x2VW1rUkFhd9IBVEFVX3lxTE10aUllMkxtVTltX1YzRkNDcGtxWHBmMERUUFNXQmZqbHVWVS1mLVlpa1M2VnVweUhjN1NhVVZqdF9IYWVrZUFlbm9fcE9IRXltWlY3NQ?oc=5",
-      "source": "한국경제",
-      "published": "2026-05-11T10:00:06+09:00",
-      "summary": "방산수출 통계 기준 재정립 필요한 이유 한국경제",
-      "keywords": []
+      "title": "코스모로보틱스 코스닥시장 상장기념식 - 연합뉴스",
+      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE9RLUlDXzg2dzBUYVZtRU1oVm8yZVJQOFdDYlhsV1VhQnJ3TWZsQjVSMTYtaVVzSXVzRm1qbWxUNHVBM3gyQllRYTk0SS1ibE55aXBaVUFXSHc4VG_SAWBBVV95cUxOQWpMYTVMdTFXYTRwNk9hUlI0RnVnUkRMS0ZpOGNvQUZFVm1MWFhkUzIzeGxZenVWUkN3Y1ZUb1RvdHlLMHBOZVJ6R3ozdll3TVBoWGJveFVJYzlIZmNySlM?oc=5",
+      "source": "연합뉴스",
+      "published": "2026-05-11T09:56:42+09:00",
+      "summary": "코스모로보틱스 코스닥시장 상장기념식 연합뉴스",
+      "keywords": [
+        "상장"
+      ]
     },
     {
       "title": "기보, 하나은행과 중기 M&A 활성화 ‘맞손’ - 서울경제",
@@ -3293,23 +3642,13 @@
       ]
     },
     {
-      "title": "\"자사주 소각 예외, 새 과세논란 될 것…금융세제 재정비해야\" - v.daum.net",
-      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTFB4cjBYd1AzUEVtRk8tX2NVeVVEWXlSNTdnLWdqZzJhN2lvNWEwOUFVaFVHZHpvSlpZcG1RMUpvUVp0b0xRODJiRmZnaXNFODQ?oc=5",
-      "source": "v.daum.net",
-      "published": "2026-05-11T09:23:38+09:00",
-      "summary": "\"자사주 소각 예외, 새 과세논란 될 것…금융세제 재정비해야\" v.daum.net",
+      "title": "\"자사주 소각 예외, 새 과세논란 될 것…금융세제 재정비해야\" - 아시아경제",
+      "url": "https://news.google.com/rss/articles/CBMiYkFVX3lxTE4zUklBQTZrQW84eGtyNTZYLVJLS214WGdreThObmdHczJrWlBnMjM4b1ppRGxLZWhXSFBTYlN5NXljRGpfU1NUd0lVWXJWdzRLam83VjM4SklSdWpOTThxYVpR?oc=5",
+      "source": "아시아경제",
+      "published": "2026-05-11T09:22:02+09:00",
+      "summary": "\"자사주 소각 예외, 새 과세논란 될 것…금융세제 재정비해야\" 아시아경제",
       "keywords": [
         "자사주"
-      ]
-    },
-    {
-      "title": "[특징주] 코스모로보틱스, 상장 첫날 장 중 '따따블' - 연합뉴스",
-      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE1pai1majZtd2ppUkZHVEZOMGJEMDJmclUwOEZzdVZoS3VwZ0NlQlhicUxfZnJudzluOHZDMFRFUFhpcUZZODhVc2dFWmlVZkZvZnlDMVJ4VFZ4RnPSAWBBVV95cUxQcHRnc1dCZ1NManZaZ29ELUtQRDRLNmM3bVpYdzJzSVJJd2VRLVJGNTIxWHpUODhFcEVqVXhhelBWVjRPaEQya3l3RWZkaEVqWHFLYXoteFZzalJ0V2JvTFY?oc=5",
-      "source": "연합뉴스",
-      "published": "2026-05-11T09:19:56+09:00",
-      "summary": "[특징주] 코스모로보틱스, 상장 첫날 장 중 '따따블' 연합뉴스",
-      "keywords": [
-        "상장"
       ]
     },
     {
@@ -3319,7 +3658,7 @@
       "published": "2026-05-11T09:18:11+09:00",
       "summary": "a16z, 디지털애셋에 3억달러 베팅…블록체인 인프라에 M&A·투자 집중 v.daum.net",
       "keywords": [
-        "M&A"
+        "인수합병"
       ]
     },
     {
@@ -3329,7 +3668,7 @@
       "published": "2026-05-11T09:17:36+09:00",
       "summary": "a16z, 디지털애셋에 3억달러 베팅…블록체인 인프라에 M&A·투자 집중 매일경제 마켓",
       "keywords": [
-        "인수합병"
+        "M&A"
       ]
     },
     {
@@ -3373,14 +3712,6 @@
       ]
     },
     {
-      "title": "트럼프 이민 단속 강화에…뜨고 있는 뜻밖의 산업 - 한국경제",
-      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE9YaDBlT3kzZWF4YzBTRGd1QWpSSEhiT0pHWHRyMDZadlVPdUQxaU0xR194OF9GLXNFRWI3MEJtMUlxbWlzV016bXFIbnNBU3JBcGdYbElEWDQxUdIBVEFVX3lxTE1UX1JTRFF6bzNmVVo4djd5MmJJbzZ3dU81TlZsM3FDOEhRTXRrdWZ0eXlhdE5ad21mMG1ieTJFNklIVDVVMHRUYUFYYmJBbzlyV1MzMQ?oc=5",
-      "source": "한국경제",
-      "published": "2026-05-11T08:48:36+09:00",
-      "summary": "트럼프 이민 단속 강화에…뜨고 있는 뜻밖의 산업 한국경제",
-      "keywords": []
-    },
-    {
       "title": "스파크바이오파마, 315억원 규모 투자 유치.. 코스닥 IPO 절차 본격화 - 약업신문",
       "url": "https://news.google.com/rss/articles/CBMib0FVX3lxTE1DeVhsdVlPR3RBZzVpa00yZkJxSVVabFZfVHU1bERzQzh0a2lpQWtoLXo5eVBMZHEzN3A1QjVGWTNkQlo2LUVRQ1hicGMyeXpTR21iZGoyLXhoLXE4ajM4Q19MTnZSRWh4NFlfeFlTVQ?oc=5",
       "source": "약업신문",
@@ -3389,34 +3720,6 @@
       "keywords": [
         "투자유치"
       ]
-    },
-    {
-      "title": "프로스트바이트, 130만유로 투자 유치…양자컴퓨터 배선 병목 해결 나선다 - 양자신문",
-      "url": "https://news.google.com/rss/articles/CBMib0FVX3lxTE95RGlqSlFuWl85ZkhCeXk2VXlVdnE3UUxKazc3bE5qTWxWWGZvbWhzWThHc1F0Wk45UUdGS1lIeEtjcThnMHd6cGxvNHcxOVA2NFgzakY4X3Q0MkgyREhHeVQ3U2NuYnphX0d2bnBCUQ?oc=5",
-      "source": "양자신문",
-      "published": "2026-05-11T08:40:00+09:00",
-      "summary": "프로스트바이트, 130만유로 투자 유치…양자컴퓨터 배선 병목 해결 나선다 양자신문",
-      "keywords": [
-        "투자유치"
-      ]
-    },
-    {
-      "title": "안산그린파워, 대우건설 유상증자 참여 - 디지털투데이",
-      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTFB3LVNSVWNkU0lic0VXanVmcVdoTG5LcHlMMlZJLXl2c2VkblpXMHZDS1Z2U3ZGX20wRkJaVjFlSW1kYldqeFdTbzI0MGdLdzdkNk9zYmJmLWNxUERta1FPYndDLUFic3NQdkZpU3J5U0QwS00?oc=5",
-      "source": "디지털투데이",
-      "published": "2026-05-11T07:50:02+09:00",
-      "summary": "안산그린파워, 대우건설 유상증자 참여 디지털투데이",
-      "keywords": [
-        "유상증자"
-      ]
-    },
-    {
-      "title": "\"자꾸 기침이 나와\" AI와 상담…'글로벌 빅테크' 새 격전지로 - 한국경제",
-      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE5vdGwxT1Rwd1QwTm5kWEtnUGlVM2ROSTBoS3o3dzc1cE9NU2JjZmF6dndEVDFEVnRKRXNqcTQ0cmU2ejRXMXk2RThQV0d1WVhxVkhvQkp0YXgyZ9IBVEFVX3lxTE03d3NZR05Dc1czT0VCaERHWXhjMVhwZ1ZzLV94aDRRN2FSTXVYOWpzRHMtLW9HLWFWRThaMkstdEpwRjF2eXlIV3pDWVhBR2lJSlRGRA?oc=5",
-      "source": "한국경제",
-      "published": "2026-05-11T07:40:00+09:00",
-      "summary": "\"자꾸 기침이 나와\" AI와 상담…'글로벌 빅테크' 새 격전지로 한국경제",
-      "keywords": []
     },
     {
       "title": "최태원 vs 노소영, 재산분할 파기환송심 13일 조정 기일...'비자금 기여도' 뺀 재산 분할 '핵심 쟁점' - 녹색경제신문",
@@ -3444,16 +3747,6 @@
       "summary": "'매각 지지부진' 홈플러스, 37곳 전격 휴업 MBC 뉴스",
       "keywords": [
         "매각"
-      ]
-    },
-    {
-      "title": "[코스피·코스닥 전 거래일(8일) 주요공시] - 연합뉴스",
-      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE52OUplc0lVcE9wTm1Wd1RaSDd4VlFQeFZkY1g3XzBzNXJjLWx5VzBUSFQ1WlVYSjNYbkF1WHpjYXIxX2FRYXBBa3BPTXJsblI0aWlySWxKUGRpNFXSAWBBVV95cUxOT09FeG5iREhTOU1xYzZyR2ZmcWNCVHYtOG0wN2ZHc05iV1lCMlY1WGotOVMzck1ZSW04ZklDZ05WYkFtaUJheV81S2RqYmxGbHl3NkhMNTM4QVRFSjdjVkQ?oc=5",
-      "source": "연합뉴스",
-      "published": "2026-05-11T06:05:06+09:00",
-      "summary": "[코스피·코스닥 전 거래일(8일) 주요공시] 연합뉴스",
-      "keywords": [
-        "유상증자"
       ]
     },
     {
@@ -3497,11 +3790,11 @@
       ]
     },
     {
-      "title": "8천피 넘보는 韓증시…중복상장 규제 꺼낸 당국, 체질 개선 속도 - v.daum.net",
-      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTFBFZ1VLWFJqU2d1MU1IMDV5ZkZKM084cTA2T2ZSLVlyei0zMTBxUy0tOTZMd1BkeDhZRVRDR3ZQR3JmXzFkQW9vWkFjdDlDQmM?oc=5",
-      "source": "v.daum.net",
-      "published": "2026-05-11T05:55:03+09:00",
-      "summary": "8천피 넘보는 韓증시…중복상장 규제 꺼낸 당국, 체질 개선 속도 v.daum.net",
+      "title": "스페이스X, 상장 20일뒤 급등한다? \"치고빠져라\" 수익 전략 - 네이트",
+      "url": "https://news.google.com/rss/articles/CBMiU0FVX3lxTFBIeUNJdTFsVndGUmJPaWtjdjU2ZHNzRWVMLTZhdEZacFNzOVhBa0Y5TnRpVHBwQVRWRHMydHZFSWlnNVlwTnFadW00aEpTSVdYN2ZZ?oc=5",
+      "source": "네이트",
+      "published": "2026-05-11T05:01:00+09:00",
+      "summary": "스페이스X, 상장 20일뒤 급등한다? \"치고빠져라\" 수익 전략 네이트",
       "keywords": [
         "상장"
       ]
@@ -3527,13 +3820,13 @@
       ]
     },
     {
-      "title": "코인 팔아 집 산 30대⋯103억원어치 매각 - v.daum.net",
-      "url": "https://news.google.com/rss/articles/CBMiRkFVX3lxTE5mZGpIcURvaGNSaXNrVlFfSWVOb3E0a3JNZV9ta2xmZHBwTWRUZ2F6T3pMVFNfbDlDenJTNG40ZXZVOWtHR0E?oc=5",
-      "source": "v.daum.net",
-      "published": "2026-05-10T18:53:37+09:00",
-      "summary": "코인 팔아 집 산 30대⋯103억원어치 매각 v.daum.net",
+      "title": "연차 휴가 ‘시간 단위’ 분할 사용 가능해진다… 노동자 휴식권 강화 > 뉴스 - 더코리아",
+      "url": "https://news.google.com/rss/articles/CBMiQ0FVX3lxTFB6T0NXYTFJMEFhUVpvNXBNeE9EWnA0eFl0dklkUV94XzhvMVVoMDlyNEVqYmwzOXlQMV9feVVrakoyWGc?oc=5",
+      "source": "더코리아",
+      "published": "2026-05-10T23:31:00+09:00",
+      "summary": "연차 휴가 ‘시간 단위’ 분할 사용 가능해진다… 노동자 휴식권 강화 > 뉴스 더코리아",
       "keywords": [
-        "매각"
+        "분할"
       ]
     },
     {
@@ -3545,44 +3838,6 @@
       "keywords": [
         "인수합병",
         "지분인수"
-      ]
-    },
-    {
-      "title": "주병기 “과징금으론 일감 몰아주기 못 깨…기업 분할 등 수단 필요” - 이데일리",
-      "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE52MV9jRTJlNVhWaTQwSWhUT0N0MlV3VFVkM1R6bFRSN0RKVVVOSzBjZVg0ZTJicnVhMy1IVmpxWXZsSUdHRXIzbVlMRVFIWFpES1Qtd1JpUTBldWtjbnJyUzMxbV9uS1RfVERz?oc=5",
-      "source": "이데일리",
-      "published": "2026-05-10T18:27:03+09:00",
-      "summary": "주병기 “과징금으론 일감 몰아주기 못 깨…기업 분할 등 수단 필요” 이데일리",
-      "keywords": [
-        "분할"
-      ]
-    },
-    {
-      "title": "전쟁發 수입물가 상승세 계속됐나 - 한국경제",
-      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE5fY05FNGhCX1ZmeGtiR0R3R2dFR2NEeG8zSFh6QVJMYl9sVUpUUm9CSkJBa3FqQXV5RUdab01qR01nOC01cTFWZy14cnFoLV9zZjZJQUFjWmlMQdIBVEFVX3lxTFBMT2ozbzhGalR5cmVkb2hyOUpWTWM1Zmd4RnBUZzdONVdWSUxFb3FYUElvdTVjaTZZQ1hCYXJnM2tzbkttc2FPRXRlUHNpZEVNRmZQOQ?oc=5",
-      "source": "한국경제",
-      "published": "2026-05-10T18:23:08+09:00",
-      "summary": "전쟁發 수입물가 상승세 계속됐나 한국경제",
-      "keywords": []
-    },
-    {
-      "title": "노바티스, 제네릭제약사 헥살 인수합병 - 메디칼타임즈",
-      "url": "https://news.google.com/rss/articles/CBMickFVX3lxTFB0ckZNQ0JPNVlRQUlYUGtIbjZuYzZoMk1ZMVprYWhIRjNaWjJfUTZiVk8zbGluUVFObkFEWC1NbTFLRzFzVUw4WU5tZERlOWc5a1E0NGxLNDVTLVNoTndPa1UxbEJ3OEgtRHVFZmpEbVF5dw?oc=5",
-      "source": "메디칼타임즈",
-      "published": "2026-05-10T18:11:22+09:00",
-      "summary": "노바티스, 제네릭제약사 헥살 인수합병 메디칼타임즈",
-      "keywords": [
-        "인수합병"
-      ]
-    },
-    {
-      "title": "파라마운트·WBD 합병…국내 콘텐츠 산업 충격없나 [IT클로즈업] - 디지털데일리",
-      "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTFBHSkNtTzd2WVJ1WWIyRXRUQkcySkdkcVFoa3FzaWgxMDAwT2FtTi1RdWdjZkFpYVF5X05NQjBIWjF2b1ZMWk96ZHdudDFHMzJFaGhGTjBfVTRxcFhqOEtIT19lMmk?oc=5",
-      "source": "디지털데일리",
-      "published": "2026-05-10T17:28:20+09:00",
-      "summary": "파라마운트·WBD 합병…국내 콘텐츠 산업 충격없나 [IT클로즈업] 디지털데일리",
-      "keywords": [
-        "합병"
       ]
     },
     {
@@ -3616,13 +3871,16 @@
       ]
     },
     {
-      "title": "[이진호의 퓨처로그] 스페이스X IPO가 한국에 던지는 질문 - 전자신문",
-      "url": "https://news.google.com/rss/articles/CBMiTkFVX3lxTE9DN2dYODBPbTNSRTFOZ0t1YmVVNVQwQ3YtT0FJMXRjNjhpdVY3WC1GY3FrM0ZVMmNLQmdoR2Y5ckFpTDlOWHBGMXc0SzlwUQ?oc=5",
-      "source": "전자신문",
+      "title": "[심층진단] ‘적대적 M&A’ 낙인 찍힌 고려아연 싸움… 실제로는 ‘합병’ 아닌 ‘지분·지배권 전쟁’ - 브릿지경제",
+      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTFBfeVNwX1lCRDZRWWRJSDROekE2M2N6Vk0zZXdFRTU0emVCbDJ2aExFR0FpV1ZQSzJOeXlJVF9kd2duNTRkcDA1TTIwUVFyV29YaUk3SWpOUDgwUQ?oc=5",
+      "source": "브릿지경제",
       "published": "2026-05-10T16:00:00+09:00",
-      "summary": "[이진호의 퓨처로그] 스페이스X IPO가 한국에 던지는 질문 전자신문",
+      "summary": "[심층진단] ‘적대적 M&A’ 낙인 찍힌 고려아연 싸움… 실제로는 ‘합병’ 아닌 ‘지분·지배권 전쟁’ 브릿지경제",
       "keywords": [
-        "IPO"
+        "인수합병",
+        "M&A",
+        "합병",
+        "지분인수"
       ]
     },
     {
@@ -3666,16 +3924,6 @@
       ]
     },
     {
-      "title": "롯데웰푸드, 1분기 어닝 서프라이즈...2분기에도 25% 증가 전망 - thecommoditiesnews.com",
-      "url": "https://news.google.com/rss/articles/CBMid0FVX3lxTFB4MFdXUUJZS3FvdG1FSDVONWNFRkFKb3I0ekFNaDVkanRfZVZrZDBDWGtieFJ0TkcyRUR5ZGJVemYtSDJrdGhad0JMa2c5YW4tNlQxRDhESHBnc3daN2kyUXEwMlNFc09PN3pEMVBONEszaU9ZVE9r?oc=5",
-      "source": "thecommoditiesnews.com",
-      "published": "2026-05-10T11:31:29+09:00",
-      "summary": "롯데웰푸드, 1분기 어닝 서프라이즈...2분기에도 25% 증가 전망 thecommoditiesnews.com",
-      "keywords": [
-        "어닝서프라이즈"
-      ]
-    },
-    {
       "title": "“반복 담합 땐 기업분할도”…공정위, ‘초강수’ 구조적 조치 의견 수렴 [현장+] - 쿠키뉴스",
       "url": "https://news.google.com/rss/articles/CBMiY0FVX3lxTE9tbFBpOGpYVWgxZDNqVlg0VTVxaDd5TkRtaUlKM1ZwYi1DVThQVUw0dzhvMDlfclJsNUM1WTc5NUlrSDlrbTMxVEdBNWtDdmhFalVId0dSV1pTd0NRM0tBMTRsOA?oc=5",
       "source": "쿠키뉴스",
@@ -3703,26 +3951,6 @@
       "summary": "글로벌 럭셔리 브랜드도 뚫었다…'어닝 서프라이즈' 기록한 이 종목[주末머니] v.daum.net",
       "keywords": [
         "어닝서프라이즈"
-      ]
-    },
-    {
-      "title": "동양·ABL생명 합병 눈앞···지상 과제는 '수익성·노조' - 뉴스웨이",
-      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE9jSkNFXzdHbzZHNll3NVUxanE4Sy1YLUZzNmtjeEY5NHNpUVJyOHJnN1lXbkxnUXVTRm0tWHktZ3B2d0pjRlFrZHN6Nm9yenRia3lGZ1RfcDZvREZrVGNtTEZIdmdyUUs1WVE?oc=5",
-      "source": "뉴스웨이",
-      "published": "2026-05-10T09:03:00+09:00",
-      "summary": "동양·ABL생명 합병 눈앞···지상 과제는 '수익성·노조' 뉴스웨이",
-      "keywords": [
-        "합병"
-      ]
-    },
-    {
-      "title": "성인용 독감백신 분할 소아접종 자제 - 메디칼타임즈",
-      "url": "https://news.google.com/rss/articles/CBMickFVX3lxTE1oWXNlWEJqSV9oaVp0aWdvQkUzTlFqcWs2VzUyQXFIcE5Sak1NNFprSFhMTmRNMnRMVmVCWHU4Zm1vVHF4aVIyTFpUcjJ1dGVUWDlhVHp5dGdNbGZQTDBuMGRnYXlPeGdTYU40OFd2N3RrUQ?oc=5",
-      "source": "메디칼타임즈",
-      "published": "2026-05-10T07:50:00+09:00",
-      "summary": "성인용 독감백신 분할 소아접종 자제 메디칼타임즈",
-      "keywords": [
-        "분할"
       ]
     },
     {
@@ -3796,16 +4024,6 @@
       ]
     },
     {
-      "title": "반도체 뜨자 수처리도 관심…‘지앤지인텍’, 투자 유치 - 마켓인",
-      "url": "https://news.google.com/rss/articles/CBMickFVX3lxTE4wMm1NcVgxRXdhOEJuOTI5czNrVWI4M0paWkFFQTE3SFhac0pDcEU3ZDAzSmdZYnltUmh0dTF1Q0V6RWpHT1lYYUN3WjlhM3BDSWJjS1RpR0JGNFhiTGxjdzVTV0lQNWxLTG1LVE16MFlhdw?oc=5",
-      "source": "마켓인",
-      "published": "2026-05-09T07:07:02+09:00",
-      "summary": "반도체 뜨자 수처리도 관심…‘지앤지인텍’, 투자 유치 마켓인",
-      "keywords": [
-        "투자유치"
-      ]
-    },
-    {
       "title": "[주간e종목] ‘수상한 4연上’ KBI메탈, 결국 하루 거래정지 - 시사저널e",
       "url": "https://news.google.com/rss/articles/CBMickFVX3lxTE56Mmd4d3FadXNBZmpPUTF0ZHIwRjVLeDQ1UEhBdDVpc3hsd1lISnBVeEl1UVF2cWRxRjNqZHFjOTBtcmw1U1JtbXhrTzZrNXpJYXRUMW1LMG1xcW5hZnZiYUxVWkowemZXaE1MX3BkLXhHZ9IBdkFVX3lxTE45ZzQ0aS01T09ERmY2eGd6QzM4bGJzMU5xeTg1dmJQZm03Q1VPeDZqSXU3TkV0RnFNcWFyWUVoVnRUV085TTFxU183Uy1OcVd2VWZxalluT2FXaUpVbWtqdDNTUGRoc1BIQ1BuQXBTRHZleENXYmc?oc=5",
       "source": "시사저널e",
@@ -3827,26 +4045,6 @@
       ]
     },
     {
-      "title": "“스페이스X 상장전 이것 사라” 5월말 돈 버는 단타 종목 2개 - 중앙일보",
-      "url": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE1iTzMzd09MSFlocFV6MjZSWVQ2QnlCOG1jYXhCNDBNajVHTDJVVGNJTy0yOEhBRUFoZFFLNFdJdmlCTUY2c3N6YWNxVzNFeURLaXB0eDF3?oc=5",
-      "source": "중앙일보",
-      "published": "2026-05-09T06:00:00+09:00",
-      "summary": "“스페이스X 상장전 이것 사라” 5월말 돈 버는 단타 종목 2개 중앙일보",
-      "keywords": [
-        "상장"
-      ]
-    },
-    {
-      "title": "심평원, '분할 주의 의약품' DUR 점검 확대 - 메디칼타임즈",
-      "url": "https://news.google.com/rss/articles/CBMidEFVX3lxTE1DSWwzZXNzTHRSWWFQMGJyc21kamViZ2kwMnYwZDZnaXE0QWF0VEpkUGV1anluN2FKNU50RXB3WGt5ZGFWR1Q0cTFMNnhMZEpkcm5DbFpMSzJoeHZFdmZLM3IzRjdqWmxGR0tIcVFJOGVNV0R0?oc=5",
-      "source": "메디칼타임즈",
-      "published": "2026-05-09T00:54:59+09:00",
-      "summary": "심평원, '분할 주의 의약품' DUR 점검 확대 메디칼타임즈",
-      "keywords": [
-        "분할"
-      ]
-    },
-    {
       "title": "한신평, 콘텐트리중앙·메가박스중앙 CP 등급 'B+'로 하향 - 인베스트조선",
       "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxPWC1nM28tblZsd3BfSkIwUlVYeUkwT3AwbV84bnByakZlUWNWeGRqUHZLajdnRmlxdFhHUW40VnRBbDF1TTVfZm5sZHJPY0JRY3FiaTh1MFdtR2oxZW9nV1dVOER0MEhybDFBakg4Vy1XQTNRVDJJa2QyUzJ5ZGw5Mk9kdw?oc=5",
       "source": "인베스트조선",
@@ -3855,23 +4053,13 @@
       "keywords": []
     },
     {
-      "title": "계양전기, 유상증자 결정…보통주 820만주 발행 - 디지털투데이",
-      "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTFB2cjFObUtSNzhIaHZ3N1o2dVZMM1RZby1nbWw0dXNKck1jYVFwVXJPUGtXYlJnS3FJS1NFWXJ0a21TN29mcWZoYkxNQXB2VUhhRUpFSUFNaEFGOWs1Y050UTRZd3JrTzhiV2UxLVAzSWdZa0E?oc=5",
-      "source": "디지털투데이",
-      "published": "2026-05-08T18:20:03+09:00",
-      "summary": "계양전기, 유상증자 결정…보통주 820만주 발행 디지털투데이",
+      "title": "연차휴가 시간 단위 분할 사용…1년 뒤 시행 - 시선뉴스",
+      "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTFBfb2RsUzZPODU3UUJnSlV2d2xBZy1Ncm03dmhqb29LdzJlRGFFbElLMG50cjBjYVQ5X0trNGhFbmNRZ3FodHNMTFZjMFVzbm5Ja2VDaWZ0N1l4dkhZVGZhSlZrTkt4T0dBVURLVTFn0gFyQVVfeXFMTXJURkVkX0hKSE0zQWRtLW90Z3ZjLWVIUkhNUWFkZE9YZ1pkN24wUFlTeUF6VjAzOVY5TWd6RHNTdE9YM19qUlNaMkZMajVRSl8zeldtVGVHUElCTE9IdHhIOEE1YnEzUEtxd2gzMF9TZTRn?oc=5",
+      "source": "시선뉴스",
+      "published": "2026-05-08T17:47:22+09:00",
+      "summary": "연차휴가 시간 단위 분할 사용…1년 뒤 시행 시선뉴스",
       "keywords": [
-        "유상증자"
-      ]
-    },
-    {
-      "title": "푸드나무, 10억원 제3자배정 유상증자 - 연합뉴스",
-      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE1FRmlmVHBsOXZQczVIYldKWGdTN1lrZ1hkN054bjU4OS13cEtPOHBGc3BQNk1rRjJWay1HOGxzMFFXRzl6UHYtaFdSa25aWldHeUgyQ1BlQmZxWEXSAWBBVV95cUxOcTNTbGhUTEhvQjRNWGR2NllLTGYya1JQdXlVdE9QZ3BKd1AwLWtRMFpocXQzZ0xkS0J0QXdRU3RpUnhSbFhOTklEZmhiNFg2NG4yRWJST1dVVXl1YTE4RG8?oc=5",
-      "source": "연합뉴스",
-      "published": "2026-05-08T18:06:17+09:00",
-      "summary": "푸드나무, 10억원 제3자배정 유상증자 연합뉴스",
-      "keywords": [
-        "유상증자"
+        "분할"
       ]
     },
     {
@@ -3915,26 +4103,6 @@
       ]
     },
     {
-      "title": "불확실성 속 존재감 키운 고려아연…최윤범 리더십 아래 신사업 성장 본격화 - 철강금속신문",
-      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE41QWZvcmZYOEhXdkJ5M0VXZnU5T2tjQk0wb1RFYkxRNjNzdWNjTkdGamhROW1mTFRCeWZ6Vk9hdjMxc242UHRvZEFIMVpCekk1YklhNklaLUVXQU84UXNFZk9tQmFyZ1V1emc?oc=5",
-      "source": "철강금속신문",
-      "published": "2026-05-08T16:38:00+09:00",
-      "summary": "불확실성 속 존재감 키운 고려아연…최윤범 리더십 아래 신사업 성장 본격화 철강금속신문",
-      "keywords": [
-        "신사업"
-      ]
-    },
-    {
-      "title": "19개월 전 '청사진' 약속 지킨 바로팜, IPO 도전 속 남은 과제는 - 히트뉴스",
-      "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE1tMkdGU25qbkhYOUpRVHV0YmFUcDN3OUg1VEhTWnZuV3czQjRKczBnVkEwbFpHZ3lqdnBaTEo4dm5KemNlQWNnUUd5NC1zQlRkWDFQUVZLY3BiYm9Pek11cDdleTZ6cHNwczZz?oc=5",
-      "source": "히트뉴스",
-      "published": "2026-05-08T16:00:00+09:00",
-      "summary": "19개월 전 '청사진' 약속 지킨 바로팜, IPO 도전 속 남은 과제는 히트뉴스",
-      "keywords": [
-        "IPO"
-      ]
-    },
-    {
       "title": "라인게임즈, '계약 위반' 분쟁 속 '지분 희석' 유상증자 강행…자본시장 공정성 논란 - gukjenews.com",
       "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE9na19WWDNEUVA5UXA3eW83S213QU85MGJyTG9lVGVTbHVVUWNYcHFkSU52NkhpZDFXX1FKRFRMYXFTQmdROUtEaGwyV3B3V3huN3NBY3J2VTNkUzRsVHRUZlFoUF9HcEo4OVgwNnp3?oc=5",
       "source": "gukjenews.com",
@@ -3963,26 +4131,6 @@
       ]
     },
     {
-      "title": "\"앤트로픽, 500억달러 투자유치 검토…몸값 1천200조원\" - 연합뉴스",
-      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTFAxTno4SUdnZ3g1LTd5MFpnWGlDZ1k2endKTmxPalFzVTMwNkFicWhBenFtQ0ZTOWxhUkhEZTA0UkNUUGozNkNMUGNkWUFJYVR0Mzc1YkFPNElJR0XSAWBBVV95cUxNUC1jLTc1ZWhlUEhLWUhwVnZmajdEU0trRTQ3R0lmZU5NR1hNMGNldFExWmFDNnpwb3M3SnNaNEZmd1BVS3l3eWo5WjJaUVFYN21oZmNmd3E2bjB1bHF0eEw?oc=5",
-      "source": "연합뉴스",
-      "published": "2026-05-08T15:26:18+09:00",
-      "summary": "\"앤트로픽, 500억달러 투자유치 검토…몸값 1천200조원\" 연합뉴스",
-      "keywords": [
-        "투자유치"
-      ]
-    },
-    {
-      "title": "비브로스 '똑닥', 비트컴퓨터 투자유치 진행 - 메디칼타임즈",
-      "url": "https://news.google.com/rss/articles/CBMidEFVX3lxTE1SWjZyUDZ2aV8zVVJTY052alktbjFJNTA0cE9DNHpNMHB6REVpc2t4bnFpb1VSRlo3YzhvTVNSVW1zZWRzNW9fRUUxbTJ3U3BuNkdvMVRuRWp6MFlYOXdJMDA1VXJINGcyd05RTGR6SjJqdEN3?oc=5",
-      "source": "메디칼타임즈",
-      "published": "2026-05-08T13:58:22+09:00",
-      "summary": "비브로스 '똑닥', 비트컴퓨터 투자유치 진행 메디칼타임즈",
-      "keywords": [
-        "투자유치"
-      ]
-    },
-    {
       "title": "페스카로, JS오토모티브 지분 인수…사이버보안·전장·생산 통합 체계 구축 - v.daum.net",
       "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTFBvYTZXd3RJUVYtaWpVUVhzbzlUUWVneVgwbURDS0lmNTA1ckZkUGJNTlg4bUdMNDNubmFzTmZwcTJHTXBxMVAtVzlRYnlGZVE?oc=5",
       "source": "v.daum.net",
@@ -3990,6 +4138,16 @@
       "summary": "페스카로, JS오토모티브 지분 인수…사이버보안·전장·생산 통합 체계 구축 v.daum.net",
       "keywords": [
         "지분인수"
+      ]
+    },
+    {
+      "title": "코스피 `7천피 시대` 황제주도 `쑥`…액면분할 기대감도[매일뭐니머니] - 매일신문",
+      "url": "https://news.google.com/rss/articles/CBMiYkFVX3lxTFB5cHprdjRSNnNkSV85alhKbk5qdXh4VlFDSndWbkdjSWRkYWs3Nlo4cXAxN3ptbjQtOWpTTGprQW9MN3N0LXhMYm9ZZ3Q0Y2pPSmM1Tjh3QnhjdDdMZnhuSU5B?oc=5",
+      "source": "매일신문",
+      "published": "2026-05-08T11:02:14+09:00",
+      "summary": "코스피 `7천피 시대` 황제주도 `쑥`…액면분할 기대감도[매일뭐니머니] 매일신문",
+      "keywords": [
+        "분할"
       ]
     },
     {
@@ -4029,14 +4187,12 @@
       "keywords": []
     },
     {
-      "title": "S사 등 대기업 제약사 인수합병 '잰걸음' - 메디칼타임즈",
-      "url": "https://news.google.com/rss/articles/CBMickFVX3lxTE5wT0xtWV9tLU9tTXpYVS1XcEpDV0NyZXFQcVpRY2NHeER0VjNuZEpTQUdZd1Atc1plN0N3dWlnZnRvQkg0VlVDbkZiT1UwMk9TR0VzRWNQYm9OcURqRXVkZ3dtcXhrQk8tbFlubVM5V21oUQ?oc=5",
-      "source": "메디칼타임즈",
-      "published": "2026-05-08T05:41:33+09:00",
-      "summary": "S사 등 대기업 제약사 인수합병 '잰걸음' 메디칼타임즈",
-      "keywords": [
-        "인수합병"
-      ]
+      "title": "VIG파트너스 6호 펀드부터 신창훈 대표 체제로 전환…'크레딧 펀드' 법인 분리 가닥 - 인베스트조선",
+      "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxObGpJcE5ROWtRVXBiMHJOc1Vud0RKWlY5U3FHTGY4S09hYWhTSXRtYmdlSUhoaEw1RDJBRWVGYVNMS1NkYzN5ODZZcHM2RjJOZUpoNkhiUDItSEtva3F0ZUJLbi1ad3dnVU02TkxDVnN4UWdnbFhQQzdLMDFiakhsOFdjQQ?oc=5",
+      "source": "인베스트조선",
+      "published": "2026-05-08T07:00:31+09:00",
+      "summary": "VIG파트너스 6호 펀드부터 신창훈 대표 체제로 전환…'크레딧 펀드' 법인 분리 가닥 인베스트조선",
+      "keywords": []
     },
     {
       "title": "대원제약, 액면분할 및 사명변경 상정 - 메디칼타임즈",
@@ -4049,16 +4205,6 @@
       ]
     },
     {
-      "title": "액면분할 승인…주당 2천5백원에서 5백원으로 - 메디칼타임즈",
-      "url": "https://news.google.com/rss/articles/CBMickFVX3lxTE5JOExRS3lzRHZDWUlVTzI3Z0w4Ql9ESmUyUFo5M0d5cHFNYWJsYU9rMHFFS2NMZmhCYmVkZUx0OGRwQndwSWwycjZodlZWdDBic0JGN0haZEFYWUxNMTlaVUtyRjR2cGd3NGhIM3NDQW1EQQ?oc=5",
-      "source": "메디칼타임즈",
-      "published": "2026-05-08T03:32:50+09:00",
-      "summary": "액면분할 승인…주당 2천5백원에서 5백원으로 메디칼타임즈",
-      "keywords": [
-        "분할"
-      ]
-    },
-    {
       "title": "연차휴가 분할 사용 등 노동자 휴식권 보호 강화된다 - knongnews.com",
       "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE9yVnFBTEE5dkhuSWctYmJaeFNQRE1uR1B1OGdOREIteUpMVjRSRDlnejF3WXJ3dXlLYmNjSHBPUGx5YXJGTVpFV1NydjJiRGVqWW5hNVBZSm9WT1VTRl9DTGJCd09HNER0RFk4?oc=5",
       "source": "knongnews.com",
@@ -4066,16 +4212,6 @@
       "summary": "연차휴가 분할 사용 등 노동자 휴식권 보호 강화된다 knongnews.com",
       "keywords": [
         "분할"
-      ]
-    },
-    {
-      "title": "씨젠, 100% 무상증자 결정 \"주주 가치 제고\" - 메디칼타임즈",
-      "url": "https://news.google.com/rss/articles/CBMidEFVX3lxTE1oZEJ0M2JxdXNkMTVBcERCMWlUUFFMZ0lJekg3Umlrd2lDSDdzYU9sZGV6NWxmdkdPQ2ViVFAxWDNlZlF2VURJeDhIblEyZWx5VzdxRmJMUlZrb0VyMDd3MHl3ZXQzWmx2OV9LY2lGZE4tRjFl?oc=5",
-      "source": "메디칼타임즈",
-      "published": "2026-05-07T20:45:20+09:00",
-      "summary": "씨젠, 100% 무상증자 결정 \"주주 가치 제고\" 메디칼타임즈",
-      "keywords": [
-        "무상증자"
       ]
     },
     {
@@ -4097,23 +4233,23 @@
       ]
     },
     {
-      "title": "광진실업, 10억원 제3자배정 유상증자 - 연합뉴스",
-      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTFA3S0wyMFU2aDN2eFZ5bmJtY3Q2cUpMMWdlN1YybWJmeDJtbWVGZnFQeHhJVnd0S1JrMXpMMll5eDdMdjVZdHhZTmdSa3czVWdHcEFkbG05QmhKNDjSAWBBVV95cUxPMjlwVmVDMHVlaUxkdlFFaDJDWXM1S3lWaXNnekdUYl9KVmRDdWFKcFdJZFZoZHhMeWRuWTJiNjhqdllpUkY2SlhTQkZfU2M3dUxETmpsUWkxNHVmUmhEZFA?oc=5",
-      "source": "연합뉴스",
-      "published": "2026-05-07T16:23:45+09:00",
-      "summary": "광진실업, 10억원 제3자배정 유상증자 연합뉴스",
+      "title": "고용노동부, 연차휴가 분할 사용 등 노동자 휴식권 보호 강화 - 시사일보",
+      "url": "https://news.google.com/rss/articles/CBMiTEFVX3lxTFBkZjNLMHhqSm5WTy11M3A3eVRVLVRQZDc1VU4yNHgta0RwdFNKSEdna0VJUVVaSUZJNVpEcDlOd3hJR1o0Nk5Sb3NhSk0?oc=5",
+      "source": "시사일보",
+      "published": "2026-05-07T18:46:00+09:00",
+      "summary": "고용노동부, 연차휴가 분할 사용 등 노동자 휴식권 보호 강화 시사일보",
       "keywords": [
-        "유상증자"
+        "분할"
       ]
     },
     {
-      "title": "흑자도산 위기 제이알글로벌리츠…소액주주들, 유상증자 제안 - 연합인포맥스",
-      "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE5BRnZHY0RqYl9XZ3pxZk5xcUY3VEdCaW5iRzVfemg3YUFQTGVReFBDT3gzNWNnZFFVd2p1SUc0MThpRktqT2JKSExTRkQ4aFpFTFRjWDhQQmlGS2NfTFpFNVVxdzVnV2NnT3A1V2k0dDg?oc=5",
-      "source": "연합인포맥스",
-      "published": "2026-05-07T14:13:00+09:00",
-      "summary": "흑자도산 위기 제이알글로벌리츠…소액주주들, 유상증자 제안 연합인포맥스",
+      "title": "엑스페릭스, 255억원 CB 발행…ID 지분 추가 인수 추진 - 뉴스핌",
+      "url": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE9aVnhvNVphLVlIcV9JNm1QMjVGdWpCODBwZ1dTam44YnZrRlM5RHYxeXk1U0NvWEVPUEJUZFpWNU5LVTloSDVzeGRRNlhYLTl4WkM2OGVaQm5FU0ZJ?oc=5",
+      "source": "뉴스핌",
+      "published": "2026-05-07T16:25:00+09:00",
+      "summary": "엑스페릭스, 255억원 CB 발행…ID 지분 추가 인수 추진 뉴스핌",
       "keywords": [
-        "유상증자"
+        "지분인수"
       ]
     },
     {
@@ -4141,16 +4277,6 @@
       "published": "2026-05-07T10:22:00+09:00",
       "summary": "제이알글로벌리츠 ‘기습 회생’ 후폭풍…감사의견 신뢰도·당국 대응력 도마 위 인베스트조선",
       "keywords": []
-    },
-    {
-      "title": "NH투자증권 \"미래에셋증권, 美 증권사 인수합병.. 글로벌 확장 기대\" - 글로벌이코노믹",
-      "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxQcTBUanhMOE16SjFhYUllNkVFVnRuQWxZRzlaY0QtSHVrTU1obU0yQWFON0VNOFhTQ1VYNTN0NC1KZ1VxZm5wU3lxaFh4bVdTNFFvRmxwSTBheWM0RHRRcFd4V241eGRNV1Ftd2VaSEVBa3ZjREJxVi1WdkRJVEJveDhTQTJCYUhn?oc=5",
-      "source": "글로벌이코노믹",
-      "published": "2026-05-07T10:12:05+09:00",
-      "summary": "NH투자증권 \"미래에셋증권, 美 증권사 인수합병.. 글로벌 확장 기대\" 글로벌이코노믹",
-      "keywords": [
-        "인수합병"
-      ]
     },
     {
       "title": "\"하이닉스 한 주도 부담\"…코스피 7000에 황제주 급증, 액면분할 기대감도 커졌다 - 조선일보",
@@ -4201,16 +4327,6 @@
       ]
     },
     {
-      "title": "에스아이리소스, 10억원 유상증자 - 연합뉴스",
-      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE54eWc5b2RWdVZ6d0ItLVEtTEhfS05IS3NLR0FsUWY2cmcxS1YwQ3BmWkstTlpFTWxRYTV1UFlqb3dFRGxocFRsWGloV1dHV2swS3hQbWI0UmpLUHPSAWBBVV95cUxOdDZDWFdJRjBLVHpmT3pHR1AyLTVHa0JZNFZ4QnowVTlnRXM3MGw2NWtULWltcHpVOXNyUkJqS0NrYjNyM08taWxrY3l0NHBYNlRJNmtqMElRNTdxcGVadVE?oc=5",
-      "source": "연합뉴스",
-      "published": "2026-05-06T19:06:30+09:00",
-      "summary": "에스아이리소스, 10억원 유상증자 연합뉴스",
-      "keywords": [
-        "유상증자"
-      ]
-    },
-    {
       "title": "어펄마의 도레이 FCCL 인수, 공정위 제동에 1년째 표류 - 인베스트조선",
       "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxNMzdZY0lqWlpPMnYyNTYxeF9qcEFQaFZ1SGtMU0NNTklQcjJWRUItSHNkUzUyREp2V0VCU0M5ZGtsd0FlazNtZ1hPREpUd0NQRW0xb3FQclZzTzlQcnZuQ3BsOXpNMVNkaDBObndUZXhrMUVoZFNHMl9majU5dVFQbkZjMA?oc=5",
       "source": "인베스트조선",
@@ -4233,26 +4349,6 @@
       "published": "2026-05-06T13:50:00+09:00",
       "summary": "제이알리츠 쇼크에 A급 이하 채권 가격도 줄줄이 하락 인베스트조선",
       "keywords": []
-    },
-    {
-      "title": "‘샛별배송’ 컬리, 네이버에 330억 유상증자…전략적 협력 강화 - 한겨레",
-      "url": "https://news.google.com/rss/articles/CBMickFVX3lxTFB0TEw0NGdvUk03bEM0MHh1REppOFgtLWFtaXllSXRVOVhYcU1PdkRIQ3doc0k5TjZUTWtMZHdMVkUzWHJhcnExTTVXRmZCam1rZExMSUQ2R1FUN1FMSmpTMnhodHJoRS1RWU9HZVFaM3Yzdw?oc=5",
-      "source": "한겨레",
-      "published": "2026-05-06T11:49:00+09:00",
-      "summary": "‘샛별배송’ 컬리, 네이버에 330억 유상증자…전략적 협력 강화 한겨레",
-      "keywords": [
-        "유상증자"
-      ]
-    },
-    {
-      "title": "컬리, 네이버 대상 330억원 유상증자…\"기업가치 2.8조원\" - 지디넷코리아",
-      "url": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE9jU3V2OUpBOC1EX19Rb3BwbFVnMVJWOTB5Q1lWRnVhVGxUWnV2blFQbzgyVE45NkpIb2FnM2ZLRDFFeU01UHdVMkU3ZEtDRE1vUS1NMjN3?oc=5",
-      "source": "지디넷코리아",
-      "published": "2026-05-06T10:12:03+09:00",
-      "summary": "컬리, 네이버 대상 330억원 유상증자…\"기업가치 2.8조원\" 지디넷코리아",
-      "keywords": [
-        "유상증자"
-      ]
     },
     {
       "title": "오스템 판 최규옥 회장, '패밀리오피스'로 서진시스템 투자 눈길 - 인베스트조선",
@@ -4279,6 +4375,16 @@
       "published": "2026-05-04T15:02:00+09:00",
       "summary": "LG화학, 엔솔 지분 블록딜 채비…규모·시점·용처 예의주시 인베스트조선",
       "keywords": []
+    },
+    {
+      "title": "한화솔루션·SKC, 유상증자 희비 - v.daum.net",
+      "url": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE8wM3VDems4d2ZpTjJUWjBRWVJjdkw3UDZ1TUxfUU91bUxvVVY5eloySjI4Q09LXzVWVjJvTFpjRm8yWjVuRE5STkRadU5JWG8?oc=5",
+      "source": "v.daum.net",
+      "published": "2026-05-04T10:20:57+09:00",
+      "summary": "한화솔루션·SKC, 유상증자 희비 v.daum.net",
+      "keywords": [
+        "유상증자"
+      ]
     },
     {
       "title": "1년 새 128% 오른 LS마린솔루션, 전력망 핵심 수혜주로 부상[전예진의 마켓 인사이트] - 한경매거진&북",
@@ -4317,16 +4423,6 @@
       ]
     },
     {
-      "title": "펄어비스 품 떠나는 CCP게임즈…현 경영진이 지분 인수해 재독립 - 뉴스1",
-      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE5iQWhiQXBndmxQV0tNdzdvNDF1WmExenBseXduaWFzcVhUZ3p3RDllQjRKeDhMUVR1bTFhdzVmYUZ2OWxaRmlsNms3cWRkWGlYdEcxeUVyamlRN1Jwa0lqdQ?oc=5",
-      "source": "뉴스1",
-      "published": "2026-04-30T16:00:00+09:00",
-      "summary": "펄어비스 품 떠나는 CCP게임즈…현 경영진이 지분 인수해 재독립 뉴스1",
-      "keywords": [
-        "지분인수"
-      ]
-    },
-    {
       "title": "매입보수 챙기고 줄이탈…제이알글로벌리츠 '운용 무책임' 논란 - 인베스트조선",
       "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxOX1IzLUVSZFdjQ1N3aEIyaTJvcVZEcXFFVS11WEpkTFZHVzZyYjJ5bFNFRXJNZUFlcVR1aFdQZEhxTUZ0a0FBQ3RiWWFkN3VKX1BsUlI2VW1oYkR5NDJQaHBuRVNsS0loa29FQlJ2ZU1TN2JXVmktQmNmWm9HZ0FCLUhMVQ?oc=5",
       "source": "인베스트조선",
@@ -4341,26 +4437,6 @@
       "published": "2026-04-30T16:00:00+09:00",
       "summary": "하림그룹, 홈플러스 익스프레스 인수 본계약 체결 인베스트조선",
       "keywords": []
-    },
-    {
-      "title": "현대차그룹, 적자 충전사 지분 인수…\"장기적 사업 경쟁력 확보 위한 투자\" - 빅데이터뉴스",
-      "url": "https://news.google.com/rss/articles/CBMifEFVX3lxTE5BN1VBNlFiWUFmcGRpS0hEdGhXOWZtRkVqYURaaVc0OEhsQlJrU1QxM2dnVUZPRk5TQU1NMzJ6MDl4cEJJeVFDdXJ2aUNmbHk3OGp4TG5Fb05JRE5WdnZwdENVa0JRaHo2MzdTS0xGYk16T2hWbDFpTjJfaFg?oc=5",
-      "source": "빅데이터뉴스",
-      "published": "2026-04-29T17:29:36+09:00",
-      "summary": "현대차그룹, 적자 충전사 지분 인수…\"장기적 사업 경쟁력 확보 위한 투자\" 빅데이터뉴스",
-      "keywords": [
-        "지분인수"
-      ]
-    },
-    {
-      "title": "[기자의 눈] 바이오기업 자금조달 훈풍과 유상증자 순기능 - 데일리팜",
-      "url": "https://news.google.com/rss/articles/CBMiYkFVX3lxTFByc09lWVdtTFRqMWVtRk14N0s4Y0FVOWU2SnpCY3RGNjF1eHY1QWtSQWtvS1oyUTNTS0Fjck1EUEpsUVM2Q1JzVVI1OXd6UU1adl9WSkJITWloX1dUdnJ6VzhB?oc=5",
-      "source": "데일리팜",
-      "published": "2026-04-29T16:00:00+09:00",
-      "summary": "[기자의 눈] 바이오기업 자금조달 훈풍과 유상증자 순기능 데일리팜",
-      "keywords": [
-        "유상증자"
-      ]
     },
     {
       "title": "KBI메탈, 원영하이텍 100% 지분 인수 결정 - 디지털투데이",
