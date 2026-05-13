@@ -188,6 +188,10 @@
   .hot-panel { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 14px; }
   .hot-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
   .hot-card .hot-title { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .hot-card .hot-title.clickable { cursor: pointer; transition: color 0.12s; }
+  .hot-card .hot-title.clickable:hover { color: var(--accent); }
+  .hot-card .hot-title .more { font-size: 9px; color: var(--ink-faint); margin-left: 6px; letter-spacing: 0.06em; text-transform: none; }
+  .hot-card .hot-title.clickable:hover .more { color: var(--accent); }
   .hot-card .hot-title .pill { background: var(--bg-warm); padding: 1px 6px; border-radius: 3px; font-size: 9px; color: var(--ink-mid); }
   .hot-list { display: flex; flex-direction: column; gap: 4px; }
   .hot-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; padding: 4px 6px; border-radius: 4px; cursor: pointer; transition: background 0.12s; }
@@ -344,15 +348,18 @@
     <button class="preset-chip" data-preset="smartmoney" title="외국인 + 기관 모두 5D 누적 순매수">🐋 스마트머니</button>
     <button class="preset-chip" data-preset="laggard" title="해당 테마 평균 대비 1M 수익률이 5%↓ 낮은 종목 — 따라잡기 후보">🐢 테마 낙오자</button>
     <button class="preset-chip" data-preset="distrib" title="외국인 매도 + 개인 매수 — '개미 잡힌' 종목, 약세 신호">⚠️ 분배(약세)</button>
+    <button class="preset-chip" data-preset="foreign5d" title="외국인 5D 누적 순매수가 양수인 종목 (전체 보기)">🐋 외국인 5D 순매수</button>
+    <button class="preset-chip" data-preset="topgain" title="오늘 상승 중인 종목 (1D &gt; 0) 전체 보기">📈 1D 상승</button>
+    <button class="preset-chip" data-preset="toploss" title="오늘 하락 중인 종목 (1D &lt; 0) 전체 보기">📉 1D 하락</button>
     <span class="preset-clear" id="preset-clear" style="display:none;">× 프리셋 해제</span>
   </div>
 
   <!-- ============ HOT LIST PANEL ============ -->
   <div class="hot-panel" id="hot-panel">
-    <div class="hot-card"><div class="hot-title">🔥 거래량 폭발 <span class="pill">vs 20D 평균</span></div><div class="hot-list" id="hot-volume"></div></div>
-    <div class="hot-card"><div class="hot-title">🐋 외국인 5D 매수 Top <span class="pill">금일 기준</span></div><div class="hot-list" id="hot-foreign"></div></div>
-    <div class="hot-card"><div class="hot-title">📈 1D 상승 Top <span class="pill">필터 적용</span></div><div class="hot-list" id="hot-gain"></div></div>
-    <div class="hot-card"><div class="hot-title">📉 1D 하락 Top <span class="pill">필터 적용</span></div><div class="hot-list" id="hot-loss"></div></div>
+    <div class="hot-card"><div class="hot-title clickable" data-hot-preset="volume" title="클릭하면 모두 보기"><span>🔥 거래량 폭발 <span class="pill">vs 20D 평균</span></span><span class="more">전체 보기 →</span></div><div class="hot-list" id="hot-volume"></div></div>
+    <div class="hot-card"><div class="hot-title clickable" data-hot-preset="foreign5d" title="클릭하면 모두 보기"><span>🐋 외국인 5D 매수 Top <span class="pill">금일 기준</span></span><span class="more">전체 보기 →</span></div><div class="hot-list" id="hot-foreign"></div></div>
+    <div class="hot-card"><div class="hot-title clickable" data-hot-preset="topgain" title="클릭하면 모두 보기"><span>📈 1D 상승 Top <span class="pill">필터 적용</span></span><span class="more">전체 보기 →</span></div><div class="hot-list" id="hot-gain"></div></div>
+    <div class="hot-card"><div class="hot-title clickable" data-hot-preset="toploss" title="클릭하면 모두 보기"><span>📉 1D 하락 Top <span class="pill">필터 적용</span></span><span class="more">전체 보기 →</span></div><div class="hot-list" id="hot-loss"></div></div>
   </div>
 
   <!-- ============ SECTOR ROTATION PANEL ============ -->
@@ -1098,6 +1105,15 @@ function passesPreset(d, code) {
     const sa = sectorAvg1M(t);
     return isFinite(sa) && (sa - d.r1m) >= 5; // 5%p below theme average
   }
+  if (p === 'foreign5d') {
+    return d.flow && isFinite(d.flow.foreign5d) && d.flow.foreign5d > 0;
+  }
+  if (p === 'topgain') {
+    return isFinite(d.r1d) && d.r1d > 0;
+  }
+  if (p === 'toploss') {
+    return isFinite(d.r1d) && d.r1d < 0;
+  }
   return true;
 }
 
@@ -1141,6 +1157,9 @@ function getFilteredSorted() {
     else if (k === 'volratio') {
       va = da && da.avgVol20 > 0 ? da.volume / da.avgVol20 : undefined;
       vb = db && db.avgVol20 > 0 ? db.volume / db.avgVol20 : undefined;
+    }
+    else if (k === 'foreign5d' || k === 'organ5d' || k === 'individual5d') {
+      va = da?.flow?.[k]; vb = db?.flow?.[k];
     }
     else { va = da?.[k]; vb = db?.[k]; }
     const aN = isFinite(va) ? va : (dirMul > 0 ? Infinity : -Infinity);
@@ -1682,15 +1701,31 @@ function init() {
     render();
   });
 
-  // Preset chips
+  // Default sort per preset so activating one immediately ranks the table
+  // by the most relevant column (e.g. 외국인 5D 순매수 → foreign5d desc).
+  const PRESET_DEFAULT_SORT = {
+    volume:    { key: 'volratio',  dir: 'desc' },
+    foreign5d: { key: 'foreign5d', dir: 'desc' },
+    topgain:   { key: 'r1d',       dir: 'desc' },
+    toploss:   { key: 'r1d',       dir: 'asc'  },
+  };
+  function applyPreset(p, { scrollToTable = false } = {}) {
+    STATE.preset = STATE.preset === p ? '' : p;
+    document.querySelectorAll('.preset-chip').forEach(c => c.classList.toggle('active', c.dataset.preset === STATE.preset));
+    $('preset-clear').style.display = STATE.preset ? 'inline-block' : 'none';
+    const sort = STATE.preset && PRESET_DEFAULT_SORT[STATE.preset];
+    if (sort) { STATE.sortKey = sort.key; STATE.sortDir = sort.dir; }
+    render();
+    if (scrollToTable) {
+      const wrap = document.querySelector('.table-wrap');
+      if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
   document.querySelectorAll('.preset-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      const p = chip.dataset.preset;
-      STATE.preset = STATE.preset === p ? '' : p;
-      document.querySelectorAll('.preset-chip').forEach(c => c.classList.toggle('active', c.dataset.preset === STATE.preset));
-      $('preset-clear').style.display = STATE.preset ? 'inline-block' : 'none';
-      render();
-    });
+    chip.addEventListener('click', () => applyPreset(chip.dataset.preset));
+  });
+  document.querySelectorAll('.hot-title.clickable').forEach(el => {
+    el.addEventListener('click', () => applyPreset(el.dataset.hotPreset, { scrollToTable: true }));
   });
   $('preset-clear').addEventListener('click', () => {
     STATE.preset = '';
