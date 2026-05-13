@@ -903,8 +903,19 @@ async function scanAll() {
       if (needHist) {
         tasks.push(fetchHistory(code).then(hist => {
           const row = buildRow(code, hist);
-          cacheSet(CACHE_PREFIX, code, row);
-          STATE.data[code] = { ...(STATE.data[code] || {}), ...row };
+          // History gives end-of-day price/r1d/volume; if Phase 1 already
+          // captured an intraday quote (quoteAt set), preserve it so we
+          // don't roll the live price back to yesterday's close.
+          const existing = STATE.data[code];
+          const liveQuote = existing && existing.quoteAt ? {
+            price: existing.price,
+            r1d: existing.r1d,
+            volume: existing.volume,
+            quoteAt: existing.quoteAt,
+          } : null;
+          const merged = liveQuote ? { ...row, ...liveQuote } : row;
+          cacheSet(CACHE_PREFIX, code, merged);
+          STATE.data[code] = { ...(existing || {}), ...merged };
         }).catch(e => { errors++; console.warn('[hist]', code, e.message); }));
       }
       if (needFlow) {
