@@ -641,14 +641,28 @@ async function fetchBulkQuotes(codes) {
   const j = JSON.parse(text);
   const datas = j?.result?.areas?.[0]?.datas;
   if (!Array.isArray(datas)) throw new Error('bulk: malformed response');
+  const num = v => (typeof v === 'number' ? v : parseFloat(v));
   const out = {};
   for (const d of datas) {
     if (!d || !d.cd) continue;
+    const price = num(d.nv);
+    const prevClose = num(d.pcv);
+    // Naver's `cr` is an UNSIGNED percent; direction comes from `rf`
+    // (2=상승/1=상한, 5=하락/4=하한, 3=보합). Compute from price/prevClose
+    // so 등락률 always carries the right sign, even if `rf` is missing.
+    let r1d;
+    if (isFinite(price) && isFinite(prevClose) && prevClose > 0) {
+      r1d = ((price / prevClose) - 1) * 100;
+    } else {
+      const mag = Math.abs(num(d.cr));
+      const sign = (d.rf === '5' || d.rf === '4' || d.rf === 5 || d.rf === 4) ? -1 : 1;
+      r1d = isFinite(mag) ? mag * sign : NaN;
+    }
     out[d.cd] = {
-      price: typeof d.nv === 'number' ? d.nv : parseFloat(d.nv),
-      prevClose: typeof d.pcv === 'number' ? d.pcv : parseFloat(d.pcv),
-      r1d: typeof d.cr === 'number' ? d.cr : parseFloat(d.cr),
-      volume: typeof d.aq === 'number' ? d.aq : parseFloat(d.aq),
+      price,
+      prevClose,
+      r1d,
+      volume: num(d.aq),
     };
   }
   return out;
