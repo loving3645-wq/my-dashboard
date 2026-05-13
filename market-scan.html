@@ -812,14 +812,12 @@ async function scanAll() {
    * One Naver polling call returns ~40 tickers with current price + 1D % +
    * volume. We hit it concurrently in chunks so the visible columns
    * (price, 1D, 거래량) fill within a few seconds even before history starts.
-   * Tickers already cached fresh skip the bulk fill. */
-  setStatus('live', '시세 빠른 조회 중 (1단계)');
+   * Always refetch on user-initiated scan so 현재가 reflects live intraday quotes
+   * — history (Phase 2) still uses the 6h cache since daily bars don't move. */
+  setStatus('live', '실시간 현재가 가져오는 중 (1단계)');
   const BULK_CHUNK = 40;
   const BULK_CONCURRENCY = 4;
-  const bulkTargets = codes.filter(c => {
-    const d = STATE.data[c];
-    return !d || !isFinite(d.price) || (Date.now() - (d.fetchedAt || 0)) > CACHE_TTL_MS;
-  });
+  const bulkTargets = codes.slice();
   const bulkChunks = [];
   for (let i = 0; i < bulkTargets.length; i += BULK_CHUNK) {
     bulkChunks.push(bulkTargets.slice(i, i + BULK_CHUNK));
@@ -831,11 +829,12 @@ async function scanAll() {
       const chunk = bulkQueue.shift();
       try {
         const bulk = await fetchBulkQuotes(chunk);
+        const now = Date.now();
         for (const c of chunk) {
           const q = bulk[c];
           if (!q) continue;
           const reg = REGISTRY[c] || {};
-          STATE.data[c] = {
+          const merged = {
             ...(STATE.data[c] || {}),
             code: c,
             name: reg.name,
@@ -844,7 +843,12 @@ async function scanAll() {
             price: isFinite(q.price) ? q.price : STATE.data[c]?.price,
             r1d: isFinite(q.r1d) ? q.r1d : STATE.data[c]?.r1d,
             volume: isFinite(q.volume) ? q.volume : STATE.data[c]?.volume,
+            quoteAt: now,
           };
+          STATE.data[c] = merged;
+          // Persist quote into the history cache so a quick reload still
+          // shows the freshest intraday price until Phase 2 history lands.
+          if (merged.spark) cacheSet(CACHE_PREFIX, c, merged);
         }
       } catch (e) { console.warn('[bulk]', e.message); }
       bulkDone++;
