@@ -25,6 +25,7 @@ NAVER_HISTORY = (
     "?symbol={code}&requestType=1&startTime={start}&endTime={end}&timeframe=day"
 )
 NAVER_TREND = "https://m.stock.naver.com/api/stock/{code}/trend"
+NAVER_INTEGRATION = "https://m.stock.naver.com/api/stock/{code}/integration"
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TICKERS_FILE = os.path.join(ROOT, "tickers-full.js")
@@ -38,6 +39,7 @@ USER_AGENT = (
 
 HISTORY_WORKERS = 24
 FLOW_WORKERS = 24
+MCAP_WORKERS = 24
 RETRY_COUNT = 2
 SPARK_LEN = 60  # last 60 trading days for sparkline (≈ 3 months)
 
@@ -152,6 +154,37 @@ def parse_qty(s):
         return 0
 
 
+_MKTVAL_JO_RE = re.compile(r"(\d[\d,]*)\s*조")
+_MKTVAL_EOK_RE = re.compile(r"(\d[\d,]*)\s*억")
+
+
+def parse_market_value(text):
+    """Parse Naver totalInfos.marketValue (e.g. "1,289조 1,044억", "456억")
+    into 억원 (units of 100M KRW). 1조 = 10,000억."""
+    if not text:
+        return None
+    s = str(text)
+    cap = 0
+    jo = _MKTVAL_JO_RE.search(s)
+    if jo:
+        cap += int(jo.group(1).replace(",", "")) * 10000
+    eok = _MKTVAL_EOK_RE.search(s)
+    if eok:
+        cap += int(eok.group(1).replace(",", ""))
+    return cap if cap > 0 else None
+
+
+def fetch_market_cap(session, code):
+    """Fetch market cap (in 억원) via Naver's integration endpoint."""
+    url = NAVER_INTEGRATION.format(code=code)
+    r = get_with_retry(session, url, referer="https://m.stock.naver.com/")
+    j = r.json()
+    for t in (j.get("totalInfos") or []):
+        if t and t.get("code") == "marketValue":
+            return parse_market_value(t.get("value"))
+    return None
+
+
 def fetch_flow(session, code):
     url = NAVER_TREND.format(code=code)
     r = get_with_retry(session, url, referer="https://m.stock.naver.com/")
@@ -260,6 +293,33 @@ def main():
                 )
     print(f"Phase B done ({flow_errors} errors)", flush=True)
 
+    # ---- Phase C: market cap (시가총액) ----
+    # Naver's siseJson (history) endpoint doesn't expose 시가총액, so we hit
+    # the integration endpoint separately. Runs for every ticker with valid
+    # history — including ETFs (their 순자산총액 ≈ 시가총액 surrogate).
+    print("Phase C: fetching market cap (24 workers)...", flush=True)
+    mcap_errors = 0
+    completed = 0
+    mcap_codes = list(snapshot.keys())
+    with ThreadPoolExecutor(max_workers=MCAP_WORKERS) as ex:
+        futures = {ex.submit(fetch_market_cap, session, c): c for c in mcap_codes}
+        for fut in as_completed(futures):
+            code = futures[fut]
+            completed += 1
+            try:
+                mcap = fut.result()
+                if mcap is not None:
+                    snapshot[code]["marketCap"] = mcap
+            except Exception:
+                mcap_errors += 1
+            if completed % 250 == 0:
+                print(
+                    f"  mcap {completed}/{len(mcap_codes)} "
+                    f"(err={mcap_errors})",
+                    flush=True,
+                )
+    print(f"Phase C done ({mcap_errors} errors)", flush=True)
+
     # ---- Write snapshot ----
     now_kst = datetime.now(KST)
     output = {
@@ -270,6 +330,7 @@ def main():
         "totalTickers": len(codes),
         "histErrors": hist_errors,
         "flowErrors": flow_errors,
+        "mcapErrors": mcap_errors,
         "tickers": snapshot,
     }
 

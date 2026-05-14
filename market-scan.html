@@ -160,6 +160,7 @@
   .pct.empty { color: var(--ink-faint); background: transparent; font-weight: 400; }
 
   .price { font-weight: 600; font-family: var(--mono); }
+  .mcap { font-family: var(--mono); color: var(--ink-mid); font-size: 11px; }
   .vol-cell { display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
   .vol-cell .today { font-weight: 500; }
   .vol-cell .avg { font-size: 10px; color: var(--ink-soft); }
@@ -387,6 +388,7 @@
         <tr id="head-row">
           <th class="left" data-sort="name">종목 <span class="arrow">↕</span></th>
           <th class="left sector-col" data-sort="sector">섹터 <span class="arrow">↕</span></th>
+          <th data-sort="marketCap">시총 <span class="arrow">↕</span></th>
           <th data-sort="price">현재가 <span class="arrow">↕</span></th>
           <th data-sort="r1d">1D <span class="arrow">↕</span></th>
           <th data-sort="r1w">1W <span class="arrow">↕</span></th>
@@ -983,6 +985,15 @@ function fmtVol(v) {
   if (v >= 1e4) return (v / 1e4).toFixed(0) + '만';
   return v.toLocaleString();
 }
+// Market cap is stored in 억원 (units of 100M KRW). 1조 = 10,000억.
+function fmtMcap(v) {
+  if (!isFinite(v) || v <= 0) return '—';
+  if (v >= 10000) {
+    const jo = v / 10000;
+    return jo >= 100 ? jo.toFixed(0) + '조' : jo.toFixed(1) + '조';
+  }
+  return Math.round(v).toLocaleString() + '억';
+}
 function fmtFlow(v) {
   if (!isFinite(v) || v === 0) return { txt: '0', cls: 'flat' };
   const cls = v > 0 ? 'buy' : 'sell';
@@ -1192,6 +1203,7 @@ function buildHeader() {
   $('head-row').innerHTML = `
     <th class="left" data-sort="name">종목 <span class="arrow">↕</span></th>
     <th class="left sector-col" data-sort="sector">섹터 <span class="arrow">↕</span></th>
+    <th data-sort="marketCap">시총 <span class="arrow">↕</span></th>
     <th data-sort="price">현재가 <span class="arrow">↕</span></th>
     <th data-sort="r1d">1D <span class="arrow">↕</span></th>
     <th data-sort="r1w">1W <span class="arrow">↕</span></th>
@@ -1221,7 +1233,7 @@ function render() {
   buildHeader();
   const codes = getFilteredSorted();
   const tbody = $('scan-body');
-  const baseCols = 11; // name, sector, price, r1d/w/m/3/6/y, trend, volume
+  const baseCols = 12; // name, sector, marketCap, price, r1d/w/m/3/6/y, trend, volume
   const cellSpan = baseCols + (STATE.withRS ? 1 : 0) + (STATE.withFlow ? 3 : 0);
 
   if (!codes.length) {
@@ -1254,6 +1266,7 @@ function render() {
       return `<tr class="empty" data-code="${code}">
         <td class="left"><div class="name-cell">${starCell(code)}<span class="code">${code}</span><span class="nm">${reg.name}</span><span class="mkt-pill ${mktPill}">${mktLabel}</span>${reportBadge(code)}</div></td>
         <td class="left sector-col sector-cell">${sectorTrim}</td>
+        <td class="muted">—</td>
         <td class="muted">—</td>
         <td><span class="pct empty">—</span></td>
         <td><span class="pct empty">—</span></td>
@@ -1294,6 +1307,7 @@ function render() {
     return `<tr data-code="${code}">
       <td class="left"><div class="name-cell">${starCell(code)}<span class="code">${code}</span><span class="nm">${reg.name}</span><span class="mkt-pill ${mktPill}">${mktLabel}</span>${reportBadge(code)}</div></td>
       <td class="left sector-col sector-cell" title="${reg.sector || ''}">${sectorTrim}</td>
+      <td class="${isFinite(d.marketCap) && d.marketCap > 0 ? 'mcap' : 'muted'}">${fmtMcap(d.marketCap)}</td>
       <td class="price">${fmtNum(d.price)}</td>
       <td><span class="pct ${r1d.cls}">${r1d.txt}</span></td>
       <td><span class="pct ${r1w.cls}">${r1w.txt}</span></td>
@@ -1599,6 +1613,7 @@ async function loadDailySnapshot() {
         mkt: reg.mkt,
         sector: reg.sector,
         price: row.price,
+        marketCap: row.marketCap, // in 억원 (100M KRW)
         r1d: row.r1d,
         r1w: row.r1w,
         r1m: row.r1m,
