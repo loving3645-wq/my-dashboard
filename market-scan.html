@@ -468,6 +468,8 @@ const STATE = {
   watch: new Set(),
   reportCounts: {}, // ticker -> N (today's research report count)
   reportDate: null,
+  snapshotMeta: null, // { count, generatedAt, total } from data/market-snapshot.json
+  lastScanAt: null,   // ms epoch — most recent successful '스캔 시작'
 };
 
 const CACHE_TTL_MS = 6 * 3600 * 1000; // 6h
@@ -942,6 +944,10 @@ async function scanAll() {
   $('scan-btn').style.display = 'inline-block';
   $('stop-btn').style.display = 'none';
   setStatus(errors ? 'error' : '', errors ? `완료 (${errors}개 실패)` : '완료');
+  // Reflect that the table is now showing live quotes, not the stale daily
+  // snapshot. snapshot-info otherwise stays pinned to the JSON file's mtime.
+  STATE.lastScanAt = Date.now();
+  refreshFreshnessInfo();
   render();
   refreshCacheInfo();
 }
@@ -1644,12 +1650,32 @@ async function loadDailySnapshot() {
 }
 
 function fmtRelativeTime(iso) {
-  const t = Date.parse(iso);
-  if (!isFinite(t)) return iso;
+  const t = typeof iso === 'number' ? iso : Date.parse(iso);
+  if (!isFinite(t)) return String(iso);
   const diffMin = (Date.now() - t) / 60000;
+  if (diffMin < 1) return '방금 전';
   if (diffMin < 60) return Math.round(diffMin) + '분 전';
   if (diffMin < 60 * 24) return Math.round(diffMin / 60) + '시간 전';
   return Math.round(diffMin / 60 / 24) + '일 전';
+}
+
+/* '스냅샷' 라벨은 표에 보이는 값의 신선도를 의미함. 라이브 스캔이 더 최근이면
+ * 스냅샷 시점이 아니라 스캔 시점을 보여줘야 사용자가 "지금 본 가격이 언제 것"
+ * 인지 헷갈리지 않는다. */
+function refreshFreshnessInfo() {
+  const el = $('snapshot-info');
+  if (!el) return;
+  const snap = STATE.snapshotMeta;
+  const scanAt = STATE.lastScanAt;
+  if (scanAt && (!snap || scanAt > Date.parse(snap.generatedAt))) {
+    el.textContent = `라이브 · ${fmtRelativeTime(scanAt)}`;
+    el.title = '마지막 스캔: ' + new Date(scanAt).toLocaleString('ko-KR');
+  } else if (snap) {
+    el.textContent = `${snap.count.toLocaleString()}종목 · ${fmtRelativeTime(snap.generatedAt)}`;
+    el.title = '생성 시각: ' + snap.generatedAt;
+  } else {
+    el.textContent = '없음';
+  }
 }
 
 /* =====================================================================
@@ -1661,6 +1687,8 @@ function tickClock() {
   const mm = String(now.getMinutes()).padStart(2, '0');
   const ss = String(now.getSeconds()).padStart(2, '0');
   $('clock').textContent = `${hh}:${mm}:${ss}`;
+  // Keep relative-time label live (방금 전 → 1분 전 → …) without polling.
+  if (now.getSeconds() % 15 === 0) refreshFreshnessInfo();
 }
 
 function init() {
@@ -1790,9 +1818,8 @@ function init() {
   // Then hydrate from daily snapshot (overrides browser cache when fresher)
   loadDailySnapshot().then(snap => {
     if (snap) {
-      $('snapshot-info').textContent =
-        `${snap.count.toLocaleString()}종목 · ${fmtRelativeTime(snap.generatedAt)}`;
-      $('snapshot-info').title = '생성 시각: ' + snap.generatedAt;
+      STATE.snapshotMeta = snap;
+      refreshFreshnessInfo();
       setStatus('', `일일 스냅샷 ${snap.count.toLocaleString()}종목 로드 완료 (${fmtRelativeTime(snap.generatedAt)})`);
       render();
     } else {
