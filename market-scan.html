@@ -271,6 +271,16 @@
         <a href="us-market.html">미국 스캐너</a>
         <span class="sep">/</span>
         <a href="research.html">리서치</a>
+        <span class="sep">/</span>
+        <a href="news.html">뉴스</a>
+        <span class="sep">/</span>
+        <a href="post-ipo.html">Post-IPO</a>
+        <span class="sep">/</span>
+        <a href="ipo-calendar.html">IPO 캘린더</a>
+        <span class="sep">/</span>
+        <a href="mezzanine.html">메자닌</a>
+        <span class="sep">/</span>
+        <a href="alarm.html" target="_blank" rel="noopener">⏰ 알람</a>
       </div>
     </div>
     <div class="topnav-right">
@@ -322,7 +332,6 @@
       <option value="9999">전체</option>
     </select>
     <div class="toolbar-divider"></div>
-    <button class="btn" id="toggle-flow" title="외국인/기관/개인 순매수 데이터를 추가로 가져옵니다">+ 수급 데이터</button>
     <button class="btn" id="toggle-rs" title="섹터·시장 평균 대비 1M 상대강도 컬럼 추가">+ 상대강도</button>
     <button class="btn primary" id="scan-btn">스캔 시작</button>
     <button class="btn warn" id="stop-btn" style="display:none;">중지</button>
@@ -456,7 +465,7 @@ const STATE = {
   etfCategory: '',
   query: '',
   showLimit: 100,
-  withFlow: false,
+  withFlow: true,
   withRS: false,
   preset: '',
   sortKey: 'r1d',
@@ -1738,13 +1747,6 @@ function init() {
       // Default direction: text asc, numbers desc
       STATE.sortDir = (k === 'name' || k === 'sector') ? 'asc' : 'desc';
     }
-    render();
-  });
-
-  $('toggle-flow').addEventListener('click', () => {
-    STATE.withFlow = !STATE.withFlow;
-    $('toggle-flow').classList.toggle('primary', STATE.withFlow);
-    $('toggle-flow').textContent = STATE.withFlow ? '✓ 수급 데이터' : '+ 수급 데이터';
     render();
   });
 
