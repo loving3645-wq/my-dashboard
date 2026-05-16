@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<meta name="theme-color" content="#fafaf7" />
+<meta name="theme-color" content="#faf8f3" />
 <title>국내 시장 스캐너 · 지니의 리서치</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,26 +17,28 @@
 
 <style>
   :root {
-    --bg: #fafaf7;
-    --bg-warm: #f4f1ea;
+    --bg: #faf8f3;
+    --bg-warm: #f1ece1;
     --surface: #ffffff;
-    --surface-2: #f7f5f0;
-    --ink: #1a1a1a;
-    --ink-mid: #555;
-    --ink-soft: #8a8580;
+    --surface-2: #f6f3ec;
+    --ink: #15161a;
+    --ink-mid: #4a4a52;
+    --ink-soft: #807a72;
     --ink-faint: #b8b3ad;
-    --line: #e8e4dc;
-    --line-strong: #d4cfc4;
-    --accent: #b8421f;
-    --accent-bg: #fbeae3;
-    --gold: #b8923f;
-    --gold-bg: #f7eecf;
-    --green: #4a7c4e;
-    --green-bg: #e0ebd9;
-    --red: #c43e3e;
-    --red-bg: #fbe4e4;
-    --blue: #3a5e7e;
-    --blue-bg: #dde6ee;
+    --line: #e6e1d6;
+    --line-strong: #cdc7b8;
+    --accent: #d23a0f;
+    --accent-bg: #fde0d2;
+    --gold: #b07410;
+    --gold-bg: #fbe9b8;
+    --green: #16924a;
+    --green-bg: #ccecd4;
+    --red: #e02e2e;
+    --red-bg: #fbd6d6;
+    --blue: #1f6fcc;
+    --blue-bg: #d2e2f6;
+    --purple: #7a3fc2;
+    --purple-bg: #e7dcf6;
     --serif: 'Fraunces', 'Nanum Myeongjo', serif;
     --sans: 'Pretendard', -apple-system, sans-serif;
     --mono: 'JetBrains Mono', ui-monospace, monospace;
@@ -47,8 +49,9 @@
   body {
     min-height: 100vh;
     background:
-      radial-gradient(ellipse 70% 40% at 100% 0%, rgba(184,66,31,0.04), transparent),
-      radial-gradient(ellipse 60% 50% at 0% 100%, rgba(184,146,63,0.03), transparent),
+      radial-gradient(ellipse 70% 40% at 100% 0%, rgba(210,58,15,0.08), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 0% 100%, rgba(31,111,204,0.06), transparent 60%),
+      radial-gradient(ellipse 50% 40% at 50% 100%, rgba(176,116,16,0.05), transparent 60%),
       var(--bg);
     background-attachment: fixed;
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
@@ -109,7 +112,7 @@
   .progress-track { flex: 1; min-width: 180px; height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; position: relative; }
   .progress-bar { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, var(--accent), var(--gold)); transition: width 0.2s; }
   .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-faint); }
-  .dot.live { background: var(--green); box-shadow: 0 0 6px rgba(74,124,78,0.5); animation: pulse 1.6s infinite; }
+  .dot.live { background: var(--green); box-shadow: 0 0 8px rgba(22,146,74,0.6); animation: pulse 1.6s infinite; }
   .dot.error { background: var(--red); }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
