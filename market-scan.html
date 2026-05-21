@@ -356,6 +356,7 @@
     <button class="preset-chip" data-preset="rebound" title="1Y ≤ -20% AND 1M ≥ +8% AND 1W ≥ +2% AND 거래량 ≥ 20D 평균 × 1.5 — 매집형 턴어라운드">🔄 반등 후보</button>
     <button class="preset-chip" data-preset="pullback" title="6M 시장 평균 대비 +15%p 이상 outperform AND 1M -5~-20% 조정 AND 1Y ≥ 시장 평균 — 시장보다 잘 갔던 종목의 건강한 조정">📊 조정 매수</button>
     <button class="preset-chip" data-preset="volume" title="오늘 거래량이 20일 평균 대비 2배 이상 — 이벤트 발생 의심">🔥 거래량 폭발</button>
+    <button class="preset-chip" data-preset="topvalue" title="오늘 거래대금(현재가 × 거래량) 상위 — 시장의 돈이 몰린 종목">💰 거래대금 상위</button>
     <button class="preset-chip" data-preset="smartmoney" title="외국인 + 기관 모두 5D 누적 순매수">🐋 스마트머니</button>
     <button class="preset-chip" data-preset="laggard" title="해당 테마 평균 대비 1M 수익률이 5%↓ 낮은 종목 — 따라잡기 후보">🐢 테마 낙오자</button>
     <button class="preset-chip" data-preset="distrib" title="외국인 매도 + 개인 매수 — '개미 잡힌' 종목, 약세 신호">⚠️ 분배(약세)</button>
@@ -368,6 +369,7 @@
   <!-- ============ HOT LIST PANEL ============ -->
   <div class="hot-panel" id="hot-panel">
     <div class="hot-card"><div class="hot-title clickable" data-hot-preset="volume" title="클릭하면 모두 보기"><span>🔥 거래량 폭발 <span class="pill">vs 20D 평균</span></span><span class="more">전체 보기 →</span></div><div class="hot-list" id="hot-volume"></div></div>
+    <div class="hot-card"><div class="hot-title clickable" data-hot-preset="topvalue" title="클릭하면 모두 보기"><span>💰 거래대금 Top <span class="pill">금일</span></span><span class="more">전체 보기 →</span></div><div class="hot-list" id="hot-value"></div></div>
     <div class="hot-card"><div class="hot-title clickable" data-hot-preset="foreign5d" title="클릭하면 모두 보기"><span>🐋 외국인 5D 매수 Top <span class="pill">금일 기준</span></span><span class="more">전체 보기 →</span></div><div class="hot-list" id="hot-foreign"></div></div>
     <div class="hot-card"><div class="hot-title clickable" data-hot-preset="topgain" title="클릭하면 모두 보기"><span>📈 1D 상승 Top <span class="pill">필터 적용</span></span><span class="more">전체 보기 →</span></div><div class="hot-list" id="hot-gain"></div></div>
     <div class="hot-card"><div class="hot-title clickable" data-hot-preset="toploss" title="클릭하면 모두 보기"><span>📉 1D 하락 Top <span class="pill">필터 적용</span></span><span class="more">전체 보기 →</span></div><div class="hot-list" id="hot-loss"></div></div>
@@ -962,6 +964,77 @@ async function scanAll() {
   refreshCacheInfo();
 }
 
+/* ---- Quick live refresh (Phase 1 only) ----
+ * Snapshot JSON is regenerated weekday 18:00 KST. If a user opens this page
+ * during the next trading day, the snapshot's r1d/price reflect *yesterday's*
+ * close — so today's intraday move is invisible until they click 스캔 시작.
+ * This helper auto-fetches Naver's bulk realtime quote for ALL tickers (not
+ * just current filter) so the table's price/1D/거래량 columns reflect live
+ * intraday prices on page open. History (Phase 2) is skipped — the daily
+ * snapshot's spark/r1w/r1m/etc. are still good. */
+async function quickLiveRefresh() {
+  if (STATE.scanning) return;
+  STATE.scanning = true;
+  STATE.abortFlag = false;
+  setStatus('live', '실시간 시세 자동 갱신 중…');
+  const BULK_CHUNK = 40;
+  const BULK_CONCURRENCY = 4;
+  const targets = ALL_CODES.slice();
+  const chunks = [];
+  for (let i = 0; i < targets.length; i += BULK_CHUNK) {
+    chunks.push(targets.slice(i, i + BULK_CHUNK));
+  }
+  let done = 0, errors = 0;
+  $('progress-text').textContent = `0 / ${chunks.length} 묶음`;
+  $('progress-bar').style.width = '0%';
+  const queue = chunks.slice();
+  async function worker() {
+    while (queue.length && !STATE.abortFlag) {
+      const chunk = queue.shift();
+      try {
+        const bulk = await fetchBulkQuotes(chunk);
+        const now = Date.now();
+        for (const c of chunk) {
+          const q = bulk[c];
+          if (!q) continue;
+          const existing = STATE.data[c] || {};
+          STATE.data[c] = {
+            ...existing,
+            code: c,
+            price: isFinite(q.price) ? q.price : existing.price,
+            r1d: isFinite(q.r1d) ? q.r1d : existing.r1d,
+            volume: isFinite(q.volume) ? q.volume : existing.volume,
+            quoteAt: now,
+          };
+        }
+      } catch (e) { errors++; console.warn('[quickRefresh]', e.message); }
+      done++;
+      $('progress-text').textContent = `실시간 시세 ${done} / ${chunks.length} 묶음`;
+      $('progress-bar').style.width = (done / chunks.length * 100) + '%';
+      if (done % 4 === 0) render();
+    }
+  }
+  await Promise.all(Array.from({ length: BULK_CONCURRENCY }, () => worker()));
+  STATE.scanning = false;
+  STATE.lastScanAt = Date.now();
+  setStatus(errors ? 'error' : '', errors ? `실시간 갱신 완료 (${errors}묶음 실패)` : '실시간 시세 반영됨');
+  refreshFreshnessInfo();
+  render();
+}
+
+/* 스냅샷이 한국 시간 기준 '오늘 자정' 이전에 만들어졌는지 검사.
+ * 평일에만 의미가 있고, true 면 오늘의 인트라데이 시세를 못 담은 상태. */
+function isSnapshotStaleForToday(generatedAt) {
+  const t = Date.parse(generatedAt);
+  if (!isFinite(t)) return false;
+  const kstNow = Date.now() + 9 * 3600 * 1000;
+  const kstTodayMidnight = Math.floor(kstNow / 86400000) * 86400000;
+  const todayMidnightUtcMs = kstTodayMidnight - 9 * 3600 * 1000;
+  const kstDow = new Date(kstTodayMidnight).getUTCDay(); // 0=Sun, 6=Sat
+  if (kstDow === 0 || kstDow === 6) return false; // 주말에는 자동 갱신 의미 없음
+  return t < todayMidnightUtcMs;
+}
+
 function updateProgress(done, total, startedAt) {
   let txt = `2단계 히스토리 ${done} / ${total}`;
   if (startedAt && done > 0 && done < total) {
@@ -1000,6 +1073,14 @@ function fmtVol(v) {
   if (v >= 1e8) return (v / 1e8).toFixed(2) + '억';
   if (v >= 1e4) return (v / 1e4).toFixed(0) + '만';
   return v.toLocaleString();
+}
+// KRW amount (거래대금 등) — 조/억 단위로 압축. fmtVol와 동일 버킷이지만 의미를 분리.
+function fmtKrw(v) {
+  if (!isFinite(v) || v <= 0) return '—';
+  if (v >= 1e12) return (v / 1e12).toFixed(2) + '조';
+  if (v >= 1e8) return (v / 1e8).toFixed(1) + '억';
+  if (v >= 1e4) return (v / 1e4).toFixed(0) + '만';
+  return Math.round(v).toLocaleString();
 }
 // Market cap is stored in 억원 (units of 100M KRW). 1조 = 10,000억.
 function fmtMcap(v) {
@@ -1130,6 +1211,10 @@ function passesPreset(d, code) {
   if (p === 'volume') {
     return isFinite(d.volume) && isFinite(d.avgVol20) && d.avgVol20 > 0 && (d.volume / d.avgVol20) >= 2;
   }
+  if (p === 'topvalue') {
+    // 거래대금이 잡힌 종목 전체. 정렬은 거래대금 desc로 자동 적용됨.
+    return isFinite(d.price) && d.price > 0 && isFinite(d.volume) && d.volume > 0;
+  }
   if (p === 'smartmoney') {
     return d.flow && d.flow.foreign5d > 0 && d.flow.organ5d > 0;
   }
@@ -1195,6 +1280,10 @@ function getFilteredSorted() {
     else if (k === 'volratio') {
       va = da && da.avgVol20 > 0 ? da.volume / da.avgVol20 : undefined;
       vb = db && db.avgVol20 > 0 ? db.volume / db.avgVol20 : undefined;
+    }
+    else if (k === 'tradingValue') {
+      va = da && isFinite(da.price) && isFinite(da.volume) ? da.price * da.volume : undefined;
+      vb = db && isFinite(db.price) && isFinite(db.volume) ? db.price * db.volume : undefined;
     }
     else if (k === 'foreign5d' || k === 'organ5d' || k === 'individual5d') {
       va = da?.flow?.[k]; vb = db?.flow?.[k];
@@ -1408,6 +1497,13 @@ function renderHotPanel() {
     .sort((a, b) => b.ratio - a.ratio)
     .slice(0, 5);
 
+  // Trading value (거래대금) = price × volume — "돈이 몰린" 종목
+  const topValue = all
+    .filter(x => isFinite(x.d.price) && x.d.price > 0 && isFinite(x.d.volume) && x.d.volume > 0)
+    .map(x => ({ ...x, val: x.d.price * x.d.volume }))
+    .sort((a, b) => b.val - a.val)
+    .slice(0, 5);
+
   // Foreign 5D net buy (positive only)
   const foreignBuy = all
     .filter(x => x.d.flow && isFinite(x.d.flow.foreign5d))
@@ -1435,6 +1531,10 @@ function renderHotPanel() {
   $('hot-volume').innerHTML = renderList(volSpike, x => ({
     txt: '×' + x.ratio.toFixed(1),
     cls: x.ratio >= 3 ? 'up' : '',
+  }));
+  $('hot-value').innerHTML = renderList(topValue, x => ({
+    txt: fmtKrw(x.val) + '원',
+    cls: '',
   }));
   $('hot-foreign').innerHTML = foreignBuy.length && foreignBuy[0].d.flow.foreign5d > 0
     ? renderList(foreignBuy, x => {
@@ -1761,10 +1861,11 @@ function init() {
   // Default sort per preset so activating one immediately ranks the table
   // by the most relevant column (e.g. 외국인 5D 순매수 → foreign5d desc).
   const PRESET_DEFAULT_SORT = {
-    volume:    { key: 'volratio',  dir: 'desc' },
-    foreign5d: { key: 'foreign5d', dir: 'desc' },
-    topgain:   { key: 'r1d',       dir: 'desc' },
-    toploss:   { key: 'r1d',       dir: 'asc'  },
+    volume:    { key: 'volratio',     dir: 'desc' },
+    topvalue:  { key: 'tradingValue', dir: 'desc' },
+    foreign5d: { key: 'foreign5d',    dir: 'desc' },
+    topgain:   { key: 'r1d',          dir: 'desc' },
+    toploss:   { key: 'r1d',          dir: 'asc'  },
   };
   function applyPreset(p, { scrollToTable = false } = {}) {
     STATE.preset = STATE.preset === p ? '' : p;
@@ -1825,6 +1926,11 @@ function init() {
       refreshFreshnessInfo();
       setStatus('', `일일 스냅샷 ${snap.count.toLocaleString()}종목 로드 완료 (${fmtRelativeTime(snap.generatedAt)})`);
       render();
+      // 스냅샷이 오늘(KST) 자정 이전 — 즉 오늘 장중 시세를 못 담음 — 이면 자동으로
+      // 실시간 시세만 1단계 갱신해서 price/1D/거래량 컬럼이 오늘을 반영하게 한다.
+      if (isSnapshotStaleForToday(snap.generatedAt)) {
+        quickLiveRefresh();
+      }
     } else {
       $('snapshot-info').textContent = '없음';
       if (cachedCount === 0) {
