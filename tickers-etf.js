@@ -230,7 +230,7 @@ window.TICKER_ETF_REGISTRY = {
   '0184E0': { name: '1Q 200채권혼합50액티브', mkt: 'ETF', sector: '기타' },
   '0184L0': { name: 'PLUS 중기종합채권(A-이상)액티브', mkt: 'ETF', sector: '채권' },
   '0184N0': { name: 'PLUS 은채권혼합', mkt: 'ETF', sector: '기타' },
-  '0184V0': { name: 'UNICORN 코스닥바이오액티브', mkt: 'ETF', sector: '국내테마' },
+  '0184V0': { name: 'UNICORN K바이오액티브', mkt: 'ETF', sector: '국내테마' },
   '0185L0': { name: 'TIME 글로벌휴머노이드로봇산업액티브', mkt: 'ETF', sector: '해외주식' },
   '0186L0': { name: 'KoAct 미국로봇피지컬AI액티브', mkt: 'ETF', sector: '해외주식' },
   '0186S0': { name: '1Q 코스닥150채권혼합50액티브', mkt: 'ETF', sector: '기타' },
