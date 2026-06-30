@@ -540,7 +540,7 @@ window.TICKER_ETF_REGISTRY = {
   '281990': { name: 'RISE 중소형고배당', mkt: 'ETF', sector: '국내테마' },
   '282000': { name: 'RISE 국고채3년선물인버스', mkt: 'ETF', sector: '파생/레버리지' },
   '283580': { name: 'KODEX 차이나CSI300', mkt: 'ETF', sector: '해외주식' },
-  '284430': { name: 'KODEX 200미국채혼합', mkt: 'ETF', sector: '채권' },
+  '284430': { name: 'KODEX 200미국채혼합50', mkt: 'ETF', sector: '채권' },
   '284980': { name: 'RISE 200금융', mkt: 'ETF', sector: '국내테마' },
   '285690': { name: 'FOCUS ESG리더스', mkt: 'ETF', sector: '국내테마' },
   '287180': { name: 'PLUS 미국나스닥테크', mkt: 'ETF', sector: '해외주식' },
