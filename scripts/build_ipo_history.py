@@ -40,6 +40,12 @@ NAVER_HISTORY = (
     "?symbol={code}&requestType=1&startTime={start}&endTime={end}&timeframe=day"
 )
 
+# 종목명 → 종목코드 자동완성. 38.co.kr 상세페이지가 종목코드를 안 주거나(신규 상장
+# 직후 미갱신·503 봇차단) tickers-full.js 마스터에도 없는 신규 상장 종목의 코드를
+# 이름으로 직접 해석한다. 반환 code는 siseJson symbol로 그대로 사용 가능
+# (신규 상장 종목은 '0039P0' 같은 영숫자 임시코드가 오지만 siseJson이 이를 받는다).
+NAVER_AC = "https://ac.stock.naver.com/ac"
+
 START_DATE = "2016-01-01"
 DETAIL_WORKERS = 12
 PRICE_WORKERS = 16
@@ -178,6 +184,32 @@ def load_ticker_master():
 def normalize_name(name):
     """'채비(구.대영채비)' → '채비'. KRX 마스터 매칭용."""
     return re.sub(r"\s*\(구\.[^)]+\)\s*$", "", name or "").strip()
+
+
+def naver_ticker_by_name(session, name):
+    """종목명으로 Naver 자동완성을 조회해 (code, market)을 돌려준다. 정확히
+    일치하는 국내 주식(KOSPI/KOSDAQ) 항목만 채택하고, 없으면 None."""
+    clean = normalize_name(name)
+    if not clean:
+        return None
+    try:
+        r = session.get(
+            NAVER_AC,
+            params={"q": clean, "target": "stock"},
+            timeout=15,
+        )
+        if r.status_code != 200:
+            return None
+        items = r.json().get("items", [])
+    except Exception:
+        return None
+    for it in items:
+        code = (it.get("code") or "").strip()
+        cand = (it.get("name") or "").strip()
+        mkt = (it.get("typeCode") or "").strip().upper()
+        if code and cand == clean and mkt in ("KOSPI", "KOSDAQ"):
+            return code, mkt
+    return None
 
 
 def fetch_detail(session, detail_no):
@@ -336,6 +368,15 @@ def main():
                 if not market:
                     market = master_mkt
                 fallback_hits[0] += 1
+            else:
+                # 3차 폴백 — Naver 자동완성으로 신규 상장 종목 코드 해석.
+                # 정적 master(tickers-full.js)에 아직 없는 최신 상장이 여기서 잡힌다.
+                ac = naver_ticker_by_name(sess, ipo["name"])
+                if ac:
+                    ticker, ac_mkt = ac
+                    if not market:
+                        market = ac_mkt
+                    fallback_hits[0] += 1
         if ticker:
             ipo["ticker"] = ticker
         if market:
