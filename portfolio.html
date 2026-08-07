@@ -231,7 +231,7 @@
 
     <div class="section">
       <h2>보유 <em>종목</em></h2>
-      <div class="desc">상장/비상장 구분 표시 · 동일 종목은 펀드 합산(가중평균 단가) · 종목 클릭 → 딥다이브</div>
+      <div class="desc">상장 주식만 (비상장 제외) · 동일 종목은 펀드 합산(가중평균 단가) · 종목 클릭 → 딥다이브</div>
       <div style="overflow-x:auto;">
         <table class="tbl">
           <thead>
@@ -563,6 +563,7 @@ function stockRowsForFilter() {
   const map = {};
   for (const f of sel) for (const p of (f.positions||[])) {
     if ((p.assetType||'')!=='stock') continue;
+    if (p.unlisted) continue;  // 비상장 주식은 주식 포트폴리오에서 제외 (펀드 명세 탭에는 유지)
     const n = normalizePosition(p);
     const key = n.ticker || n.code;
     if (!map[key]) map[key] = { code:n.code, ticker:n.ticker, name:n.name, mkt:n.mkt, unlisted:n.unlisted,
