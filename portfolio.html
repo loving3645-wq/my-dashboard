@@ -54,11 +54,24 @@
   .page-head h1 em { font-style: italic; color: var(--accent); font-weight: 500; }
   .page-head .sub { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); letter-spacing: 0.1em; margin-top: 6px; text-transform: uppercase; }
 
+  /* 탭 */
+  .tabs { display: flex; gap: 6px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
+  .tab { padding: 10px 18px; font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: 0.04em; color: var(--ink-soft); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab:hover { color: var(--accent); }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* 툴바 */
+  .toolbar-mini { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+  .tlabel { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.12em; text-transform: uppercase; }
+  .select { padding: 6px 12px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 5px; font-size: 12px; font-family: var(--mono); color: var(--ink-mid); cursor: pointer; }
+
   /* KPI 요약 카드 */
   .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 18px; }
   .kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
   .kpi .lbl { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
-  .kpi .val { font-family: var(--mono); font-weight: 500; font-size: 24px; letter-spacing: -0.01em; }
+  .kpi .val { font-family: var(--mono); font-weight: 500; font-size: 23px; letter-spacing: -0.01em; }
   .kpi .val small { font-size: 13px; color: var(--ink-faint); font-weight: 400; }
   .kpi .sub2 { font-family: var(--mono); font-size: 11px; margin-top: 6px; color: var(--ink-soft); }
   .up { color: var(--green); }
@@ -70,10 +83,16 @@
   .section h2 em { font-style: italic; color: var(--accent); font-weight: 500; }
   .section .desc { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 14px; }
 
+  /* 펀드 헤더 */
+  .fund-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+  .fund-head .nm { font-family: var(--serif); font-weight: 500; font-size: 18px; }
+  .fund-head .aum { font-family: var(--mono); font-size: 13px; }
+  .fund-head .aum b { font-weight: 600; }
+
   /* 비중 바 */
-  .alloc-bar { display: flex; width: 100%; height: 22px; border-radius: 5px; overflow: hidden; border: 1px solid var(--line); margin-bottom: 10px; }
+  .alloc-bar { display: flex; width: 100%; height: 20px; border-radius: 5px; overflow: hidden; border: 1px solid var(--line); margin: 12px 0 10px; }
   .alloc-bar .seg { height: 100%; }
-  .alloc-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-family: var(--mono); font-size: 11px; }
+  .alloc-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-family: var(--mono); font-size: 11px; margin-bottom: 6px; }
   .alloc-legend .item { display: flex; align-items: center; gap: 6px; }
   .alloc-legend .swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
 
@@ -81,21 +100,23 @@
   .tbl thead { background: var(--surface-2); }
   .tbl th { text-align: right; padding: 9px 10px; font-family: var(--mono); font-weight: 500; font-size: 10px; color: var(--ink-soft); letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 1px solid var(--line); white-space: nowrap; }
   .tbl th.left { text-align: left; }
-  .tbl tbody tr { border-bottom: 1px solid var(--line); transition: background 0.1s; cursor: pointer; }
+  .tbl tbody tr { border-bottom: 1px solid var(--line); transition: background 0.1s; }
+  .tbl tbody tr.clickable { cursor: pointer; }
   .tbl tbody tr:hover { background: var(--bg-warm); }
   .tbl td { padding: 10px; text-align: right; font-family: var(--mono); font-size: 12.5px; color: var(--ink); white-space: nowrap; }
   .tbl td.left { text-align: left; }
   .tbl tfoot td { padding: 11px 10px; text-align: right; font-family: var(--mono); font-weight: 600; font-size: 12.5px; border-top: 2px solid var(--ink); }
   .tbl tfoot td.left { text-align: left; }
 
-  .name-cell { display: flex; align-items: center; gap: 8px; min-width: 160px; }
+  .name-cell { display: flex; align-items: center; gap: 8px; min-width: 150px; }
   .name-cell .dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
   .name-cell .code { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); }
   .name-cell .nm { font-family: var(--sans); font-size: 13px; font-weight: 500; }
+  .type-pill { font-family: var(--mono); font-size: 9px; padding: 2px 6px; border-radius: 3px; letter-spacing: 0.06em; white-space: nowrap; }
   .mkt-pill { font-family: var(--mono); font-size: 9px; padding: 2px 5px; border-radius: 2px; letter-spacing: 0.08em; }
   .mkt-pill.kospi { background: var(--blue-bg); color: var(--blue); }
   .mkt-pill.kosdaq { background: var(--gold-bg); color: var(--gold); }
-  .weight-cell { position: relative; }
+  .fund-tag { font-family: var(--mono); font-size: 9px; color: var(--ink-soft); background: var(--bg-warm); padding: 2px 6px; border-radius: 3px; }
   .weight-cell .barwrap { display: inline-block; width: 46px; height: 6px; background: var(--bg-warm); border-radius: 3px; margin-left: 8px; vertical-align: middle; overflow: hidden; }
   .weight-cell .barwrap i { display: block; height: 100%; background: var(--accent); }
 
@@ -106,7 +127,7 @@
     .app { padding: 18px 14px 60px; }
     .tbl th, .tbl td { padding: 7px 6px; font-size: 11.5px; }
     .section { padding: 14px 14px; }
-    .kpi .val { font-size: 20px; }
+    .kpi .val { font-size: 19px; }
     .hide-sm { display: none; }
   }
 </style>
@@ -128,53 +149,89 @@
 
   <div class="page-head">
     <h1>내 <em>포트폴리오</em></h1>
-    <div class="sub">보유 현황 · 평가손익 · 일간 수익 — 매일 자동 시세 반영</div>
+    <div class="sub">펀드 명세 · 주식 포트폴리오 — 주식은 매일 자동 시세 반영</div>
   </div>
 
-  <!-- KPI 요약 -->
-  <div class="kpi-grid" id="kpi-grid">
-    <div class="kpi"><div class="lbl">총 평가금액</div><div class="val" id="kpi-total">—</div><div class="sub2" id="kpi-total-sub">불러오는 중…</div></div>
-    <div class="kpi"><div class="lbl">평가손익</div><div class="val" id="kpi-pnl">—</div><div class="sub2" id="kpi-pnl-sub">&nbsp;</div></div>
-    <div class="kpi"><div class="lbl">일간 손익</div><div class="val" id="kpi-day">—</div><div class="sub2" id="kpi-day-sub">전일 종가 대비</div></div>
-    <div class="kpi"><div class="lbl">매입금액</div><div class="val" id="kpi-cost">—</div><div class="sub2" id="kpi-cash-sub">&nbsp;</div></div>
+  <div class="tabs">
+    <button class="tab active" data-view="funds">펀드 명세</button>
+    <button class="tab" data-view="stocks">주식 포트폴리오</button>
   </div>
 
-  <!-- 비중 -->
-  <div class="section">
-    <h2>자산 <em>비중</em></h2>
-    <div class="desc">현금 포함 · 평가금액 기준</div>
-    <div class="alloc-bar" id="alloc-bar"></div>
-    <div class="alloc-legend" id="alloc-legend"></div>
+  <!-- ============ 탭 1 : 펀드 명세 ============ -->
+  <div class="view active" id="view-funds">
+
+    <div class="kpi-grid">
+      <div class="kpi"><div class="lbl">총 순자산 (AUM)</div><div class="val" id="f-aum">—</div><div class="sub2" id="f-aum-sub">불러오는 중…</div></div>
+      <div class="kpi"><div class="lbl">펀드 수</div><div class="val" id="f-count">—</div><div class="sub2" id="f-count-sub">&nbsp;</div></div>
+      <div class="kpi"><div class="lbl">주식 평가액</div><div class="val" id="f-stock">—</div><div class="sub2" id="f-stock-sub">전체 대비</div></div>
+      <div class="kpi"><div class="lbl">주식 평가손익</div><div class="val" id="f-pnl">—</div><div class="sub2" id="f-pnl-sub">&nbsp;</div></div>
+    </div>
+
+    <div class="section">
+      <h2>전체 <em>자산 배분</em></h2>
+      <div class="desc">모든 펀드 합산 · 자산 종류별 평가금액 기준</div>
+      <div class="alloc-bar" id="f-alloc-bar"></div>
+      <div class="alloc-legend" id="f-alloc-legend"></div>
+    </div>
+
+    <div class="toolbar-mini">
+      <span class="tlabel">펀드</span>
+      <select class="select" id="f-fund-filter"><option value="all">전체 펀드</option></select>
+    </div>
+
+    <div id="funds-container"></div>
   </div>
 
-  <!-- 보유 종목 -->
-  <div class="section">
-    <h2>보유 <em>종목</em></h2>
-    <div class="desc">종목 클릭 → 딥다이브 · 현재가는 data/market-snapshot.json에서 자동 매칭</div>
-    <div style="overflow-x:auto;">
-      <table class="tbl">
-        <thead>
-          <tr>
-            <th class="left">종목</th>
-            <th class="hide-sm">수량</th>
-            <th class="hide-sm">평균단가</th>
-            <th>현재가</th>
-            <th class="hide-sm">일간</th>
-            <th>평가금액</th>
-            <th>평가손익</th>
-            <th>수익률</th>
-            <th>비중</th>
-          </tr>
-        </thead>
-        <tbody id="holdings-body"><tr><td colspan="9" class="empty-state">불러오는 중…</td></tr></tbody>
-        <tfoot id="holdings-foot"></tfoot>
-      </table>
+  <!-- ============ 탭 2 : 주식 포트폴리오 ============ -->
+  <div class="view" id="view-stocks">
+
+    <div class="toolbar-mini">
+      <span class="tlabel">펀드</span>
+      <select class="select" id="s-fund-filter"><option value="all">전체 펀드 합산</option></select>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi"><div class="lbl">주식 평가금액</div><div class="val" id="s-total">—</div><div class="sub2" id="s-total-sub">불러오는 중…</div></div>
+      <div class="kpi"><div class="lbl">평가손익</div><div class="val" id="s-pnl">—</div><div class="sub2" id="s-pnl-sub">&nbsp;</div></div>
+      <div class="kpi"><div class="lbl">일간 손익</div><div class="val" id="s-day">—</div><div class="sub2" id="s-day-sub">전일 종가 대비</div></div>
+      <div class="kpi"><div class="lbl">매입금액</div><div class="val" id="s-cost">—</div><div class="sub2" id="s-cost-sub">&nbsp;</div></div>
+    </div>
+
+    <div class="section">
+      <h2>종목 <em>비중</em></h2>
+      <div class="desc">주식 평가금액 기준 (현금·기타 자산 제외)</div>
+      <div class="alloc-bar" id="s-alloc-bar"></div>
+      <div class="alloc-legend" id="s-alloc-legend"></div>
+    </div>
+
+    <div class="section">
+      <h2>보유 <em>종목</em></h2>
+      <div class="desc">동일 종목은 펀드 합산(가중평균 단가) · 종목 클릭 → 딥다이브</div>
+      <div style="overflow-x:auto;">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th class="left">종목</th>
+              <th class="hide-sm">수량</th>
+              <th class="hide-sm">평균단가</th>
+              <th>현재가</th>
+              <th class="hide-sm">일간</th>
+              <th>평가금액</th>
+              <th>평가손익</th>
+              <th>수익률</th>
+              <th>비중</th>
+            </tr>
+          </thead>
+          <tbody id="s-body"><tr><td colspan="9" class="empty-state">불러오는 중…</td></tr></tbody>
+          <tfoot id="s-foot"></tfoot>
+        </table>
+      </div>
     </div>
   </div>
 
   <div class="footer-info">
-    <span>보유 데이터: <code>data/portfolio.json</code> (직접 편집)</span>
-    <span>시세: <code>data/market-snapshot.json</code> · 매일 자동 갱신</span>
+    <span>보유 데이터: <code>data/portfolio.json</code> (펀드별 명세, 직접 편집)</span>
+    <span>주식 시세: <code>data/market-snapshot.json</code> · 매일 자동 갱신</span>
     <span id="foot-updated">—</span>
   </div>
 </div>
@@ -183,10 +240,20 @@
 <script>
 const $ = id => document.getElementById(id);
 
-// 비중 바 색상 팔레트
 const PALETTE = ['#b8421f','#2e527a','#b8923f','#2f6b35','#5e3e7c','#c06a3a','#3a7ca5','#8a6d3b','#4a7a4a','#7a5a8a','#a0522d','#556b8d'];
 
-const STATE = { portfolio: null, snapshot: null };
+// 자산 종류 메타
+const ASSET_TYPES = {
+  stock:     { label: '주식',     color: '#b8421f' },
+  mezzanine: { label: '메자닌',   color: '#5e3e7c' },
+  bond:      { label: '채권',     color: '#2e527a' },
+  fund:      { label: '펀드',     color: '#2f6b35' },
+  cash:      { label: '현금성',   color: '#b8b3a8' },
+  other:     { label: '기타',     color: '#8a6d3b' },
+};
+const typeMeta = t => ASSET_TYPES[t] || ASSET_TYPES.other;
+
+const STATE = { data: null, snapshot: null, fFund: 'all', sFund: 'all' };
 
 async function loadJSON(path) {
   const r = await fetch(path + '?t=' + Date.now(), { cache: 'no-store' });
@@ -199,166 +266,268 @@ async function loadAll() {
     loadJSON('data/portfolio.json'),
     loadJSON('data/market-snapshot.json'),
   ]);
-  STATE.portfolio = pf.status === 'fulfilled' ? pf.value : null;
-  STATE.snapshot  = snap.status === 'fulfilled' ? snap.value : null;
-  render();
+  STATE.data = pf.status === 'fulfilled' ? pf.value : null;
+  STATE.snapshot = snap.status === 'fulfilled' ? snap.value : null;
+  initFilters();
+  renderFundsView();
+  renderStocksView();
+  renderFooter();
 }
 
+// ── 포맷터
 const fmtWon = v => Number.isFinite(v) ? Math.round(v).toLocaleString('ko-KR') : '—';
-const fmtSignWon = v => {
-  if (!Number.isFinite(v)) return '—';
-  const s = v > 0 ? '+' : v < 0 ? '−' : '';
-  return s + Math.abs(Math.round(v)).toLocaleString('ko-KR');
-};
-const fmtPct = v => {
-  if (!Number.isFinite(v)) return '—';
-  const s = v > 0 ? '+' : v < 0 ? '−' : '';
-  return s + Math.abs(v).toFixed(2) + '%';
-};
-const cls = v => v > 0 ? 'up' : v < 0 ? 'down' : 'flat';
-const escapeHtml = s => String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtSignWon = v => { if (!Number.isFinite(v)) return '—'; const s = v>0?'+':v<0?'−':''; return s + Math.abs(Math.round(v)).toLocaleString('ko-KR'); };
+const fmtPct = v => { if (!Number.isFinite(v)) return '—'; const s = v>0?'+':v<0?'−':''; return s + Math.abs(v).toFixed(2) + '%'; };
+// 억 단위 축약 (큰 금액용)
+const fmtEok = v => { if (!Number.isFinite(v)) return '—'; if (Math.abs(v) >= 1e8) return (v/1e8).toFixed(1) + '억'; if (Math.abs(v) >= 1e4) return Math.round(v/1e4).toLocaleString('ko-KR') + '만'; return Math.round(v).toLocaleString('ko-KR'); };
+const cls = v => v>0?'up':v<0?'down':'flat';
+const escapeHtml = s => String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const lookupTicker = code => (window.TICKER_REGISTRY||{})[code] || null;
 
-function lookupTicker(code) {
-  const reg = window.TICKER_REGISTRY || {};
-  return reg[code] || null;
+// 포지션 하나를 정규화: {type, name, code, mkt, qty, avg, price, r1d, cost, value, pnl, ret, dayPnl}
+function normalizePosition(p) {
+  const type = p.assetType || 'other';
+  if (type === 'stock') {
+    const code = String(p.ticker||'').padStart(6,'0');
+    const meta = lookupTicker(code);
+    const t = STATE.snapshot && STATE.snapshot.tickers ? STATE.snapshot.tickers[code] : null;
+    const price = t && Number.isFinite(t.price) ? t.price : null;
+    const r1d = t && Number.isFinite(t.r1d) ? t.r1d : null;
+    const qty = Number(p.qty)||0, avg = Number(p.avgPrice)||0;
+    const cost = qty*avg;
+    const value = price!==null ? qty*price : null;
+    const pnl = value!==null ? value-cost : null;
+    const ret = (value!==null && cost>0) ? pnl/cost*100 : null;
+    let dayPnl = null;
+    if (price!==null && r1d!==null) dayPnl = qty*(price - price/(1+r1d/100));
+    return { type, code, name: p.name || (meta&&meta.name) || code, mkt: meta&&meta.mkt||null,
+             qty, avg, price, r1d, cost, value, pnl, ret, dayPnl, hasPrice: price!==null };
+  }
+  // 비주식 자산: value(평가금액) 기준, cost 선택
+  const value = Number(p.value);
+  const cost = Number.isFinite(p.cost) ? Number(p.cost) : null;
+  const pnl = (Number.isFinite(value) && cost!==null) ? value-cost : null;
+  const ret = (pnl!==null && cost>0) ? pnl/cost*100 : null;
+  return { type, code:null, name: p.name || typeMeta(type).label, mkt:null,
+           qty:null, avg:null, price:null, r1d:null,
+           cost, value: Number.isFinite(value)?value:null, pnl, ret, dayPnl:null, hasPrice:false };
 }
 
-// 종목별 계산
-function computeRows() {
-  const pf = STATE.portfolio;
-  const snap = STATE.snapshot;
-  const tickers = (snap && snap.tickers) || {};
-  const holdings = (pf && pf.holdings) || [];
+function fundsList() { return (STATE.data && STATE.data.funds) || []; }
+function fundValue(fund) { return (fund.positions||[]).reduce((a,p)=>a+(normalizePosition(p).value||0),0); }
 
-  return holdings.map((h, i) => {
-    const code = String(h.ticker || '').padStart(6, '0');
-    const meta = lookupTicker(code);
-    const t = tickers[code];
-    const price = t && Number.isFinite(t.price) ? t.price : null;   // 현재가
-    const r1d = t && Number.isFinite(t.r1d) ? t.r1d : null;         // 전일 대비 %
-    const qty = Number(h.qty) || 0;
-    const avg = Number(h.avgPrice) || 0;
+function initFilters() {
+  const funds = fundsList();
+  const opts = funds.map(f => `<option value="${escapeHtml(f.id)}">${escapeHtml(f.name)}</option>`).join('');
+  $('f-fund-filter').innerHTML = `<option value="all">전체 펀드</option>` + opts;
+  $('s-fund-filter').innerHTML = `<option value="all">전체 펀드 합산</option>` + opts;
+  $('f-fund-filter').value = STATE.fFund;
+  $('s-fund-filter').value = STATE.sFund;
+}
 
-    const cost = qty * avg;                                  // 매입금액
-    const mktValue = price !== null ? qty * price : null;    // 평가금액
-    const pnl = mktValue !== null ? mktValue - cost : null;  // 평가손익
-    const ret = (mktValue !== null && cost > 0) ? (pnl / cost) * 100 : null; // 수익률
-    // 일간 손익: 전일 종가 = price / (1 + r1d/100)
-    let dayPnl = null;
-    if (price !== null && r1d !== null) {
-      const prevClose = price / (1 + r1d / 100);
-      dayPnl = qty * (price - prevClose);
-    }
-    return {
-      code, qty, avg, price, r1d, cost, mktValue, pnl, ret, dayPnl,
-      name: h.name || (meta && meta.name) || code,
-      mkt: meta && meta.mkt ? meta.mkt : null,
-      color: PALETTE[i % PALETTE.length],
-      hasPrice: price !== null,
-    };
+function allocBar(barEl, legendEl, items, denom) {
+  const d = denom>0?denom:1;
+  barEl.innerHTML = items.map(it =>
+    `<div class="seg" style="width:${(it.value/d*100).toFixed(2)}%;background:${it.color};" title="${escapeHtml(it.label)} ${(it.value/d*100).toFixed(1)}%"></div>`
+  ).join('');
+  legendEl.innerHTML = items.map(it =>
+    `<span class="item"><span class="swatch" style="background:${it.color};"></span>${escapeHtml(it.label)} <b>${(it.value/d*100).toFixed(1)}%</b></span>`
+  ).join('');
+}
+
+// ============ 탭 1 : 펀드 명세 ============
+function renderFundsView() {
+  const funds = fundsList();
+  if (!funds.length) { $('funds-container').innerHTML = `<div class="section"><div class="empty-state">펀드 데이터가 없습니다. data/portfolio.json 의 funds 를 채워주세요.</div></div>`; return; }
+
+  // 전체 자산배분 + KPI
+  const byType = {}; let aum=0, stockVal=0, stockPnl=0;
+  for (const f of funds) for (const p of (f.positions||[])) {
+    const n = normalizePosition(p);
+    byType[n.type] = (byType[n.type]||0) + (n.value||0);
+    aum += n.value||0;
+    if (n.type==='stock') { stockVal += n.value||0; stockPnl += n.pnl||0; }
+  }
+  $('f-aum').innerHTML = fmtEok(aum) + ' <small>원</small>';
+  $('f-aum-sub').textContent = `${fmtWon(aum)}원`;
+  $('f-count').innerHTML = funds.length + ' <small>개</small>';
+  $('f-count-sub').textContent = funds.map(f=>f.name).join(' · ');
+  $('f-stock').innerHTML = fmtEok(stockVal) + ' <small>원</small>';
+  $('f-stock-sub').textContent = aum>0 ? `전체의 ${(stockVal/aum*100).toFixed(1)}%` : '—';
+  $('f-pnl').innerHTML = `<span class="${cls(stockPnl)}">${fmtSignWon(stockPnl)}</span> <small>원</small>`;
+  $('f-pnl-sub').textContent = '상장주식 평가손익';
+
+  const typeItems = Object.keys(byType).filter(t=>byType[t]>0)
+    .sort((a,b)=>byType[b]-byType[a])
+    .map(t => ({ label: typeMeta(t).label, value: byType[t], color: typeMeta(t).color }));
+  allocBar($('f-alloc-bar'), $('f-alloc-legend'), typeItems, aum);
+
+  // 펀드별 카드 (필터 적용)
+  const shown = STATE.fFund==='all' ? funds : funds.filter(f=>f.id===STATE.fFund);
+  $('funds-container').innerHTML = shown.map(renderFundCard).join('');
+  $('funds-container').querySelectorAll('tr.clickable').forEach(tr =>
+    tr.addEventListener('click', () => { window.location.href = `stock-deep-dive.html#${tr.dataset.code}`; }));
+}
+
+function renderFundCard(fund) {
+  const rows = (fund.positions||[]).map(normalizePosition)
+    .sort((a,b)=>(b.value||0)-(a.value||0));
+  const total = rows.reduce((a,r)=>a+(r.value||0),0);
+  const cost = rows.reduce((a,r)=>a+(r.cost||0),0);
+  const pnl = rows.reduce((a,r)=> (r.pnl!==null? a+r.pnl : a), 0);
+  const hasPnl = rows.some(r=>r.pnl!==null);
+
+  // 자산배분 바 (펀드 내)
+  const byType = {};
+  for (const r of rows) byType[r.type] = (byType[r.type]||0)+(r.value||0);
+  const typeItems = Object.keys(byType).filter(t=>byType[t]>0).sort((a,b)=>byType[b]-byType[a])
+    .map(t=>({label:typeMeta(t).label, value:byType[t], color:typeMeta(t).color}));
+
+  const body = rows.map(r => {
+    const tm = typeMeta(r.type);
+    const w = total>0 && r.value ? r.value/total*100 : 0;
+    const nameCell = r.type==='stock'
+      ? `<div class="name-cell"><span class="dot" style="background:${tm.color};"></span><span class="code">${r.code}</span><span class="nm">${escapeHtml(r.name)}</span>${r.mkt?`<span class="mkt-pill ${(r.mkt||'').toUpperCase().includes('KOSDAQ')?'kosdaq':'kospi'}">${(r.mkt||'').toUpperCase().includes('KOSDAQ')?'KOSDAQ':'KOSPI'}</span>`:''}</div>`
+      : `<div class="name-cell"><span class="dot" style="background:${tm.color};"></span><span class="nm">${escapeHtml(r.name)}</span></div>`;
+    return `<tr${r.type==='stock'?` class="clickable" data-code="${r.code}"`:''}>
+      <td class="left">${nameCell}</td>
+      <td class="left"><span class="type-pill" style="background:${tm.color}22;color:${tm.color};">${tm.label}</span></td>
+      <td class="hide-sm">${r.type==='stock'?fmtWon(r.qty):'<span class="flat">—</span>'}</td>
+      <td class="hide-sm">${r.type==='stock'?fmtWon(r.avg):'<span class="flat">—</span>'}</td>
+      <td>${fmtWon(r.value)}</td>
+      <td class="${cls(r.pnl)}">${r.pnl!==null?fmtSignWon(r.pnl):'<span class="flat">—</span>'}</td>
+      <td class="${cls(r.ret)}">${r.ret!==null?fmtPct(r.ret):'<span class="flat">—</span>'}</td>
+      <td class="weight-cell">${w.toFixed(1)}%<span class="barwrap"><i style="width:${Math.min(w,100).toFixed(1)}%;"></i></span></td>
+    </tr>`;
+  }).join('');
+
+  return `<div class="section">
+    <div class="fund-head">
+      <span class="nm">${escapeHtml(fund.name)}</span>
+      <span class="aum">평가액 <b>${fmtWon(total)}</b>원 ${hasPnl?`· 손익 <b class="${cls(pnl)}">${fmtSignWon(pnl)}</b>`:''}</span>
+    </div>
+    <div class="alloc-bar">${typeItems.map(it=>`<div class="seg" style="width:${(it.value/(total||1)*100).toFixed(2)}%;background:${it.color};" title="${escapeHtml(it.label)}"></div>`).join('')}</div>
+    <div class="alloc-legend">${typeItems.map(it=>`<span class="item"><span class="swatch" style="background:${it.color};"></span>${escapeHtml(it.label)} <b>${(it.value/(total||1)*100).toFixed(1)}%</b></span>`).join('')}</div>
+    <div style="overflow-x:auto;margin-top:8px;">
+      <table class="tbl">
+        <thead><tr>
+          <th class="left">종목/자산</th><th class="left">종류</th>
+          <th class="hide-sm">수량</th><th class="hide-sm">평균단가</th>
+          <th>평가금액</th><th>평가손익</th><th>수익률</th><th>비중</th>
+        </tr></thead>
+        <tbody>${body || `<tr><td colspan="8" class="empty-state">포지션 없음</td></tr>`}</tbody>
+        <tfoot><tr>
+          <td class="left">합계</td><td class="left"></td>
+          <td class="hide-sm"></td><td class="hide-sm"></td>
+          <td>${fmtWon(total)}</td>
+          <td class="${cls(pnl)}">${hasPnl?fmtSignWon(pnl):'—'}</td>
+          <td class="${cls(cost>0?pnl/cost*100:null)}">${hasPnl&&cost>0?fmtPct(pnl/cost*100):'—'}</td>
+          <td>100%</td>
+        </tr></tfoot>
+      </table>
+    </div>
+  </div>`;
+}
+
+// ============ 탭 2 : 주식 포트폴리오 ============
+function stockRowsForFilter() {
+  const funds = fundsList();
+  const sel = STATE.sFund==='all' ? funds : funds.filter(f=>f.id===STATE.sFund);
+  // 종목코드로 합산 (가중평균 단가)
+  const map = {};
+  for (const f of sel) for (const p of (f.positions||[])) {
+    if ((p.assetType||'')!=='stock') continue;
+    const n = normalizePosition(p);
+    if (!map[n.code]) map[n.code] = { code:n.code, name:n.name, mkt:n.mkt, price:n.price, r1d:n.r1d, hasPrice:n.hasPrice, qty:0, cost:0, funds:new Set() };
+    const m = map[n.code];
+    m.qty += n.qty; m.cost += n.cost; m.funds.add(f.name);
+  }
+  return Object.values(map).map(m => {
+    const avg = m.qty>0 ? m.cost/m.qty : 0;
+    const value = m.hasPrice ? m.qty*m.price : null;
+    const pnl = value!==null ? value-m.cost : null;
+    const ret = (value!==null && m.cost>0) ? pnl/m.cost*100 : null;
+    const dayPnl = (m.hasPrice && m.r1d!==null) ? m.qty*(m.price - m.price/(1+m.r1d/100)) : null;
+    return { ...m, avg, value, pnl, ret, dayPnl, funds:[...m.funds] };
   });
 }
 
-function render() {
-  if (!STATE.portfolio) {
-    $('holdings-body').innerHTML = `<tr><td colspan="9" class="empty-state">
-      data/portfolio.json 을 불러올 수 없습니다.</td></tr>`;
-    return;
-  }
-  const rows = computeRows();
-  const cash = Number(STATE.portfolio.cash) || 0;
+function renderStocksView() {
+  const rows = stockRowsForFilter();
+  const totCost = rows.reduce((a,r)=>a+(r.cost||0),0);
+  const totVal  = rows.reduce((a,r)=>a+(r.value||0),0);
+  const totPnl  = rows.reduce((a,r)=>a+(r.pnl||0),0);
+  const totDay  = rows.reduce((a,r)=>a+(r.dayPnl||0),0);
+  const totRet  = totCost>0 ? totPnl/totCost*100 : null;
+  const dayRet  = (totVal-totDay)>0 ? totDay/(totVal-totDay)*100 : null;
 
-  const totCost = rows.reduce((a, r) => a + (r.cost || 0), 0);
-  const totMkt  = rows.reduce((a, r) => a + (r.mktValue || 0), 0);
-  const totPnl  = rows.reduce((a, r) => a + (r.pnl || 0), 0);
-  const totDay  = rows.reduce((a, r) => a + (r.dayPnl || 0), 0);
-  const totAssets = totMkt + cash;                       // 현금 포함 총자산
-  const totRet = totCost > 0 ? (totPnl / totCost) * 100 : null;
-  const dayRet = totMkt > 0 ? (totDay / (totMkt - totDay)) * 100 : null;
+  $('s-total').innerHTML = fmtWon(totVal) + ' <small>원</small>';
+  $('s-total-sub').textContent = `보유 종목 ${rows.length}개`;
+  $('s-pnl').innerHTML = `<span class="${cls(totPnl)}">${fmtSignWon(totPnl)}</span> <small>원</small>`;
+  $('s-pnl-sub').innerHTML = `<span class="${cls(totRet)}">${fmtPct(totRet)}</span> · 매입 대비`;
+  $('s-day').innerHTML = `<span class="${cls(totDay)}">${fmtSignWon(totDay)}</span> <small>원</small>`;
+  $('s-day-sub').innerHTML = `<span class="${cls(dayRet)}">${fmtPct(dayRet)}</span> · 전일 종가 대비`;
+  $('s-cost').innerHTML = fmtWon(totCost) + ' <small>원</small>';
+  $('s-cost-sub').textContent = STATE.sFund==='all' ? '전체 펀드 합산' : (fundsList().find(f=>f.id===STATE.sFund)||{}).name || '';
 
-  // ── KPI
-  $('kpi-total').innerHTML = fmtWon(totAssets) + ' <small>원</small>';
-  $('kpi-total-sub').innerHTML = `주식 ${fmtWon(totMkt)} · 현금 ${fmtWon(cash)}`;
+  // 비중 바
+  const items = rows.filter(r=>(r.value||0)>0).map((r,i)=>({label:r.name,value:r.value,color:PALETTE[i%PALETTE.length]})).sort((a,b)=>b.value-a.value);
+  allocBar($('s-alloc-bar'), $('s-alloc-legend'), items, totVal);
 
-  $('kpi-pnl').innerHTML = `<span class="${cls(totPnl)}">${fmtSignWon(totPnl)}</span> <small>원</small>`;
-  $('kpi-pnl-sub').innerHTML = `<span class="${cls(totRet)}">${fmtPct(totRet)}</span> · 매입 대비`;
-
-  $('kpi-day').innerHTML = `<span class="${cls(totDay)}">${fmtSignWon(totDay)}</span> <small>원</small>`;
-  $('kpi-day-sub').innerHTML = `<span class="${cls(dayRet)}">${fmtPct(dayRet)}</span> · 전일 종가 대비`;
-
-  $('kpi-cost').innerHTML = fmtWon(totCost) + ' <small>원</small>';
-  $('kpi-cash-sub').innerHTML = `보유 종목 ${rows.length}개`;
-
-  // ── 비중 바 (현금 포함)
-  const allocItems = rows
-    .filter(r => (r.mktValue || 0) > 0)
-    .map(r => ({ label: r.name, value: r.mktValue, color: r.color }))
-    .sort((a, b) => b.value - a.value);
-  if (cash > 0) allocItems.push({ label: '현금', value: cash, color: '#b8b3a8' });
-
-  const denom = totAssets > 0 ? totAssets : 1;
-  $('alloc-bar').innerHTML = allocItems.map(it =>
-    `<div class="seg" style="width:${(it.value / denom * 100).toFixed(2)}%;background:${it.color};" title="${escapeHtml(it.label)} ${(it.value/denom*100).toFixed(1)}%"></div>`
-  ).join('');
-  $('alloc-legend').innerHTML = allocItems.map(it =>
-    `<span class="item"><span class="swatch" style="background:${it.color};"></span>${escapeHtml(it.label)} <b>${(it.value / denom * 100).toFixed(1)}%</b></span>`
-  ).join('');
-
-  // ── 보유 종목 테이블 (평가금액 큰 순)
-  const sorted = [...rows].sort((a, b) => (b.mktValue || 0) - (a.mktValue || 0));
-  const tbody = $('holdings-body');
+  // 테이블
+  const sorted = [...rows].sort((a,b)=>(b.value||0)-(a.value||0));
+  const tbody = $('s-body');
   if (!sorted.length) {
-    tbody.innerHTML = `<tr><td colspan="9" class="empty-state">보유 종목이 없습니다. data/portfolio.json 의 holdings 를 채워주세요.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" class="empty-state">해당 펀드에 주식 포지션이 없습니다.</td></tr>`;
   } else {
-    tbody.innerHTML = sorted.map(r => {
-      const mktKey = (r.mkt || '').toUpperCase().includes('KOSDAQ') ? 'kosdaq' : 'kospi';
-      const w = totAssets > 0 && r.mktValue ? (r.mktValue / totAssets * 100) : 0;
-      const priceCell = r.hasPrice ? fmtWon(r.price)
-        : '<span class="flat" title="market-snapshot.json에 시세 없음">시세없음</span>';
-      return `<tr data-code="${r.code}">
-        <td class="left"><div class="name-cell">
-          <span class="dot" style="background:${r.color};"></span>
-          <span class="code">${r.code}</span>
-          <span class="nm">${escapeHtml(r.name)}</span>
-          ${r.mkt ? `<span class="mkt-pill ${mktKey}">${mktKey.toUpperCase()}</span>` : ''}
-        </div></td>
-        <td class="hide-sm">${r.qty.toLocaleString('ko-KR')}</td>
+    tbody.innerHTML = sorted.map((r,i) => {
+      const color = PALETTE[i%PALETTE.length];
+      const mktKey = (r.mkt||'').toUpperCase().includes('KOSDAQ')?'kosdaq':'kospi';
+      const w = totVal>0 && r.value ? r.value/totVal*100 : 0;
+      const priceCell = r.hasPrice ? fmtWon(r.price) : '<span class="flat" title="시세 없음">시세없음</span>';
+      const fundTag = (STATE.sFund==='all' && r.funds.length) ? ` <span class="fund-tag">${escapeHtml(r.funds.join(','))}</span>` : '';
+      return `<tr class="clickable" data-code="${r.code}">
+        <td class="left"><div class="name-cell"><span class="dot" style="background:${color};"></span><span class="code">${r.code}</span><span class="nm">${escapeHtml(r.name)}</span>${r.mkt?`<span class="mkt-pill ${mktKey}">${mktKey.toUpperCase()}</span>`:''}${fundTag}</div></td>
+        <td class="hide-sm">${fmtWon(r.qty)}</td>
         <td class="hide-sm">${fmtWon(r.avg)}</td>
         <td>${priceCell}</td>
-        <td class="hide-sm ${cls(r.r1d)}">${r.r1d !== null ? fmtPct(r.r1d) : '—'}</td>
-        <td>${fmtWon(r.mktValue)}</td>
+        <td class="hide-sm ${cls(r.r1d)}">${r.r1d!==null?fmtPct(r.r1d):'—'}</td>
+        <td>${fmtWon(r.value)}</td>
         <td class="${cls(r.pnl)}">${fmtSignWon(r.pnl)}</td>
-        <td class="${cls(r.ret)}">${r.ret !== null ? fmtPct(r.ret) : '—'}</td>
+        <td class="${cls(r.ret)}">${r.ret!==null?fmtPct(r.ret):'—'}</td>
         <td class="weight-cell">${w.toFixed(1)}%<span class="barwrap"><i style="width:${Math.min(w,100).toFixed(1)}%;"></i></span></td>
       </tr>`;
     }).join('');
-    tbody.querySelectorAll('tr[data-code]').forEach(tr => {
-      tr.addEventListener('click', () => {
-        window.location.href = `stock-deep-dive.html#${tr.dataset.code}`;
-      });
-    });
+    tbody.querySelectorAll('tr.clickable').forEach(tr =>
+      tr.addEventListener('click', () => { window.location.href = `stock-deep-dive.html#${tr.dataset.code}`; }));
   }
 
-  // ── 합계 행
-  $('holdings-foot').innerHTML = `<tr>
-    <td class="left">합계 · 종목 ${rows.length}개</td>
-    <td class="hide-sm"></td>
-    <td class="hide-sm"></td>
-    <td></td>
+  $('s-foot').innerHTML = `<tr>
+    <td class="left">합계 · ${rows.length}개</td>
+    <td class="hide-sm"></td><td class="hide-sm"></td><td></td>
     <td class="hide-sm ${cls(totDay)}">${fmtSignWon(totDay)}</td>
-    <td>${fmtWon(totMkt)}</td>
+    <td>${fmtWon(totVal)}</td>
     <td class="${cls(totPnl)}">${fmtSignWon(totPnl)}</td>
-    <td class="${cls(totRet)}">${totRet !== null ? fmtPct(totRet) : '—'}</td>
-    <td>${totMkt > 0 && totAssets > 0 ? (totMkt / totAssets * 100).toFixed(1) : '—'}%</td>
+    <td class="${cls(totRet)}">${totRet!==null?fmtPct(totRet):'—'}</td>
+    <td>100%</td>
   </tr>`;
-
-  // ── 갱신 시각
-  const gen = STATE.snapshot && STATE.snapshot.generatedAt;
-  const upd = STATE.portfolio.updatedAt;
-  $('foot-updated').textContent =
-    `시세 ${gen ? new Date(gen).toLocaleString('ko-KR') : '—'}` +
-    (upd ? ` · 보유 수정 ${upd}` : '');
 }
+
+function renderFooter() {
+  const gen = STATE.snapshot && STATE.snapshot.generatedAt;
+  const upd = STATE.data && STATE.data.updatedAt;
+  $('foot-updated').textContent = `시세 ${gen?new Date(gen).toLocaleString('ko-KR'):'—'}` + (upd?` · 보유 수정 ${upd}`:'');
+}
+
+// ── 탭/필터 이벤트
+document.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  btn.classList.add('active');
+  $('view-' + btn.dataset.view).classList.add('active');
+}));
+$('f-fund-filter').addEventListener('change', e => { STATE.fFund = e.target.value; renderFundsView(); });
+$('s-fund-filter').addEventListener('change', e => { STATE.sFund = e.target.value; renderStocksView(); });
 
 loadAll();
 </script>
