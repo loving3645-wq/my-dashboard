@@ -121,6 +121,7 @@
   .listed-pill.unlisted { background: var(--surface-2); color: var(--ink-faint); border: 1px solid var(--line); }
   .weight-cell .barwrap { display: inline-block; width: 46px; height: 6px; background: var(--bg-warm); border-radius: 3px; margin-left: 8px; vertical-align: middle; overflow: hidden; }
   .weight-cell .barwrap i { display: block; height: 100%; background: var(--accent); }
+  .tbl td.navw { color: var(--ink-soft); }
 
   /* 매매 타임라인 */
   .hint { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); margin: 8px 0 0; letter-spacing: 0.03em; }
@@ -224,7 +225,7 @@
 
     <div class="section">
       <h2>종목 <em>비중</em></h2>
-      <div class="desc">주식 평가금액 기준 (현금·기타 자산 제외)</div>
+      <div class="desc">상장주식 내 비중 · NAV 대비 비중은 아래 표 참고</div>
       <div class="alloc-bar" id="s-alloc-bar"></div>
       <div class="alloc-legend" id="s-alloc-legend"></div>
     </div>
@@ -244,10 +245,11 @@
               <th>평가금액</th>
               <th>평가손익</th>
               <th>수익률</th>
-              <th>비중</th>
+              <th>NAV비중</th>
+              <th>주식내비중</th>
             </tr>
           </thead>
-          <tbody id="s-body"><tr><td colspan="9" class="empty-state">불러오는 중…</td></tr></tbody>
+          <tbody id="s-body"><tr><td colspan="10" class="empty-state">불러오는 중…</td></tr></tbody>
           <tfoot id="s-foot"></tfoot>
         </table>
       </div>
@@ -585,6 +587,15 @@ function stockRowsForFilter() {
   });
 }
 
+// 선택된 펀드 범위의 순자산(NAV) — 모든 자산(현금·메자닌·비상장 포함) 평가액 합
+function navForScope() {
+  const funds = fundsList();
+  const sel = STATE.sFund==='all' ? funds : funds.filter(f=>f.id===STATE.sFund);
+  let nav = 0;
+  for (const f of sel) for (const p of (f.positions||[])) nav += normalizePosition(p).value || 0;
+  return nav;
+}
+
 function renderStocksView() {
   const rows = stockRowsForFilter();
   const totCost = rows.reduce((a,r)=>a+(r.cost||0),0);
@@ -593,9 +604,10 @@ function renderStocksView() {
   const totDay  = rows.reduce((a,r)=>a+(r.dayPnl||0),0);
   const totRet  = totCost>0 ? totPnl/totCost*100 : null;
   const dayRet  = (totVal-totDay)>0 ? totDay/(totVal-totDay)*100 : null;
+  const nav     = navForScope();  // 전체 펀드 NAV (현금·메자닌·비상장 포함)
 
   $('s-total').innerHTML = fmtWon(totVal) + ' <small>원</small>';
-  $('s-total-sub').textContent = `보유 종목 ${rows.length}개`;
+  $('s-total-sub').textContent = `보유 ${rows.length}개 · NAV 대비 ${nav>0?(totVal/nav*100).toFixed(1):'—'}%`;
   $('s-pnl').innerHTML = `<span class="${cls(totPnl)}">${fmtSignWon(totPnl)}</span> <small>원</small>`;
   $('s-pnl-sub').innerHTML = `<span class="${cls(totRet)}">${fmtPct(totRet)}</span> · 매입 대비`;
   $('s-day').innerHTML = `<span class="${cls(totDay)}">${fmtSignWon(totDay)}</span> <small>원</small>`;
@@ -611,12 +623,13 @@ function renderStocksView() {
   const sorted = [...rows].sort((a,b)=>(b.value||0)-(a.value||0));
   const tbody = $('s-body');
   if (!sorted.length) {
-    tbody.innerHTML = `<tr><td colspan="9" class="empty-state">해당 펀드에 주식 포지션이 없습니다.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10" class="empty-state">해당 펀드에 주식 포지션이 없습니다.</td></tr>`;
   } else {
     tbody.innerHTML = sorted.map((r,i) => {
       const color = PALETTE[i%PALETTE.length];
       const mktKey = (r.mkt||'').toUpperCase().includes('KOSDAQ')?'kosdaq':'kospi';
-      const w = totVal>0 && r.value ? r.value/totVal*100 : 0;
+      const wStock = totVal>0 && r.value ? r.value/totVal*100 : 0;  // 상장주식 내 비중
+      const wNav   = nav>0 && r.value ? r.value/nav*100 : 0;         // 전체 NAV 대비 비중
       const priceCell = r.hasPrice ? fmtWon(r.price)
         : (r.unlisted ? '<span class="flat" title="비상장 — 장부가">비상장</span>'
                       : '<span class="flat" title="시세 미수록 — 명세 평가액">장부가</span>');
@@ -632,7 +645,8 @@ function renderStocksView() {
         <td>${fmtWon(r.value)}</td>
         <td class="${cls(r.pnl)}">${fmtSignWon(r.pnl)}</td>
         <td class="${cls(r.ret)}">${r.ret!==null?fmtPct(r.ret):'—'}</td>
-        <td class="weight-cell">${w.toFixed(1)}%<span class="barwrap"><i style="width:${Math.min(w,100).toFixed(1)}%;"></i></span></td>
+        <td class="navw">${wNav.toFixed(1)}%</td>
+        <td class="weight-cell">${wStock.toFixed(1)}%<span class="barwrap"><i style="width:${Math.min(wStock,100).toFixed(1)}%;"></i></span></td>
       </tr>`;
     }).join('');
     tbody.querySelectorAll('tr.clickable').forEach(tr =>
@@ -646,6 +660,7 @@ function renderStocksView() {
     <td>${fmtWon(totVal)}</td>
     <td class="${cls(totPnl)}">${fmtSignWon(totPnl)}</td>
     <td class="${cls(totRet)}">${totRet!==null?fmtPct(totRet):'—'}</td>
+    <td class="navw">${nav>0?(totVal/nav*100).toFixed(1):'—'}%</td>
     <td>100%</td>
   </tr>`;
 }
