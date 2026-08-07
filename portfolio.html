@@ -120,6 +120,29 @@
   .weight-cell .barwrap { display: inline-block; width: 46px; height: 6px; background: var(--bg-warm); border-radius: 3px; margin-left: 8px; vertical-align: middle; overflow: hidden; }
   .weight-cell .barwrap i { display: block; height: 100%; background: var(--accent); }
 
+  /* 매매 타임라인 */
+  .hint { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); margin: 8px 0 0; letter-spacing: 0.03em; }
+  .caret { display: inline-block; width: 10px; font-size: 9px; color: var(--ink-faint); transition: transform 0.12s; flex-shrink: 0; }
+  .caret.ghost { visibility: hidden; }
+  tr.expandable { cursor: pointer; }
+  tr.expandable.open { background: var(--bg-warm); }
+  tr.expandable.open .caret { transform: rotate(90deg); color: var(--accent); }
+  td.acq { color: var(--ink-soft); }
+  .extra-mark { color: var(--gold); font-weight: 700; cursor: help; margin-left: 2px; }
+  .detail-row td { padding: 0 !important; background: var(--bg-warm); }
+  .timeline { padding: 12px 14px 14px 32px; }
+  .tl-head { font-family: var(--mono); font-size: 11px; color: var(--ink-mid); margin-bottom: 10px; letter-spacing: 0.03em; }
+  .tl-head b { color: var(--ink); }
+  .extra-note { margin-top: 5px; color: var(--gold); font-size: 10px; }
+  table.tl-tbl { width: 100%; border-collapse: collapse; font-size: 11.5px; background: var(--surface); }
+  .tl-tbl th { text-align: right; padding: 6px 10px; font-family: var(--mono); font-weight: 500; font-size: 9px; color: var(--ink-soft); letter-spacing: 0.08em; text-transform: uppercase; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .tl-tbl th.left { text-align: left; }
+  .tl-tbl td { padding: 5px 10px; text-align: right; font-family: var(--mono); font-size: 11px; white-space: nowrap; border-bottom: 1px solid var(--line); }
+  .tl-tbl td.left { text-align: left; }
+  .bs-pill { font-family: var(--mono); font-size: 9px; padding: 1px 6px; border-radius: 3px; }
+  .bs-pill.buy { background: var(--blue-bg); color: var(--blue); }
+  .bs-pill.sell { background: var(--accent-bg); color: var(--accent); }
+
   .empty-state { padding: 36px 20px; text-align: center; color: var(--ink-faint); font-family: var(--mono); font-size: 12px; }
   .footer-info { margin-top: 14px; font-family: var(--mono); font-size: 10px; color: var(--ink-soft); display: flex; gap: 14px; flex-wrap: wrap; align-items: center; letter-spacing: 0.05em; }
 
@@ -253,7 +276,7 @@ const ASSET_TYPES = {
 };
 const typeMeta = t => ASSET_TYPES[t] || ASSET_TYPES.other;
 
-const STATE = { data: null, snapshot: null, fFund: 'all', sFund: 'all' };
+const STATE = { data: null, snapshot: null, trades: null, tradeIdx: {}, fFund: 'all', sFund: 'all' };
 
 async function loadJSON(path) {
   const r = await fetch(path + '?t=' + Date.now(), { cache: 'no-store' });
@@ -262,16 +285,61 @@ async function loadJSON(path) {
 }
 
 async function loadAll() {
-  const [pf, snap] = await Promise.allSettled([
+  const [pf, snap, trd] = await Promise.allSettled([
     loadJSON('data/portfolio.json'),
     loadJSON('data/market-snapshot.json'),
+    loadJSON('data/trades.json'),
   ]);
   STATE.data = pf.status === 'fulfilled' ? pf.value : null;
   STATE.snapshot = snap.status === 'fulfilled' ? snap.value : null;
+  STATE.trades = trd.status === 'fulfilled' ? trd.value : null;
+  buildTradeIndex();
   initFilters();
   renderFundsView();
   renderStocksView();
   renderFooter();
+}
+
+// 펀드 id별 · 종목코드별 매매내역 인덱스 (일자순)
+function buildTradeIndex() {
+  STATE.tradeIdx = {};
+  const funds = (STATE.trades && STATE.trades.funds) || {};
+  for (const fid of Object.keys(funds)) {
+    const idx = {};
+    for (const t of (funds[fid].trades || [])) {
+      (idx[t.code] = idx[t.code] || []).push(t);
+    }
+    for (const c of Object.keys(idx)) idx[c].sort((a, b) => a.date.localeCompare(b.date));
+    STATE.tradeIdx[fid] = idx;
+  }
+}
+
+function tradesFor(fundId, code) {
+  return (STATE.tradeIdx[fundId] && STATE.tradeIdx[fundId][code]) || [];
+}
+
+// 매매내역에서 종목 취득 정보 계산
+function acqInfo(fundId, code, heldQty) {
+  const ts = tradesFor(fundId, code);
+  if (!ts.length) return null;
+  const buys = ts.filter(t => t.bs === 'B');
+  const firstBuy = buys.length ? buys[0].date : null;
+  const net = ts.reduce((a, t) => a + (t.bs === 'B' ? t.qty : -t.qty), 0);
+  const realized = ts.reduce((a, t) => a + (t.bs === 'S' ? (t.pnl || 0) : 0), 0);
+  const asOf = (STATE.trades && STATE.trades.asOf) || null;
+  let holdDays = null;
+  if (firstBuy && asOf) holdDays = Math.round((new Date(asOf + 'T00:00:00') - new Date(firstBuy + 'T00:00:00')) / 86400000);
+  // 매매 순수량과 명세 보유수량 불일치 → 무상/공모/전환/분할 등 매매 외 취득분
+  const extra = (heldQty != null && net !== heldQty);
+  return { ts, buys, firstBuy, net, realized, holdDays, extra };
+}
+
+function fmtHold(days) {
+  if (!Number.isFinite(days)) return '—';
+  if (days < 30) return days + '일';
+  const y = Math.floor(days / 365), m = Math.floor((days % 365) / 30);
+  if (y > 0) return `${y}년${m > 0 ? ' ' + m + '개월' : ''}`;
+  return m + '개월';
 }
 
 // ── 포맷터
@@ -370,8 +438,14 @@ function renderFundsView() {
   // 펀드별 카드 (필터 적용)
   const shown = STATE.fFund==='all' ? funds : funds.filter(f=>f.id===STATE.fFund);
   $('funds-container').innerHTML = shown.map(renderFundCard).join('');
-  $('funds-container').querySelectorAll('tr.clickable').forEach(tr =>
-    tr.addEventListener('click', () => { window.location.href = `stock-deep-dive.html#${tr.dataset.code}`; }));
+  $('funds-container').querySelectorAll('tr.expandable').forEach(tr =>
+    tr.addEventListener('click', () => {
+      const d = document.getElementById(tr.dataset.detail);
+      if (!d) return;
+      const open = d.style.display !== 'none';
+      d.style.display = open ? 'none' : 'table-row';
+      tr.classList.toggle('open', !open);
+    }));
 }
 
 function renderFundCard(fund) {
@@ -388,17 +462,28 @@ function renderFundCard(fund) {
   const typeItems = Object.keys(byType).filter(t=>byType[t]>0).sort((a,b)=>byType[b]-byType[a])
     .map(t=>({label:typeMeta(t).label, value:byType[t], color:typeMeta(t).color}));
 
-  const body = rows.map(r => {
+  const body = rows.map((r, i) => {
     const tm = typeMeta(r.type);
     const w = total>0 && r.value ? r.value/total*100 : 0;
     const pillLabel = r.subtype || tm.label;
     const codeTxt = r.code ? `<span class="code">${escapeHtml(r.code)}</span>` : '';
     const mktPill = r.mkt ? `<span class="mkt-pill ${(r.mkt||'').toUpperCase().includes('KOSDAQ')?'kosdaq':'kospi'}">${(r.mkt||'').toUpperCase().includes('KOSDAQ')?'KOSDAQ':'KOSPI'}</span>` : '';
     const unlistedTag = r.unlisted ? `<span class="fund-tag">비상장</span>` : '';
-    const nameCell = `<div class="name-cell"><span class="dot" style="background:${tm.color};"></span>${codeTxt}<span class="nm">${escapeHtml(r.name)}</span>${mktPill}${unlistedTag}</div>`;
-    return `<tr${r.ticker?` class="clickable" data-code="${r.ticker}"`:''}>
+
+    const acq = r.code ? acqInfo(fund.id, r.code, r.type==='stock'?r.qty:null) : null;
+    const hasTrades = !!(acq && acq.ts.length);
+    const detailId = `dt-${fund.id}-${(r.code||('x'+i))}`;
+    const caret = hasTrades ? `<span class="caret">▸</span>` : `<span class="caret ghost"></span>`;
+    const nameCell = `<div class="name-cell">${caret}<span class="dot" style="background:${tm.color};"></span>${codeTxt}<span class="nm">${escapeHtml(r.name)}</span>${mktPill}${unlistedTag}</div>`;
+    const extraMark = acq && acq.extra ? `<span class="extra-mark" title="매매 순수량(${acq.net.toLocaleString()}주)과 명세 보유수량이 달라 무상·공모·전환·분할 등 매매 외 취득분이 포함됩니다. 취득일은 매매내역상 최초 매수일입니다.">*</span>` : '';
+    const acqDate = acq && acq.firstBuy ? `${acq.firstBuy}${extraMark}` : `<span class="flat">—</span>${extraMark}`;
+    const holdTxt = acq && acq.holdDays!=null ? `${fmtHold(acq.holdDays)}${extraMark}` : `<span class="flat">—</span>${extraMark}`;
+
+    const mainRow = `<tr class="hrow${hasTrades?' expandable':''}"${hasTrades?` data-detail="${detailId}"`:''}>
       <td class="left">${nameCell}</td>
       <td class="left"><span class="type-pill" style="background:${tm.color}22;color:${tm.color};">${escapeHtml(pillLabel)}</span></td>
+      <td class="left acq">${acqDate}</td>
+      <td class="left">${holdTxt}</td>
       <td class="hide-sm">${r.type==='stock'?fmtWon(r.qty):'<span class="flat">—</span>'}</td>
       <td class="hide-sm">${r.type==='stock'&&r.avg!==null?fmtWon(r.avg):'<span class="flat">—</span>'}</td>
       <td>${fmtWon(r.value)}</td>
@@ -406,6 +491,8 @@ function renderFundCard(fund) {
       <td class="${cls(r.ret)}">${r.ret!==null?fmtPct(r.ret):'<span class="flat">—</span>'}</td>
       <td class="weight-cell">${w.toFixed(1)}%<span class="barwrap"><i style="width:${Math.min(w,100).toFixed(1)}%;"></i></span></td>
     </tr>`;
+    const detail = hasTrades ? `<tr class="detail-row" id="${detailId}" style="display:none;"><td colspan="10">${tradeTimeline(acq, r)}</td></tr>` : '';
+    return mainRow + detail;
   }).join('');
 
   return `<div class="section">
@@ -415,22 +502,52 @@ function renderFundCard(fund) {
     </div>
     <div class="alloc-bar">${typeItems.map(it=>`<div class="seg" style="width:${(it.value/(total||1)*100).toFixed(2)}%;background:${it.color};" title="${escapeHtml(it.label)}"></div>`).join('')}</div>
     <div class="alloc-legend">${typeItems.map(it=>`<span class="item"><span class="swatch" style="background:${it.color};"></span>${escapeHtml(it.label)} <b>${(it.value/(total||1)*100).toFixed(1)}%</b></span>`).join('')}</div>
-    <div style="overflow-x:auto;margin-top:8px;">
+    <div class="hint">종목 행 클릭 → 매매 타임라인 펼치기 · <span class="extra-mark">*</span> 무상·공모·전환·분할 등 매매 외 취득분 포함</div>
+    <div style="overflow-x:auto;margin-top:6px;">
       <table class="tbl">
         <thead><tr>
           <th class="left">종목/자산</th><th class="left">종류</th>
+          <th class="left">취득일</th><th class="left">보유기간</th>
           <th class="hide-sm">수량</th><th class="hide-sm">평균단가</th>
           <th>평가금액</th><th>평가손익</th><th>수익률</th><th>비중</th>
         </tr></thead>
-        <tbody>${body || `<tr><td colspan="8" class="empty-state">포지션 없음</td></tr>`}</tbody>
+        <tbody>${body || `<tr><td colspan="10" class="empty-state">포지션 없음</td></tr>`}</tbody>
         <tfoot><tr>
           <td class="left">합계</td><td class="left"></td>
+          <td class="left"></td><td class="left"></td>
           <td class="hide-sm"></td><td class="hide-sm"></td>
           <td>${fmtWon(total)}</td>
           <td class="${cls(pnl)}">${hasPnl?fmtSignWon(pnl):'—'}</td>
           <td class="${cls(cost>0?(total-cost)/cost*100:null)}">${cost>0?fmtPct((total-cost)/cost*100):'—'}</td>
           <td>100%</td>
         </tr></tfoot>
+      </table>
+    </div>
+  </div>`;
+}
+
+// 종목 매매 타임라인 (펼침 상세)
+function tradeTimeline(acq, r) {
+  const nBuy = acq.buys.length, nSell = acq.ts.length - nBuy;
+  const body = acq.ts.map(t => `<tr>
+    <td class="left">${t.date}</td>
+    <td class="left"><span class="bs-pill ${t.bs==='B'?'buy':'sell'}">${t.bs==='B'?'매수':'매도'}</span></td>
+    <td>${fmtWon(t.qty)}</td>
+    <td>${fmtWon(t.price)}</td>
+    <td>${fmtWon(t.amount)}</td>
+    <td class="${t.bs==='S'?cls(t.pnl):''}">${t.bs==='S'?fmtSignWon(t.pnl):'<span class="flat">—</span>'}</td>
+  </tr>`).join('');
+  return `<div class="timeline">
+    <div class="tl-head">
+      최초매수 <b>${acq.firstBuy||'—'}</b> · 보유 <b>${fmtHold(acq.holdDays)}</b>
+      · 매수 ${nBuy}회 / 매도 ${nSell}회
+      · 실현손익 <b class="${cls(acq.realized)}">${fmtSignWon(acq.realized)}</b>
+      ${acq.extra?`<div class="extra-note">※ 매매 순수량 ${acq.net.toLocaleString()}주 ≠ 명세 보유 ${fmtWon(r.qty)}주 — 무상·공모·전환·분할 등 매매 외 취득분 포함. 취득일은 최초 매수일 기준.</div>`:''}
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="tl-tbl">
+        <thead><tr><th class="left">일자</th><th class="left">구분</th><th>수량</th><th>단가</th><th>금액</th><th>실현손익</th></tr></thead>
+        <tbody>${body}</tbody>
       </table>
     </div>
   </div>`;
