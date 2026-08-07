@@ -1,0 +1,13 @@
+{
+  "_readme": "내 포트폴리오. holdings 배열만 직접 수정하면 됩니다. 현재가/등락률은 data/market-snapshot.json에서 종목코드로 자동 매칭되므로 입력할 필요 없습니다. ticker(6자리 종목코드), qty(보유수량), avgPrice(평균 매입단가, 원) 세 가지만 채우면 됩니다. name은 비워도 tickers-full.js에서 자동으로 채워집니다.",
+  "baseCurrency": "KRW",
+  "cash": 5000000,
+  "updatedAt": "2026-08-07",
+  "holdings": [
+    { "ticker": "005930", "name": "삼성전자",   "qty": 100, "avgPrice": 68000 },
+    { "ticker": "000660", "name": "SK하이닉스", "qty": 20,  "avgPrice": 145000 },
+    { "ticker": "035420", "name": "NAVER",      "qty": 15,  "avgPrice": 205000 },
+    { "ticker": "005380", "name": "현대차",     "qty": 30,  "avgPrice": 235000 },
+    { "ticker": "035720", "name": "카카오",     "qty": 50,  "avgPrice": 52000 }
+  ]
+}
