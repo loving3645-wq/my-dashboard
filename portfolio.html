@@ -117,6 +117,8 @@
   .mkt-pill.kospi { background: var(--blue-bg); color: var(--blue); }
   .mkt-pill.kosdaq { background: var(--gold-bg); color: var(--gold); }
   .fund-tag { font-family: var(--mono); font-size: 9px; color: var(--ink-soft); background: var(--bg-warm); padding: 2px 6px; border-radius: 3px; }
+  .listed-pill { font-family: var(--mono); font-size: 9px; padding: 2px 6px; border-radius: 3px; letter-spacing: 0.04em; background: var(--green-bg); color: var(--green); }
+  .listed-pill.unlisted { background: var(--surface-2); color: var(--ink-faint); border: 1px solid var(--line); }
   .weight-cell .barwrap { display: inline-block; width: 46px; height: 6px; background: var(--bg-warm); border-radius: 3px; margin-left: 8px; vertical-align: middle; overflow: hidden; }
   .weight-cell .barwrap i { display: block; height: 100%; background: var(--accent); }
 
@@ -229,7 +231,7 @@
 
     <div class="section">
       <h2>보유 <em>종목</em></h2>
-      <div class="desc">동일 종목은 펀드 합산(가중평균 단가) · 종목 클릭 → 딥다이브</div>
+      <div class="desc">상장 주식만 (비상장 제외) · 동일 종목은 펀드 합산(가중평균 단가) · 종목 클릭 → 딥다이브</div>
       <div style="overflow-x:auto;">
         <table class="tbl">
           <thead>
@@ -561,6 +563,7 @@ function stockRowsForFilter() {
   const map = {};
   for (const f of sel) for (const p of (f.positions||[])) {
     if ((p.assetType||'')!=='stock') continue;
+    if (p.unlisted) continue;  // 비상장 주식은 주식 포트폴리오에서 제외 (펀드 명세 탭에는 유지)
     const n = normalizePosition(p);
     const key = n.ticker || n.code;
     if (!map[key]) map[key] = { code:n.code, ticker:n.ticker, name:n.name, mkt:n.mkt, unlisted:n.unlisted,
@@ -618,9 +621,10 @@ function renderStocksView() {
         : (r.unlisted ? '<span class="flat" title="비상장 — 장부가">비상장</span>'
                       : '<span class="flat" title="시세 미수록 — 명세 평가액">장부가</span>');
       const fundTag = (STATE.sFund==='all' && r.funds.length) ? ` <span class="fund-tag">${escapeHtml(r.funds.join(','))}</span>` : '';
+      const statusPill = r.unlisted ? `<span class="listed-pill unlisted">비상장</span>` : `<span class="listed-pill">상장</span>`;
       const clk = r.ticker ? ' clickable' : '';
       return `<tr class="${clk.trim()}"${r.ticker?` data-code="${r.ticker}"`:''}>
-        <td class="left"><div class="name-cell"><span class="dot" style="background:${color};"></span><span class="code">${escapeHtml(r.code)}</span><span class="nm">${escapeHtml(r.name)}</span>${r.mkt?`<span class="mkt-pill ${mktKey}">${mktKey.toUpperCase()}</span>`:''}${fundTag}</div></td>
+        <td class="left"><div class="name-cell"><span class="dot" style="background:${color};"></span><span class="code">${escapeHtml(r.code)}</span><span class="nm">${escapeHtml(r.name)}</span>${statusPill}${r.mkt?`<span class="mkt-pill ${mktKey}">${mktKey.toUpperCase()}</span>`:''}${fundTag}</div></td>
         <td class="hide-sm">${fmtWon(r.qty)}</td>
         <td class="hide-sm">${fmtWon(r.avg)}</td>
         <td>${priceCell}</td>
