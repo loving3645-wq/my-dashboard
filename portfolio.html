@@ -162,9 +162,9 @@
 
     <div class="kpi-grid">
       <div class="kpi"><div class="lbl">총 순자산 (AUM)</div><div class="val" id="f-aum">—</div><div class="sub2" id="f-aum-sub">불러오는 중…</div></div>
+      <div class="kpi"><div class="lbl">총 평가손익</div><div class="val" id="f-pnl">—</div><div class="sub2" id="f-pnl-sub">&nbsp;</div></div>
+      <div class="kpi"><div class="lbl">총 수익률</div><div class="val" id="f-ret">—</div><div class="sub2" id="f-ret-sub">취득가 대비</div></div>
       <div class="kpi"><div class="lbl">펀드 수</div><div class="val" id="f-count">—</div><div class="sub2" id="f-count-sub">&nbsp;</div></div>
-      <div class="kpi"><div class="lbl">주식 평가액</div><div class="val" id="f-stock">—</div><div class="sub2" id="f-stock-sub">전체 대비</div></div>
-      <div class="kpi"><div class="lbl">주식 평가손익</div><div class="val" id="f-pnl">—</div><div class="sub2" id="f-pnl-sub">&nbsp;</div></div>
     </div>
 
     <div class="section">
@@ -284,33 +284,35 @@ const cls = v => v>0?'up':v<0?'down':'flat';
 const escapeHtml = s => String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const lookupTicker = code => (window.TICKER_REGISTRY||{})[code] || null;
 
-// 포지션 하나를 정규화: {type, name, code, mkt, qty, avg, price, r1d, cost, value, pnl, ret, dayPnl}
+// 포지션 정규화. 기준값은 명세(value/pnl/ret). 종목코드(ticker)가 시세에 있으면 라이브로 덮어씀.
 function normalizePosition(p) {
   const type = p.assetType || 'other';
-  if (type === 'stock') {
-    const code = String(p.ticker||'').padStart(6,'0');
-    const meta = lookupTicker(code);
-    const t = STATE.snapshot && STATE.snapshot.tickers ? STATE.snapshot.tickers[code] : null;
-    const price = t && Number.isFinite(t.price) ? t.price : null;
-    const r1d = t && Number.isFinite(t.r1d) ? t.r1d : null;
-    const qty = Number(p.qty)||0, avg = Number(p.avgPrice)||0;
-    const cost = qty*avg;
-    const value = price!==null ? qty*price : null;
-    const pnl = value!==null ? value-cost : null;
-    const ret = (value!==null && cost>0) ? pnl/cost*100 : null;
-    let dayPnl = null;
-    if (price!==null && r1d!==null) dayPnl = qty*(price - price/(1+r1d/100));
-    return { type, code, name: p.name || (meta&&meta.name) || code, mkt: meta&&meta.mkt||null,
-             qty, avg, price, r1d, cost, value, pnl, ret, dayPnl, hasPrice: price!==null };
-  }
-  // 비주식 자산: value(평가금액) 기준, cost 선택
-  const value = Number(p.value);
   const cost = Number.isFinite(p.cost) ? Number(p.cost) : null;
-  const pnl = (Number.isFinite(value) && cost!==null) ? value-cost : null;
-  const ret = (pnl!==null && cost>0) ? pnl/cost*100 : null;
-  return { type, code:null, name: p.name || typeMeta(type).label, mkt:null,
-           qty:null, avg:null, price:null, r1d:null,
-           cost, value: Number.isFinite(value)?value:null, pnl, ret, dayPnl:null, hasPrice:false };
+  const qty  = Number.isFinite(p.qty)  ? Number(p.qty)  : null;
+  const ticker = p.ticker || null;
+  const meta = ticker ? lookupTicker(ticker) : null;
+  const t = (ticker && STATE.snapshot && STATE.snapshot.tickers) ? STATE.snapshot.tickers[ticker] : null;
+  const live = !!(t && Number.isFinite(t.price));
+
+  let price=null, r1d=null, value, pnl, ret, dayPnl=null;
+  if (live) {
+    price = t.price;
+    r1d = Number.isFinite(t.r1d) ? t.r1d : null;
+    value = (qty!==null) ? qty*price : (Number.isFinite(p.value)?Number(p.value):null);
+    pnl = (value!==null && cost!==null) ? value-cost : null;
+    ret = (pnl!==null && cost>0) ? pnl/cost*100 : null;
+    if (qty!==null && r1d!==null) dayPnl = qty*(price - price/(1+r1d/100));
+  } else {
+    value = Number.isFinite(p.value) ? Number(p.value) : null;
+    pnl = Number.isFinite(p.pnl) ? Number(p.pnl) : ((value!==null&&cost!==null)?value-cost:null);
+    ret = Number.isFinite(p.ret) ? Number(p.ret) : ((pnl!==null&&cost>0)?pnl/cost*100:null);
+  }
+  const avg = (qty!==null && qty>0 && cost!==null) ? cost/qty : null;  // 평균 취득단가
+  return {
+    type, subtype: p.subtype||null, code: p.code || ticker || null, ticker,
+    name: p.name || (meta&&meta.name) || p.code, mkt: meta&&meta.mkt || null,
+    unlisted: !!p.unlisted, qty, avg, cost, price, r1d, value, pnl, ret, dayPnl, hasPrice: live,
+  };
 }
 
 function fundsList() { return (STATE.data && STATE.data.funds) || []; }
@@ -341,21 +343,24 @@ function renderFundsView() {
   if (!funds.length) { $('funds-container').innerHTML = `<div class="section"><div class="empty-state">펀드 데이터가 없습니다. data/portfolio.json 의 funds 를 채워주세요.</div></div>`; return; }
 
   // 전체 자산배분 + KPI
-  const byType = {}; let aum=0, stockVal=0, stockPnl=0;
+  const byType = {}; let aum=0, cost=0, pnl=0, stockVal=0;
   for (const f of funds) for (const p of (f.positions||[])) {
     const n = normalizePosition(p);
     byType[n.type] = (byType[n.type]||0) + (n.value||0);
     aum += n.value||0;
-    if (n.type==='stock') { stockVal += n.value||0; stockPnl += n.pnl||0; }
+    cost += n.cost||0;
+    if (n.pnl!==null) pnl += n.pnl;
+    if (n.type==='stock') stockVal += n.value||0;
   }
+  const ret = cost>0 ? (aum-cost)/cost*100 : null;  // 명세 합계 기준: (평가액-취득가)/취득가
   $('f-aum').innerHTML = fmtEok(aum) + ' <small>원</small>';
   $('f-aum-sub').textContent = `${fmtWon(aum)}원`;
+  $('f-pnl').innerHTML = `<span class="${cls(pnl)}">${fmtSignWon(pnl)}</span> <small>원</small>`;
+  $('f-pnl-sub').textContent = `매입 ${fmtEok(cost)}원`;
+  $('f-ret').innerHTML = `<span class="${cls(ret)}">${fmtPct(ret)}</span>`;
+  $('f-ret-sub').textContent = aum>0 ? `주식 ${(stockVal/aum*100).toFixed(0)}% · 그 외 ${(100-stockVal/aum*100).toFixed(0)}%` : '취득가 대비';
   $('f-count').innerHTML = funds.length + ' <small>개</small>';
   $('f-count-sub').textContent = funds.map(f=>f.name).join(' · ');
-  $('f-stock').innerHTML = fmtEok(stockVal) + ' <small>원</small>';
-  $('f-stock-sub').textContent = aum>0 ? `전체의 ${(stockVal/aum*100).toFixed(1)}%` : '—';
-  $('f-pnl').innerHTML = `<span class="${cls(stockPnl)}">${fmtSignWon(stockPnl)}</span> <small>원</small>`;
-  $('f-pnl-sub').textContent = '상장주식 평가손익';
 
   const typeItems = Object.keys(byType).filter(t=>byType[t]>0)
     .sort((a,b)=>byType[b]-byType[a])
@@ -386,14 +391,16 @@ function renderFundCard(fund) {
   const body = rows.map(r => {
     const tm = typeMeta(r.type);
     const w = total>0 && r.value ? r.value/total*100 : 0;
-    const nameCell = r.type==='stock'
-      ? `<div class="name-cell"><span class="dot" style="background:${tm.color};"></span><span class="code">${r.code}</span><span class="nm">${escapeHtml(r.name)}</span>${r.mkt?`<span class="mkt-pill ${(r.mkt||'').toUpperCase().includes('KOSDAQ')?'kosdaq':'kospi'}">${(r.mkt||'').toUpperCase().includes('KOSDAQ')?'KOSDAQ':'KOSPI'}</span>`:''}</div>`
-      : `<div class="name-cell"><span class="dot" style="background:${tm.color};"></span><span class="nm">${escapeHtml(r.name)}</span></div>`;
-    return `<tr${r.type==='stock'?` class="clickable" data-code="${r.code}"`:''}>
+    const pillLabel = r.subtype || tm.label;
+    const codeTxt = r.code ? `<span class="code">${escapeHtml(r.code)}</span>` : '';
+    const mktPill = r.mkt ? `<span class="mkt-pill ${(r.mkt||'').toUpperCase().includes('KOSDAQ')?'kosdaq':'kospi'}">${(r.mkt||'').toUpperCase().includes('KOSDAQ')?'KOSDAQ':'KOSPI'}</span>` : '';
+    const unlistedTag = r.unlisted ? `<span class="fund-tag">비상장</span>` : '';
+    const nameCell = `<div class="name-cell"><span class="dot" style="background:${tm.color};"></span>${codeTxt}<span class="nm">${escapeHtml(r.name)}</span>${mktPill}${unlistedTag}</div>`;
+    return `<tr${r.ticker?` class="clickable" data-code="${r.ticker}"`:''}>
       <td class="left">${nameCell}</td>
-      <td class="left"><span class="type-pill" style="background:${tm.color}22;color:${tm.color};">${tm.label}</span></td>
+      <td class="left"><span class="type-pill" style="background:${tm.color}22;color:${tm.color};">${escapeHtml(pillLabel)}</span></td>
       <td class="hide-sm">${r.type==='stock'?fmtWon(r.qty):'<span class="flat">—</span>'}</td>
-      <td class="hide-sm">${r.type==='stock'?fmtWon(r.avg):'<span class="flat">—</span>'}</td>
+      <td class="hide-sm">${r.type==='stock'&&r.avg!==null?fmtWon(r.avg):'<span class="flat">—</span>'}</td>
       <td>${fmtWon(r.value)}</td>
       <td class="${cls(r.pnl)}">${r.pnl!==null?fmtSignWon(r.pnl):'<span class="flat">—</span>'}</td>
       <td class="${cls(r.ret)}">${r.ret!==null?fmtPct(r.ret):'<span class="flat">—</span>'}</td>
@@ -421,7 +428,7 @@ function renderFundCard(fund) {
           <td class="hide-sm"></td><td class="hide-sm"></td>
           <td>${fmtWon(total)}</td>
           <td class="${cls(pnl)}">${hasPnl?fmtSignWon(pnl):'—'}</td>
-          <td class="${cls(cost>0?pnl/cost*100:null)}">${hasPnl&&cost>0?fmtPct(pnl/cost*100):'—'}</td>
+          <td class="${cls(cost>0?(total-cost)/cost*100:null)}">${cost>0?fmtPct((total-cost)/cost*100):'—'}</td>
           <td>100%</td>
         </tr></tfoot>
       </table>
@@ -433,20 +440,26 @@ function renderFundCard(fund) {
 function stockRowsForFilter() {
   const funds = fundsList();
   const sel = STATE.sFund==='all' ? funds : funds.filter(f=>f.id===STATE.sFund);
-  // 종목코드로 합산 (가중평균 단가)
+  // 종목코드(ticker 우선, 없으면 code)로 합산 — 상장주는 가중평균, 그 외는 명세값 누적
   const map = {};
   for (const f of sel) for (const p of (f.positions||[])) {
     if ((p.assetType||'')!=='stock') continue;
     const n = normalizePosition(p);
-    if (!map[n.code]) map[n.code] = { code:n.code, name:n.name, mkt:n.mkt, price:n.price, r1d:n.r1d, hasPrice:n.hasPrice, qty:0, cost:0, funds:new Set() };
-    const m = map[n.code];
-    m.qty += n.qty; m.cost += n.cost; m.funds.add(f.name);
+    const key = n.ticker || n.code;
+    if (!map[key]) map[key] = { code:n.code, ticker:n.ticker, name:n.name, mkt:n.mkt, unlisted:n.unlisted,
+      price:n.price, r1d:n.r1d, hasPrice:n.hasPrice, qty:0, cost:0, bookValue:0, bookPnl:0, funds:new Set() };
+    const m = map[key];
+    m.qty += n.qty||0;
+    m.cost += n.cost||0;
+    m.bookValue += n.value||0;
+    if (n.pnl!==null) m.bookPnl += n.pnl;
+    m.funds.add(f.name);
   }
   return Object.values(map).map(m => {
     const avg = m.qty>0 ? m.cost/m.qty : 0;
-    const value = m.hasPrice ? m.qty*m.price : null;
-    const pnl = value!==null ? value-m.cost : null;
-    const ret = (value!==null && m.cost>0) ? pnl/m.cost*100 : null;
+    const value = m.hasPrice ? m.qty*m.price : (m.bookValue || null);
+    const pnl = m.hasPrice ? (value-m.cost) : (m.bookValue ? m.bookPnl : null);
+    const ret = (pnl!==null && m.cost>0) ? pnl/m.cost*100 : null;
     const dayPnl = (m.hasPrice && m.r1d!==null) ? m.qty*(m.price - m.price/(1+m.r1d/100)) : null;
     return { ...m, avg, value, pnl, ret, dayPnl, funds:[...m.funds] };
   });
@@ -484,10 +497,13 @@ function renderStocksView() {
       const color = PALETTE[i%PALETTE.length];
       const mktKey = (r.mkt||'').toUpperCase().includes('KOSDAQ')?'kosdaq':'kospi';
       const w = totVal>0 && r.value ? r.value/totVal*100 : 0;
-      const priceCell = r.hasPrice ? fmtWon(r.price) : '<span class="flat" title="시세 없음">시세없음</span>';
+      const priceCell = r.hasPrice ? fmtWon(r.price)
+        : (r.unlisted ? '<span class="flat" title="비상장 — 장부가">비상장</span>'
+                      : '<span class="flat" title="시세 미수록 — 명세 평가액">장부가</span>');
       const fundTag = (STATE.sFund==='all' && r.funds.length) ? ` <span class="fund-tag">${escapeHtml(r.funds.join(','))}</span>` : '';
-      return `<tr class="clickable" data-code="${r.code}">
-        <td class="left"><div class="name-cell"><span class="dot" style="background:${color};"></span><span class="code">${r.code}</span><span class="nm">${escapeHtml(r.name)}</span>${r.mkt?`<span class="mkt-pill ${mktKey}">${mktKey.toUpperCase()}</span>`:''}${fundTag}</div></td>
+      const clk = r.ticker ? ' clickable' : '';
+      return `<tr class="${clk.trim()}"${r.ticker?` data-code="${r.ticker}"`:''}>
+        <td class="left"><div class="name-cell"><span class="dot" style="background:${color};"></span><span class="code">${escapeHtml(r.code)}</span><span class="nm">${escapeHtml(r.name)}</span>${r.mkt?`<span class="mkt-pill ${mktKey}">${mktKey.toUpperCase()}</span>`:''}${fundTag}</div></td>
         <td class="hide-sm">${fmtWon(r.qty)}</td>
         <td class="hide-sm">${fmtWon(r.avg)}</td>
         <td>${priceCell}</td>
