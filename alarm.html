@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-<meta name="theme-color" content="#fffdf2" />
+<meta name="theme-color" content="#0c0e13" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="알람" />
 <title>알람</title>
 
-<link rel="manifest" id="manifestLink" href="data:application/manifest+json,%7B%22name%22%3A%22%EC%95%8C%EB%9E%8C%22%2C%22short_name%22%3A%22%EC%95%8C%EB%9E%8C%22%2C%22start_url%22%3A%22.%2Falarm.html%22%2C%22scope%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%23fffdf2%22%2C%22theme_color%22%3A%22%23fffdf2%22%7D" />
+<link rel="manifest" id="manifestLink" href="data:application/manifest+json,%7B%22name%22%3A%22%EC%95%8C%EB%9E%8C%22%2C%22short_name%22%3A%22%EC%95%8C%EB%9E%8C%22%2C%22start_url%22%3A%22.%2Falarm.html%22%2C%22scope%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22portrait%22%2C%22background_color%22%3A%22%230c0e13%22%2C%22theme_color%22%3A%22%230c0e13%22%7D" />
 <link rel="apple-touch-icon" id="appleIcon" />
 <link rel="icon" type="image/png" id="favIcon" />
 
@@ -147,8 +147,8 @@
       scope: './',
       display: 'standalone',
       orientation: 'portrait',
-      background_color: '#fffdf2',
-      theme_color: '#e63946',
+      background_color: '#0c0e13',
+      theme_color: '#0c0e13',
       icons: [
         { src: icon192, sizes: '192x192', type: 'image/png', purpose: 'any' },
         { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'any' },
@@ -166,22 +166,22 @@
 
 <style>
   :root {
-    --bg: #fffdf2;
-    --bg-warm: #fff7d1;
-    --surface: #ffffff;
-    --surface-2: #fff7d1;
-    --ink: #1f1a0a;
-    --ink-mid: #4a4232;
-    --ink-soft: #7a6f54;
-    --ink-faint: #b0a279;
-    --line: #f0d97a;
-    --line-strong: #d9b94a;
-    --accent: #e63946;
-    --accent-bg: #ffd9dd;
-    --gold: #f77f00;
-    --gold-bg: #ffe2b8;
-    --green: #2a9d8f;
-    --green-bg: #c8efe9;
+    --bg: #0c0e13;
+    --bg-warm: #171a22;
+    --surface: #14171e;
+    --surface-2: #1c202a;
+    --ink: #f1f3f8;
+    --ink-mid: #c3c9d4;
+    --ink-soft: #8b93a2;
+    --ink-faint: #5b6473;
+    --line: #262b36;
+    --line-strong: #3a414f;
+    --accent: #ff5d6a;
+    --accent-bg: #3a1e23;
+    --gold: #ffb03a;
+    --gold-bg: #33280f;
+    --green: #35d0a5;
+    --green-bg: #12302a;
     --serif: 'Jua', 'Gowun Dodum', 'Pretendard', sans-serif;
     --sans: 'Gowun Dodum', -apple-system, BlinkMacSystemFont, sans-serif;
     --mono: 'JetBrains Mono', ui-monospace, monospace;
@@ -261,7 +261,7 @@
   .banner button {
     margin-top: 8px;
     background: var(--ink);
-    color: #fff;
+    color: var(--bg);
     padding: 6px 12px;
     border-radius: 8px;
     font-size: 12px;
@@ -347,7 +347,7 @@
     width: 48px;
     height: 28px;
     border-radius: 999px;
-    background: #e8e0c8;
+    background: #3a414f;
     transition: background 0.2s;
     flex-shrink: 0;
   }
@@ -409,7 +409,7 @@
   /* ===== Editor sheet ===== */
   .scrim {
     position: fixed; inset: 0;
-    background: rgba(31,26,10,0.45);
+    background: rgba(0,0,0,0.6);
     backdrop-filter: blur(2px);
     z-index: 100;
     opacity: 0;
@@ -605,7 +605,7 @@
     font-weight: 700;
     font-size: 15px;
   }
-  .delete-btn:active { background: #ffc4ca; }
+  .delete-btn:active { background: #4a2429; }
 
   /* ===== Ringing overlay ===== */
   .ring-overlay {
