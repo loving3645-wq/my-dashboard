@@ -215,6 +215,7 @@
           <th class="left">공시일</th>
           <th class="left">발행일</th>
           <th class="left">종목</th>
+          <th>시총(발행시)</th>
           <th class="left">유형</th>
           <th class="left">회차</th>
           <th>발행액</th>
@@ -223,10 +224,11 @@
           <th>YTM</th>
           <th>콜옵션</th>
           <th class="left">만기</th>
+          <th class="left">투자자</th>
           <th class="left">공시</th>
         </tr>
       </thead>
-      <tbody id="recent-body"><tr><td colspan="12" class="empty-state">불러오는 중…</td></tr></tbody>
+      <tbody id="recent-body"><tr><td colspan="14" class="empty-state">불러오는 중…</td></tr></tbody>
     </table>
   </div>
 
@@ -359,6 +361,13 @@ function fmtKRW(n) {
   if (Math.abs(n) >= eok) return Math.round(n / eok).toLocaleString() + '억';
   if (Math.abs(n) >= 10000) return (n / 10000).toFixed(1).replace(/\.0$/, '') + '만';
   return n.toLocaleString();
+}
+
+function fmtMcap(n) {
+  if (!Number.isFinite(n) || n <= 0) return '<span class="muted">—</span>';
+  const eok = 100_000_000, jo = 1_000_000_000_000;
+  if (n >= jo) return (n / jo).toFixed(2).replace(/\.?0+$/, '') + '조';
+  return Math.round(n / eok).toLocaleString() + '억';
 }
 
 function fmtPct(n) {
@@ -539,7 +548,7 @@ function renderPuts() {
   const tbody = $('put-body');
   const flat = flatIssuances();
   if (!flat.length) {
-    tbody.innerHTML = `<tr><td colspan="12" class="empty-state">
+    tbody.innerHTML = `<tr><td colspan="14" class="empty-state">
       메자닌 데이터가 없습니다.<br>
       <span style="font-size:10px;">data/mezzanine.json 미생성 — Actions의 'DART Mezzanine' 워크플로 수동 실행 필요</span>
     </td></tr>`;
@@ -613,7 +622,7 @@ function renderRecent() {
   items.sort((a, b) => b.refDate.localeCompare(a.refDate));
 
   if (!items.length) {
-    tbody.innerHTML = `<tr><td colspan="12" class="empty-state">선택한 기간 내 신규 발행건이 없습니다.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="14" class="empty-state">선택한 기간 내 신규 발행건이 없습니다.</td></tr>`;
     return;
   }
   tbody.innerHTML = items.map(({ ticker, name, iss, refDate, days, delisted }) => {
@@ -626,6 +635,7 @@ function renderRecent() {
         ${nameLink(ticker, name, delisted)}
         ${delisted ? '' : `<span class="muted" style="margin-left:6px;font-size:10px;">${escapeHtml(ticker)}</span>`}
       </td>
+      <td class="num" title="${iss.priceAtIssue ? '발행일 종가 ' + iss.priceAtIssue.toLocaleString() + '원 × ' + (iss.sharesAtIssue || 0).toLocaleString() + '주' : ''}">${fmtMcap(iss.mcapAtIssue)}</td>
       <td class="left">${typePill(iss.type)}</td>
       <td class="left">${escapeHtml(iss.round || '—')}</td>
       <td class="num">${fmtKRW(iss.faceAmount)}</td>
@@ -634,6 +644,7 @@ function renderRecent() {
       <td class="num">${fmtPct(iss.ytmRate)}</td>
       <td class="num">${iss.callPct ? escapeHtml(iss.callPct) : '—'}</td>
       <td class="left muted">${escapeHtml(iss.maturityDate || '—')}</td>
+      <td class="left">${iss.investor ? `<span title="${escapeHtml(iss.investor)}">${escapeHtml(iss.investor.length > 18 ? iss.investor.slice(0, 18) + '…' : iss.investor)}</span>` : '<span class="muted">—</span>'}</td>
       <td class="left">${dartLink(iss.rceptNo)}</td>
     </tr>`;
   }).join('');

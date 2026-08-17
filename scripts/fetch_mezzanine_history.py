@@ -595,6 +595,177 @@ def parse_outstanding_from_body(text):
     return None
 
 
+# --- Investor / issuance-time market-cap enrichment ------------------------
+# All three fields below live in the disclosure BODY (not the structured
+# DART response). We parse them from the same tag-stripped text blob.
+
+# 투자자: private-placement CB/BW/EB 발행결정 bodies carry a table
+#   【특정인에 대한 대상자별 사채발행내역】
+#   발행 대상자명 | 회사 또는 최대주주와의 관계 | 선정경위 | … | 비고
+# The first data cell after the "비고" header is the acquirer name, e.g.
+# "한국투자증권 주식회사".
+_INVESTOR_RE = re.compile(
+    r"특정인에?\s*대한\s*대상자\s*별?\s*사채\s*발행\s*내역"
+    r".*?비\s*고\s+"
+    r"([가-힣A-Za-z0-9().·\-\s]{2,45}?)\s+"
+    r"(?:[-–]\s|최대주주|특수관계|계열|임원|본인|없음|해당\s*없음|\d[\d,]*\s)",
+    re.S,
+)
+
+
+# A real acquirer name is a legal entity — reject rows that captured the
+# bond description or a table header by mistake.
+_INVESTOR_ENTITY_RE = re.compile(
+    r"주식회사|㈜|유한회사|증권|은행|조합|펀드|자산운용|운용|캐피[탈털]|"
+    r"파트너스|인베스트|벤처|투자|holdings|capital|partners",
+    re.I,
+)
+_INVESTOR_REJECT_RE = re.compile(
+    r"사채|전환|무보증|무기명|무이권|신주인수|교환사채|발행|대상자|권면|"
+    r"성명|관계|선정|내역"
+)
+
+
+def parse_investor(text):
+    """First 발행대상자명 from the 특정인 table, or None."""
+    if not text:
+        return None
+    m = _INVESTOR_RE.search(text)
+    if not m:
+        return None
+    name = re.sub(r"\s+", " ", m.group(1)).strip(" ·-,")
+    if len(name) < 2 or name.isdigit():
+        return None
+    if _INVESTOR_REJECT_RE.search(name):
+        return None
+    if not _INVESTOR_ENTITY_RE.search(name):
+        return None
+    return name[:45]
+
+
+# 발행시점 발행주식총수: bodies state the new shares from the issue and
+# their ratio to total shares, e.g. "주식수 1,481,167 주식총수 대비 비율(%) 8.34".
+# total = new_shares / (ratio/100). This mandated field is far more reliable
+# than trying to scrape an absolute 발행주식총수 out of the boilerplate.
+_SHARES_RATIO_RE = re.compile(
+    r"주식수\s*([\d,]{4,})\s*주식\s*총수\s*대비\s*비율\s*\(?\s*%?\s*\)?\s*([\d.]+)"
+)
+
+
+def parse_shares_at_issue(text):
+    """Total shares outstanding at issuance, derived from the dilution
+    ratio field, or None."""
+    if not text:
+        return None
+    m = _SHARES_RATIO_RE.search(text)
+    if not m:
+        return None
+    try:
+        new_shares = int(m.group(1).replace(",", ""))
+        pct = float(m.group(2))
+    except ValueError:
+        return None
+    if pct <= 0 or new_shares <= 0:
+        return None
+    total = round(new_shares / (pct / 100.0))
+    if 10_000 <= total <= 100_000_000_000:
+        return total
+    return None
+
+
+NAVER_PRICE_URL = "https://api.finance.naver.com/siseJson.naver"
+
+
+def fetch_close_on_date(sess, ticker, iso_date):
+    """Close price on iso_date (or the nearest prior trading day) from
+    Naver daily OHLC. History is immutable so callers cache the result.
+    Returns an int/float price, or None on any failure."""
+    if not ticker or not iso_date:
+        return None
+    try:
+        target = iso_date.replace("-", "")
+        start = (datetime.strptime(iso_date, "%Y-%m-%d")
+                 - timedelta(days=12)).strftime("%Y%m%d")
+    except ValueError:
+        return None
+    for attempt in range(RETRY_COUNT + 1):
+        try:
+            r = sess.get(
+                NAVER_PRICE_URL,
+                params={
+                    "symbol": ticker, "requestType": 1,
+                    "startTime": start, "endTime": target,
+                    "timeframe": "day",
+                },
+                timeout=TIMEOUT,
+            )
+            if r.status_code != 200:
+                return None
+            rows = json.loads(r.text.replace("'", '"'))
+        except (requests.RequestException, ValueError):
+            time.sleep(0.5 * (attempt + 1))
+            continue
+        close = None
+        for row in rows[1:]:  # row[0] is the header
+            if not isinstance(row, list) or len(row) < 5:
+                continue
+            rdate = str(row[0])
+            if rdate <= target and isinstance(row[4], (int, float)):
+                close = row[4]
+        return close
+    return None
+
+
+# Only enrich issuances filed within this window — investor / issuance-time
+# market cap matter for the recent-issuance table, and it bounds body fetches.
+DETAIL_LOOKBACK_DAYS = 900
+
+
+def enrich_with_details(sess, ticker, issuances):
+    """Attach investor, issuance-time shares, price and market cap to recent
+    issuances. Reuses the body-parse cache (keyed by rceptNo) so bodies and
+    Naver prices are fetched at most once each."""
+    cutoff = (date.today() - timedelta(days=DETAIL_LOOKBACK_DAYS)).isoformat()
+    for x in issuances:
+        if (x.get("rceptDt") or "") < cutoff:
+            continue
+        rcept_no = x.get("rceptNo")
+        if not rcept_no:
+            continue
+        cached = _cache_get(rcept_no) or {}
+
+        if not cached.get("detailDone"):
+            body = fetch_disclosure_body(sess, rcept_no)
+            if body:  # only mark done on a successful fetch (retry otherwise)
+                merged = dict(cached)
+                merged["detailDone"] = 1
+                inv = parse_investor(body)
+                sh = parse_shares_at_issue(body)
+                if inv:
+                    merged["investor"] = inv
+                if sh:
+                    merged["sharesAtIssue"] = sh
+                _cache_put(rcept_no, merged)
+                cached = merged
+
+        inv = cached.get("investor")
+        sh = cached.get("sharesAtIssue")
+        if inv:
+            x["investor"] = inv
+        if sh:
+            x["sharesAtIssue"] = sh
+            price = cached.get("priceAtIssue")
+            if price is None and x.get("issueDate"):
+                price = fetch_close_on_date(sess, ticker, x["issueDate"])
+                if price:
+                    merged = dict(cached)
+                    merged["priceAtIssue"] = price
+                    _cache_put(rcept_no, merged)
+            if price:
+                x["priceAtIssue"] = price
+                x["mcapAtIssue"] = int(round(sh * price))
+
+
 def _abs_day_gap(iso_a, iso_b):
     """Days between two YYYY-MM-DD strings (None-safe). Used to detect
     'close enough' matches to known issueDate / maturityDate so heuristic
@@ -985,6 +1156,8 @@ def fetch_one(sess, ticker, name, corp_code, bgn_de, end_de):
     # Put/call schedules aren't in the structured DART response — parse
     # them out of each live issuance's own disclosure body.
     enrich_with_put_schedule(sess, issuances)
+    # Investor / issuance-time market cap (recent issuances only).
+    enrich_with_details(sess, ticker, issuances)
     return {
         "name": name,
         "corpCode": corp_code,
