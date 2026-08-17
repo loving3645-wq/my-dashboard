@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<meta name="theme-color" content="#fafaf7" />
+<meta name="theme-color" content="#0c0e13" />
 <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="pragma" content="no-cache" />
 <meta http-equiv="expires" content="0" />
@@ -16,15 +16,15 @@
 
 <style>
   :root {
-    --bg: #ffffff; --bg-warm: #f5f5f5; --surface: #ffffff; --surface-2: #ffffff;
-    --ink: #000000; --ink-mid: #000000; --ink-soft: #1a1a1a; --ink-faint: #999999;
-    --line: #d0d0d0; --line-strong: #a0a0a0;
-    --accent: #b8421f; --accent-bg: #fbeae3;
-    --gold: #b8923f; --gold-bg: #f7eecf;
-    --green: #2f6b35; --green-bg: #d6e8d2;
-    --red: #b02828; --red-bg: #f9d8d8;
-    --blue: #2e527a; --blue-bg: #d6e2ee;
-    --purple: #5e3e7c; --purple-bg: #e6d8ee;
+    --bg: #0c0e13; --bg-warm: #171a22; --surface: #14171e; --surface-2: #1c202a;
+    --ink: #f1f3f8; --ink-mid: #c3c9d4; --ink-soft: #8b93a2; --ink-faint: #5b6473;
+    --line: #262b36; --line-strong: #3a414f;
+    --accent: #ff7a5d; --accent-bg: #33201a;
+    --gold: #ffb03a; --gold-bg: #332814;
+    --green: #35d0a5; --green-bg: #12302a;
+    --red: #ff5d6a; --red-bg: #331a1e;
+    --blue: #5b9dff; --blue-bg: #17293a;
+    --purple: #b48bff; --purple-bg: #241a3a;
     --serif: 'Fraunces','Nanum Myeongjo',serif;
     --sans: 'Pretendard',-apple-system,sans-serif;
     --mono: 'JetBrains Mono',ui-monospace,monospace;
@@ -94,9 +94,9 @@
   .day-pill.past { background: transparent; color: var(--ink-faint); }
 
   .reason-pill { font-family: var(--mono); font-size: 9px; padding: 2px 6px; border-radius: 2px; letter-spacing: 0.04em; }
-  .cal tbody tr.group-row { background: #ffffff; cursor: default; }
-  .cal tbody tr.group-row:hover { background: #ffffff; }
-  .cal tbody tr.group-row td { padding: 12px 12px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.05em; text-align: left; border-top: 3px solid #000; border-bottom: 1px solid #000; color: #000; }
+  .cal tbody tr.group-row { background: var(--surface); cursor: default; }
+  .cal tbody tr.group-row:hover { background: var(--surface); }
+  .cal tbody tr.group-row td { padding: 12px 12px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.05em; text-align: left; border-top: 3px solid var(--line-strong); border-bottom: 1px solid var(--line-strong); color: var(--ink); }
   .cal tbody tr.group-row .g-label { font-weight: 600; color: var(--ink); margin-right: 14px; }
   .cal tbody tr.group-row .g-cnt { color: var(--accent); font-weight: 600; margin-right: 14px; }
   .cal tbody tr.group-row .g-avg { color: var(--ink-soft); font-size: 10px; }

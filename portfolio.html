@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<meta name="theme-color" content="#fafaf7" />
+<meta name="theme-color" content="#0c0e13" />
 <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="pragma" content="no-cache" />
 <meta http-equiv="expires" content="0" />
@@ -16,15 +16,15 @@
 
 <style>
   :root {
-    --bg: #ffffff; --bg-warm: #f5f5f5; --surface: #ffffff; --surface-2: #ffffff;
-    --ink: #000000; --ink-mid: #000000; --ink-soft: #1a1a1a; --ink-faint: #999999;
-    --line: #d0d0d0; --line-strong: #a0a0a0;
-    --accent: #b8421f; --accent-bg: #fbeae3;
-    --gold: #b8923f; --gold-bg: #f7eecf;
-    --green: #2f6b35; --green-bg: #d6e8d2;
-    --red: #b02828; --red-bg: #f9d8d8;
-    --blue: #2e527a; --blue-bg: #d6e2ee;
-    --purple: #5e3e7c; --purple-bg: #e6d8ee;
+    --bg: #0c0e13; --bg-warm: #171a22; --surface: #14171e; --surface-2: #1c202a;
+    --ink: #f1f3f8; --ink-mid: #c3c9d4; --ink-soft: #8b93a2; --ink-faint: #5b6473;
+    --line: #262b36; --line-strong: #3a414f;
+    --accent: #ff5d6a; --accent-bg: rgba(255,93,106,0.15);
+    --gold: #ffb03a; --gold-bg: rgba(255,176,58,0.15);
+    --green: #35d0a5; --green-bg: rgba(53,208,165,0.15);
+    --red: #ff5d6a; --red-bg: rgba(255,93,106,0.15);
+    --blue: #5b9dff; --blue-bg: rgba(91,157,255,0.15);
+    --purple: #b48bff; --purple-bg: rgba(180,139,255,0.15);
     --serif: 'Fraunces','Nanum Myeongjo',serif;
     --sans: 'Pretendard',-apple-system,sans-serif;
     --mono: 'JetBrains Mono',ui-monospace,monospace;
@@ -267,16 +267,16 @@
 <script>
 const $ = id => document.getElementById(id);
 
-const PALETTE = ['#b8421f','#2e527a','#b8923f','#2f6b35','#5e3e7c','#c06a3a','#3a7ca5','#8a6d3b','#4a7a4a','#7a5a8a','#a0522d','#556b8d'];
+const PALETTE = ['#ff5d6a','#5b9dff','#ffb03a','#35d0a5','#b48bff','#2fd4c6','#8b94ff','#f47bb8','#a6e64d','#ff8a5b','#5bd6ff','#ffd24d'];
 
 // 자산 종류 메타
 const ASSET_TYPES = {
-  stock:     { label: '주식',     color: '#b8421f' },
-  mezzanine: { label: '메자닌',   color: '#5e3e7c' },
-  bond:      { label: '채권',     color: '#2e527a' },
-  fund:      { label: '펀드',     color: '#2f6b35' },
-  cash:      { label: '현금성',   color: '#b8b3a8' },
-  other:     { label: '기타',     color: '#8a6d3b' },
+  stock:     { label: '주식',     color: '#ff5d6a' },
+  mezzanine: { label: '메자닌',   color: '#b48bff' },
+  bond:      { label: '채권',     color: '#5b9dff' },
+  fund:      { label: '펀드',     color: '#35d0a5' },
+  cash:      { label: '현금성',   color: '#9aa3b2' },
+  other:     { label: '기타',     color: '#ffb03a' },
 };
 const typeMeta = t => ASSET_TYPES[t] || ASSET_TYPES.other;
 

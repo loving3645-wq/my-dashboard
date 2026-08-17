@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<meta name="theme-color" content="#fafaf7" />
+<meta name="theme-color" content="#0c0e13" />
 <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="pragma" content="no-cache" />
 <meta http-equiv="expires" content="0" />
@@ -16,15 +16,15 @@
 
 <style>
   :root {
-    --bg: #ffffff; --bg-warm: #f5f5f5; --surface: #ffffff; --surface-2: #ffffff;
-    --ink: #000000; --ink-mid: #000000; --ink-soft: #1a1a1a; --ink-faint: #999999;
-    --line: #d0d0d0; --line-strong: #a0a0a0;
-    --accent: #b8421f; --accent-bg: #fbeae3;
-    --gold: #b8923f; --gold-bg: #f7eecf;
-    --green: #2f6b35; --green-bg: #d6e8d2;
-    --red: #b02828; --red-bg: #f9d8d8;
-    --blue: #2e527a; --blue-bg: #d6e2ee;
-    --purple: #5e3e7c; --purple-bg: #e6d8ee;
+    --bg: #0c0e13; --bg-warm: #171a22; --surface: #14171e; --surface-2: #1c202a;
+    --ink: #f1f3f8; --ink-mid: #c3c9d4; --ink-soft: #8b93a2; --ink-faint: #5b6473;
+    --line: #262b36; --line-strong: #3a414f;
+    --accent: #ff5d6a; --accent-bg: #331a1c;
+    --gold: #ffb03a; --gold-bg: #332a14;
+    --green: #35d0a5; --green-bg: #14312a;
+    --red: #ff5d6a; --red-bg: #3a1c20;
+    --blue: #5b9dff; --blue-bg: #182838;
+    --purple: #b48bff; --purple-bg: #241a33;
     --serif: 'Fraunces','Nanum Myeongjo',serif;
     --sans: 'Pretendard',-apple-system,sans-serif;
     --mono: 'JetBrains Mono',ui-monospace,monospace;
@@ -113,15 +113,15 @@
   .table-wrap { background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; overflow: auto; max-height: calc(100vh - 280px); box-shadow: 0 1px 4px rgba(26,26,26,0.06); }
   table.ipo { width: 100%; border-collapse: collapse; font-size: 12.5px; }
   .ipo thead { position: sticky; top: 0; background: #1a1a1a; z-index: 5; }
-  .ipo th { text-align: right; padding: 11px 10px; font-family: var(--mono); font-weight: 600; font-size: 10px; color: #c8b8a4; letter-spacing: 0.12em; text-transform: uppercase; border-bottom: 2px solid #b8421f; cursor: pointer; -webkit-user-select: none; user-select: none; white-space: nowrap; transition: color 0.12s, background 0.12s; }
+  .ipo th { text-align: right; padding: 11px 10px; font-family: var(--mono); font-weight: 600; font-size: 10px; color: #c8b8a4; letter-spacing: 0.12em; text-transform: uppercase; border-bottom: 2px solid #ff5d6a; cursor: pointer; -webkit-user-select: none; user-select: none; white-space: nowrap; transition: color 0.12s, background 0.12s; }
   .ipo th:hover { color: #fafaf7; background: #2a2520; }
   .ipo th.left { text-align: left; }
   .ipo th.sorted { color: #ff7a4a; }
   .ipo th .arrow { display: inline-block; margin-left: 4px; font-size: 9px; opacity: 0.6; }
   .ipo th.sorted .arrow { opacity: 1; }
   .ipo tbody tr { border-bottom: 1px solid var(--line); transition: background 0.1s; cursor: pointer; }
-  .ipo tbody tr:nth-child(even) { background: #ffffff; }
-  .ipo tbody tr:hover { background: #f0f0f0; }
+  .ipo tbody tr:nth-child(even) { background: #191c25; }
+  .ipo tbody tr:hover { background: #22262f; }
   .ipo tbody tr.no-ticker { cursor: default; opacity: 0.55; }
   .ipo tbody tr.no-ticker:hover { background: inherit; }
   .ipo td { padding: 8px 10px; text-align: right; font-family: var(--mono); font-size: 12px; color: var(--ink); white-space: nowrap; }

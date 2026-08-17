@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<meta name="theme-color" content="#fafaf7" />
+<meta name="theme-color" content="#0c0e13" />
 <title>한국 종목 딥다이브 · 지니의 리서치</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,33 +16,33 @@
 
 <style>
   :root {
-    --bg: #fafaf7;
-    --bg-warm: #f4f1ea;
-    --surface: #ffffff;
-    --surface-2: #f7f5f0;
-    --ink: #1a1a1a;
-    --ink-mid: #555;
-    --ink-soft: #8a8580;
-    --ink-faint: #b8b3ad;
-    --line: #e8e4dc;
-    --line-strong: #d4cfc4;
-    --accent: #b8421f;
-    --accent-bg: #fbeae3;
-    --gold: #b8923f;
-    --gold-bg: #f7eecf;
-    --green: #4a7c4e;
-    --green-bg: #e0ebd9;
-    --red: #c43e3e;
-    --red-bg: #fbe4e4;
-    --blue: #3a5e7e;
-    --blue-bg: #dde6ee;
-    --purple: #6b4a7c;
-    --purple-bg: #ebe0ee;
+    --bg: #0c0e13;
+    --bg-warm: #171a22;
+    --surface: #14171e;
+    --surface-2: #1c202a;
+    --ink: #f1f3f8;
+    --ink-mid: #c3c9d4;
+    --ink-soft: #8b93a2;
+    --ink-faint: #5b6473;
+    --line: #262b36;
+    --line-strong: #3a414f;
+    --accent: #ff7a4d;
+    --accent-bg: rgba(255,122,77,0.16);
+    --gold: #ffb03a;
+    --gold-bg: rgba(255,176,58,0.16);
+    --green: #35d0a5;
+    --green-bg: rgba(53,208,165,0.16);
+    --red: #ff5d6a;
+    --red-bg: rgba(255,93,106,0.16);
+    --blue: #5b9dff;
+    --blue-bg: rgba(91,157,255,0.16);
+    --purple: #b48bff;
+    --purple-bg: rgba(180,139,255,0.16);
     --serif: 'Fraunces', 'Nanum Myeongjo', serif;
     --sans: 'Pretendard', -apple-system, sans-serif;
     --mono: 'JetBrains Mono', ui-monospace, monospace;
-    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
-    --shadow-md: 0 4px 14px rgba(0,0,0,0.06);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+    --shadow-md: 0 4px 14px rgba(0,0,0,0.5);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
@@ -1050,12 +1050,12 @@ function buildPriceSeries(ticker, range, currentPrice) {
  * Charts
  * ===================================================================== */
 const COLORS = {
-  ink: '#1a1a1a', soft: '#8a8580', line: '#e8e4dc',
-  accent: '#b8421f', accentBg: 'rgba(184,66,31,0.08)',
-  green: '#4a7c4e', greenBg: 'rgba(74,124,78,0.12)',
-  red: '#c43e3e', redBg: 'rgba(196,62,62,0.12)',
-  gold: '#b8923f', goldBg: 'rgba(184,146,63,0.12)',
-  blue: '#3a5e7e', blueBg: 'rgba(58,94,126,0.12)',
+  ink: '#f1f3f8', soft: '#8b93a2', line: '#262b36',
+  accent: '#ff7a4d', accentBg: 'rgba(255,122,77,0.14)',
+  green: '#35d0a5', greenBg: 'rgba(53,208,165,0.16)',
+  red: '#ff5d6a', redBg: 'rgba(255,93,106,0.16)',
+  gold: '#ffb03a', goldBg: 'rgba(255,176,58,0.16)',
+  blue: '#5b9dff', blueBg: 'rgba(91,157,255,0.16)',
 };
 Chart.defaults.font.family = "'JetBrains Mono', 'Pretendard', monospace";
 Chart.defaults.font.size = 10;
@@ -1070,7 +1070,7 @@ function buildPriceChart(data, isUp) {
   const fillCol = isUp ? COLORS.greenBg : COLORS.redBg;
   const grad = ctx.createLinearGradient(0, 0, 0, 320);
   grad.addColorStop(0, fillCol);
-  grad.addColorStop(1, 'rgba(255,255,255,0)');
+  grad.addColorStop(1, 'rgba(20,23,30,0)');
   if (priceChart) priceChart.destroy();
   priceChart = new Chart(ctx, {
     type: 'line',
@@ -1086,7 +1086,7 @@ function buildPriceChart(data, isUp) {
         pointRadius: 0,
         pointHoverRadius: 4,
         pointHoverBackgroundColor: lineCol,
-        pointHoverBorderColor: '#fff',
+        pointHoverBorderColor: '#14171e',
         pointHoverBorderWidth: 2,
       }],
     },
@@ -1096,7 +1096,7 @@ function buildPriceChart(data, isUp) {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#1a1a1a', titleColor: '#fafaf7', bodyColor: '#fafaf7',
+          backgroundColor: '#1c202a', titleColor: '#f1f3f8', bodyColor: '#f1f3f8',
           borderColor: COLORS.accent, borderWidth: 1, padding: 10, displayColors: false,
           titleFont: { family: 'JetBrains Mono', size: 10 },
           bodyFont: { family: 'JetBrains Mono', size: 12, weight: 600 },
@@ -1154,7 +1154,7 @@ function buildRevChart(fin) {
       plugins: {
         legend: { position: 'top', align: 'end', labels: { boxWidth: 8, boxHeight: 8, padding: 12, font: { family: 'JetBrains Mono', size: 10 } } },
         tooltip: {
-          backgroundColor: '#1a1a1a', titleColor: '#fafaf7', bodyColor: '#fafaf7',
+          backgroundColor: '#1c202a', titleColor: '#f1f3f8', bodyColor: '#f1f3f8',
           borderColor: COLORS.accent, borderWidth: 1, padding: 8,
           callbacks: { label: c => '  ' + c.dataset.label + ': ' + c.parsed.y.toFixed(1) + '조원' }
         },
@@ -1185,7 +1185,7 @@ function buildMarginChart(fin) {
       plugins: {
         legend: { position: 'top', align: 'end', labels: { boxWidth: 8, boxHeight: 8, padding: 10, font: { family: 'JetBrains Mono', size: 10 } } },
         tooltip: {
-          backgroundColor: '#1a1a1a', titleColor: '#fafaf7', bodyColor: '#fafaf7',
+          backgroundColor: '#1c202a', titleColor: '#f1f3f8', bodyColor: '#f1f3f8',
           borderColor: COLORS.accent, borderWidth: 1, padding: 8,
           callbacks: { label: c => '  ' + c.dataset.label + ': ' + c.parsed.y.toFixed(1) + '%' }
         },
@@ -1208,7 +1208,7 @@ function buildDonut(a) {
       datasets: [{
         data: [a.buy, a.hold, a.sell],
         backgroundColor: [COLORS.green, COLORS.gold, COLORS.red],
-        borderColor: '#fff', borderWidth: 2,
+        borderColor: '#14171e', borderWidth: 2,
       }],
     },
     options: {
@@ -1228,7 +1228,7 @@ function buildOwn(o) {
       datasets: [{
         data: [o.institutional, o.insider, o.retail],
         backgroundColor: [COLORS.blue, COLORS.accent, COLORS.gold],
-        borderColor: '#fff', borderWidth: 2,
+        borderColor: '#14171e', borderWidth: 2,
       }],
     },
     options: {
@@ -1236,7 +1236,7 @@ function buildOwn(o) {
       plugins: {
         legend: { position: 'right', labels: { boxWidth: 8, boxHeight: 8, padding: 8, font: { family: 'JetBrains Mono', size: 10 } } },
         tooltip: {
-          backgroundColor: '#1a1a1a', titleColor: '#fafaf7', bodyColor: '#fafaf7',
+          backgroundColor: '#1c202a', titleColor: '#f1f3f8', bodyColor: '#f1f3f8',
           borderColor: COLORS.accent, borderWidth: 1, padding: 8,
           callbacks: { label: c => '  ' + c.label + ': ' + c.parsed.toFixed(1) + '%' }
         },

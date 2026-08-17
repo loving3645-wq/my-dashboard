@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<meta name="theme-color" content="#fafaf7" />
+<meta name="theme-color" content="#0c0e13" />
 <title>미국 시장 스캐너 (NASDAQ ≥5천억원) · 지니의 리서치</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,39 +15,39 @@
 
 <style>
   :root {
-    --bg: #fafaf7;
-    --bg-warm: #f4f1ea;
-    --surface: #ffffff;
-    --surface-2: #f7f5f0;
-    --ink: #1a1a1a;
-    --ink-mid: #555;
-    --ink-soft: #8a8580;
-    --ink-faint: #b8b3ad;
-    --line: #e8e4dc;
-    --line-strong: #d4cfc4;
-    --accent: #b8421f;
-    --accent-bg: #fbeae3;
-    --gold: #b8923f;
-    --gold-bg: #f7eecf;
-    --green: #4a7c4e;
-    --green-bg: #e0ebd9;
-    --red: #c43e3e;
-    --red-bg: #fbe4e4;
-    --blue: #3a5e7e;
-    --blue-bg: #dde6ee;
+    --bg: #0c0e13;
+    --bg-warm: #171a22;
+    --surface: #14171e;
+    --surface-2: #1c202a;
+    --ink: #f1f3f8;
+    --ink-mid: #c3c9d4;
+    --ink-soft: #8b93a2;
+    --ink-faint: #5b6473;
+    --line: #262b36;
+    --line-strong: #3a414f;
+    --accent: #ff5d6a;
+    --accent-bg: #351d21;
+    --gold: #ffb03a;
+    --gold-bg: #352a13;
+    --green: #35d0a5;
+    --green-bg: #123028;
+    --red: #ff5d6a;
+    --red-bg: #351a1e;
+    --blue: #5b9dff;
+    --blue-bg: #17263f;
     --serif: 'Fraunces', 'Nanum Myeongjo', serif;
     --sans: 'Pretendard', -apple-system, sans-serif;
     --mono: 'JetBrains Mono', ui-monospace, monospace;
-    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
-    --shadow-md: 0 4px 14px rgba(0,0,0,0.06);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+    --shadow-md: 0 4px 14px rgba(0,0,0,0.55);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
   body {
     min-height: 100vh;
     background:
-      radial-gradient(ellipse 70% 40% at 100% 0%, rgba(184,66,31,0.04), transparent),
-      radial-gradient(ellipse 60% 50% at 0% 100%, rgba(184,146,63,0.03), transparent),
+      radial-gradient(ellipse 70% 40% at 100% 0%, rgba(255,93,106,0.06), transparent),
+      radial-gradient(ellipse 60% 50% at 0% 100%, rgba(255,176,58,0.05), transparent),
       var(--bg);
     background-attachment: fixed;
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
@@ -105,7 +105,7 @@
   .tp-card.megacap .tp-title .ico { background: var(--blue); }
   .tp-card.gain-1d .tp-title .ico { background: var(--accent); }
   .tp-card.gain-1w .tp-title .ico { background: var(--gold); }
-  .tp-card.gain-1m .tp-title .ico { background: #6b4a7c; }
+  .tp-card.gain-1m .tp-title .ico { background: #b48bff; }
   .tp-list { display: flex; flex-direction: column; gap: 2px; }
   .tp-row { display: flex; align-items: center; gap: 6px; padding: 4px 4px; border-radius: 4px; cursor: pointer; transition: background 0.12s; min-width: 0; }
   .tp-row:hover { background: var(--bg-warm); }
@@ -152,7 +152,7 @@
   .spark-cell svg { display: block; }
 
   /* Detail modal */
-  .modal-overlay { position: fixed; inset: 0; background: rgba(20,18,12,0.55); backdrop-filter: blur(2px); z-index: 100; display: none; align-items: flex-start; justify-content: center; padding: 40px 16px; overflow-y: auto; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.66); backdrop-filter: blur(2px); z-index: 100; display: none; align-items: flex-start; justify-content: center; padding: 40px 16px; overflow-y: auto; }
   .modal-overlay.show { display: flex; }
   .modal { background: var(--bg); border: 1px solid var(--line-strong); border-radius: 12px; max-width: 1000px; width: 100%; box-shadow: var(--shadow-md); display: flex; flex-direction: column; overflow: hidden; }
   .modal-head { padding: 18px 22px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; background: var(--surface); }
@@ -583,8 +583,8 @@ function render() {
         const cls = pctClass(v);
         return `<td><span class="pct ${cls}">${fmtPct(v)}</span></td>`;
       }).join('');
-      const sparkColor = (t.r1m == null || t.r1m === 0) ? '#8a8580'
-                       : (t.r1m > 0 ? '#4a7c4e' : '#c43e3e');
+      const sparkColor = (t.r1m == null || t.r1m === 0) ? '#8b93a2'
+                       : (t.r1m > 0 ? '#35d0a5' : '#ff5d6a');
       const spark = sparklineSvg(t.spark || [], sparkColor);
       return `<tr data-symbol="${escapeHtml(t.symbol)}">
         <td class="left">
@@ -804,9 +804,9 @@ function drawDetailChart(t, periodKey) {
   const labels = slice.map(d => new Date(d.t * 1000).toISOString().slice(0, 10));
   const values = slice.map(d => d.c);
   const ret = t[p.key];
-  const color = ret == null ? '#8a8580' : (ret >= 0 ? '#4a7c4e' : '#c43e3e');
-  const bg = ret == null ? 'rgba(138,133,128,0.1)'
-                          : (ret >= 0 ? 'rgba(74,124,78,0.12)' : 'rgba(196,62,62,0.12)');
+  const color = ret == null ? '#8b93a2' : (ret >= 0 ? '#35d0a5' : '#ff5d6a');
+  const bg = ret == null ? 'rgba(139,147,162,0.12)'
+                          : (ret >= 0 ? 'rgba(53,208,165,0.14)' : 'rgba(255,93,106,0.14)');
 
   const ctx = document.getElementById('m-chart').getContext('2d');
   if (chartInstance) chartInstance.destroy();
@@ -825,10 +825,10 @@ function drawDetailChart(t, periodKey) {
           callbacks: { label: c => '$' + fmtPrice(c.parsed.y) } },
       },
       scales: {
-        x: { ticks: { font: { size: 9, family: 'JetBrains Mono' }, color: '#8a8580',
+        x: { ticks: { font: { size: 9, family: 'JetBrains Mono' }, color: '#8b93a2',
               maxTicksLimit: 6, maxRotation: 0 }, grid: { display: false } },
-        y: { ticks: { font: { size: 9, family: 'JetBrains Mono' }, color: '#8a8580',
-              callback: v => '$' + Math.round(v) }, grid: { color: '#f0eee9' } },
+        y: { ticks: { font: { size: 9, family: 'JetBrains Mono' }, color: '#8b93a2',
+              callback: v => '$' + Math.round(v) }, grid: { color: '#262b36' } },
       },
       interaction: { mode: 'index', intersect: false },
     }
