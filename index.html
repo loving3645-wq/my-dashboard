@@ -58,7 +58,7 @@
     --p2-color: #ffb03a;
     --p3-color: #9aa2b0;
     --serif: 'Jua', 'Gowun Dodum', 'Pretendard', sans-serif;
-    --sans: 'Gowun Dodum', 'Nunito', 'Pretendard', -apple-system, sans-serif;
+    --sans: 'Pretendard', -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Gowun Dodum', sans-serif;
     --mono: 'JetBrains Mono', ui-monospace, monospace;
     --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
   }
@@ -428,6 +428,11 @@
   .board { display: block; overflow: visible; padding-bottom: 0; }
   .col { display: none; }
   .col.col-active { display: flex; flex: 1 1 auto; width: 100%; min-height: 72vh; max-height: 82vh; }
+  /* "전체" view: show every list at once in a grid */
+  .col-tab.all-tab .icon { background: linear-gradient(135deg, var(--accent), var(--blue)); }
+  .board.show-all { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; align-items: start; }
+  .board.show-all .col { display: flex; width: auto; min-height: 56vh; max-height: 74vh; }
+  @media (max-width: 700px) { .board.show-all { grid-template-columns: 1fr; } }
   @media (max-width: 700px) {
     .workspace { grid-template-columns: 1fr; gap: 12px; }
     .col-tabs { flex-direction: row; overflow-x: auto; position: static; }
@@ -527,7 +532,8 @@
   <div class="workspace">
   <div class="col-tabs" id="col-tabs">
     <div class="side-lbl">카테고리</div>
-    <button class="col-tab cal-tab active" data-col="cal"><span class="icon"></span>캘린더<span class="badge" id="ct-cal">0</span></button>
+    <button class="col-tab all-tab active" data-col="all"><span class="icon"></span>전체</button>
+    <button class="col-tab cal-tab" data-col="cal"><span class="icon"></span>캘린더<span class="badge" id="ct-cal">0</span></button>
     <button class="col-tab todo-tab" data-col="todo"><span class="icon"></span>할 일<span class="badge" id="ct-todo">0</span></button>
     <button class="col-tab deals-tab" data-col="deals"><span class="icon"></span>검토딜<span class="badge" id="ct-deals">0</span></button>
     <button class="col-tab stocks-tab" data-col="stocks"><span class="icon"></span>종목<span class="badge" id="ct-stocks">0</span></button>
@@ -538,8 +544,8 @@
     <button class="col-tab journal-tab" data-col="journal"><span class="icon"></span>메모<span class="badge" id="ct-journal">0</span></button>
     <button class="col-tab routines-tab" data-col="routines"><span class="icon"></span>루틴<span class="badge" id="ct-routines">0</span></button>
   </div>
-  <div class="board">
-    <div class="col cal col-active" data-col="cal">
+  <div class="board show-all">
+    <div class="col cal" data-col="cal">
       <div class="col-header">
         <div class="col-title"><span class="icon"></span>캘린더</div>
         <div class="col-count" id="cal-count">—</div>
@@ -1966,6 +1972,8 @@ function setActiveCol(colName) {
   state.activeCol = colName;
   localStorage.setItem(STORAGE_KEY.COL, colName);
   document.querySelectorAll('.col-tab').forEach(b => b.classList.toggle('active', b.dataset.col === colName));
+  const board = document.querySelector('.board');
+  if (board) board.classList.toggle('show-all', colName === 'all');
   document.querySelectorAll('.col').forEach(c => c.classList.toggle('col-active', c.dataset.col === colName));
 }
 document.querySelectorAll('.col-tab').forEach(btn => {
@@ -1988,9 +1996,9 @@ document.querySelectorAll('[data-stat-jump]').forEach(el => {
 });
 // Apply the stored (or default) category on load so one box fills the main area.
 (function initActiveCol() {
-  let c = 'cal';
-  try { c = localStorage.getItem(STORAGE_KEY.COL) || 'cal'; } catch {}
-  if (c === 'paused' || c === 'done' || !document.querySelector(`.col[data-col="${c}"]`)) c = 'cal';
+  let c = 'all';
+  try { c = localStorage.getItem(STORAGE_KEY.COL) || 'all'; } catch {}
+  if (c !== 'all' && (c === 'paused' || c === 'done' || !document.querySelector(`.col[data-col="${c}"]`))) c = 'all';
   setActiveCol(c);
 })();
 (function initRetro() {
@@ -2215,7 +2223,7 @@ async function bootstrap() {
   state.calendarGistId = localStorage.getItem(STORAGE_KEY.CALENDAR_GIST_ID);
   state.activeTab = localStorage.getItem(STORAGE_KEY.TAB) || 'all';
   state.priFilter = localStorage.getItem(STORAGE_KEY.PRI_FILTER) || 'all';
-  state.activeCol = localStorage.getItem(STORAGE_KEY.COL) || 'cal';
+  state.activeCol = localStorage.getItem(STORAGE_KEY.COL) || 'all';
   if (state.activeCol === 'doing') state.activeCol = 'deals';
   document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.tab === state.activeTab));
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.pri === state.priFilter));
