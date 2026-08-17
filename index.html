@@ -468,29 +468,6 @@
     <span class="sync-pill" id="sync-pill"><span class="dot"></span><span class="lbl">SYNC</span></span>
   </div>
 
-  <section class="retro-bar" id="retro-bar">
-    <div class="retro-head">
-      <div class="alerts-title"><span class="accent-dot"></span>회고</div>
-      <button class="retro-toggle" id="retro-toggle" aria-expanded="true">접기</button>
-    </div>
-    <div class="retro-body" id="retro-body">
-      <div class="retro-card accent-done">
-        <div class="retro-num" id="retro-week-done">0</div>
-        <div class="retro-lbl">이번 주 완료</div>
-        <div class="retro-sub" id="retro-week-sub">—</div>
-      </div>
-      <div class="retro-card accent-paused">
-        <div class="retro-num" id="retro-paused">0</div>
-        <div class="retro-lbl">잠시중단</div>
-        <div class="retro-sub" id="retro-paused-sub">—</div>
-      </div>
-      <div class="retro-card accent-avg">
-        <div class="retro-num" id="retro-avg">—</div>
-        <div class="retro-lbl">평균 체류일</div>
-        <div class="retro-sub" id="retro-avg-sub">카테고리별 평균</div>
-      </div>
-    </div>
-  </section>
 
   <div class="col-tabs" id="col-tabs">
     <button class="col-tab cal-tab active" data-col="cal"><span class="icon"></span>캘린더<span class="badge" id="ct-cal">0</span></button>
@@ -1220,6 +1197,7 @@ function startOfWeek(t) {
   return d.getTime();
 }
 function renderRetrospect() {
+  if (!document.getElementById('retro-bar')) return;
   const now = Date.now();
   const weekStart = startOfWeek(now);
   const dayMs = 86400000;
