@@ -417,6 +417,25 @@
   .col.done, .col.paused { display: none !important; }
   .col-tab.done-tab, .col-tab.paused-tab { display: none !important; }
   .stat[data-stat-jump="done"], .stat[data-stat-jump="paused"] { display: none !important; }
+
+  /* ===== Left-sidebar category layout: pick a category → its box fills the main area ===== */
+  .workspace { display: grid; grid-template-columns: 240px 1fr; gap: 20px; align-items: start; }
+  .col-tabs { display: flex !important; flex-direction: column; gap: 3px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 10px; margin-bottom: 0; overflow: visible; position: sticky; top: 16px; }
+  .col-tabs .side-lbl { font-family: var(--mono); font-size: 9px; letter-spacing: 0.15em; color: var(--ink-faint); text-transform: uppercase; padding: 4px 10px 8px; }
+  .col-tab { flex: none; justify-content: flex-start; gap: 10px; padding: 10px 12px; font-size: 13px; min-width: 0; white-space: normal; }
+  .col-tab .icon { width: 8px; height: 8px; }
+  .col-tab .badge { margin-left: auto; font-size: 11px; }
+  .board { display: block; overflow: visible; padding-bottom: 0; }
+  .col { display: none; }
+  .col.col-active { display: flex; flex: 1 1 auto; width: 100%; min-height: 72vh; max-height: 82vh; }
+  @media (max-width: 700px) {
+    .workspace { grid-template-columns: 1fr; gap: 12px; }
+    .col-tabs { flex-direction: row; overflow-x: auto; position: static; }
+    .col-tabs .side-lbl { display: none; }
+    .col-tab { flex: 1 0 auto; justify-content: center; }
+    .col-tab .badge { margin-left: 4px; }
+    .col.col-active { min-height: calc(100vh - 300px); max-height: none; }
+  }
 </style>
 </head>
 <body>
@@ -469,7 +488,9 @@
   </div>
 
 
+  <div class="workspace">
   <div class="col-tabs" id="col-tabs">
+    <div class="side-lbl">카테고리</div>
     <button class="col-tab cal-tab active" data-col="cal"><span class="icon"></span>캘린더<span class="badge" id="ct-cal">0</span></button>
     <button class="col-tab todo-tab" data-col="todo"><span class="icon"></span>할 일<span class="badge" id="ct-todo">0</span></button>
     <button class="col-tab deals-tab" data-col="deals"><span class="icon"></span>검토딜<span class="badge" id="ct-deals">0</span></button>
@@ -561,6 +582,7 @@
       <div class="col-add"><button class="col-add-btn" data-add-routine>+ 루틴 추가</button></div>
     </div>
   </div>
+  </div><!-- /.workspace -->
   <footer class="footer">
     <div class="left">
       <span id="footer-status">READY</span>
@@ -1484,7 +1506,7 @@ function confirmProjectModal() {
     });
   }
   closeProjectModal(); renderProjects(); scheduleSave();
-  if (window.innerWidth <= 700) setActiveCol('projects');
+  setActiveCol('projects');
 }
 document.querySelector('[data-add-project]').addEventListener('click', () => openProjectModal({ mode: 'add' }));
 document.getElementById('project-cancel').addEventListener('click', closeProjectModal);
@@ -1585,7 +1607,7 @@ function confirmStockModal() {
     });
   }
   closeStockModal(); renderStocks(); scheduleSave();
-  if (window.innerWidth <= 700) setActiveCol('stocks');
+  setActiveCol('stocks');
 }
 document.querySelector('[data-add-stock]').addEventListener('click', () => openStockModal({ mode: 'add' }));
 document.getElementById('stock-cancel').addEventListener('click', closeStockModal);
@@ -1665,7 +1687,7 @@ function confirmJournalModal() {
     });
   }
   closeJournalModal(); renderJournal(); scheduleSave();
-  if (window.innerWidth <= 700) setActiveCol('journal');
+  setActiveCol('journal');
 }
 document.querySelector('[data-add-journal]').addEventListener('click', () => openJournalModal({ mode: 'add' }));
 document.getElementById('journal-cancel').addEventListener('click', closeJournalModal);
@@ -1821,7 +1843,7 @@ function confirmRoutineModal() {
     });
   }
   closeRoutineModal(); renderRoutines(); scheduleSave();
-  if (window.innerWidth <= 700) setActiveCol('routines');
+  setActiveCol('routines');
 }
 document.querySelector('[data-add-routine]').addEventListener('click', () => openRoutineModal({ mode: 'add' }));
 document.getElementById('routine-cancel').addEventListener('click', closeRoutineModal);
@@ -1928,6 +1950,13 @@ document.querySelectorAll('[data-stat-jump]').forEach(el => {
     scrollToCol(col);
   });
 });
+// Apply the stored (or default) category on load so one box fills the main area.
+(function initActiveCol() {
+  let c = 'cal';
+  try { c = localStorage.getItem(STORAGE_KEY.COL) || 'cal'; } catch {}
+  if (c === 'paused' || c === 'done' || !document.querySelector(`.col[data-col="${c}"]`)) c = 'cal';
+  setActiveCol(c);
+})();
 (function initRetro() {
   const bar = document.getElementById('retro-bar');
   const btn = document.getElementById('retro-toggle');
@@ -1980,7 +2009,7 @@ function confirmTodoModal() {
   };
   state.todos.push(todo);
   closeTodoModal(); renderBoard(); scheduleSave();
-  if (window.innerWidth <= 700) setActiveCol(todo.status);
+  setActiveCol(todo.status);
 }
 document.querySelectorAll('[data-add]').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -2038,7 +2067,7 @@ function confirmContactModal() {
     });
   }
   closeContactModal(); renderContacts(); scheduleSave();
-  if (window.innerWidth <= 700) setActiveCol('contacts');
+  setActiveCol('contacts');
 }
 document.querySelector('[data-add-contact]').addEventListener('click', () => openContactModal({ mode: 'add' }));
 document.getElementById('contact-cancel').addEventListener('click', closeContactModal);
