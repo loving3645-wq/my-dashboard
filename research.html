@@ -14,6 +14,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..600,0..100&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
 <script src="tickers-full.js"></script>
+<script src="themes.js"></script>
+<script src="sectors.js"></script>
 
 <style>
   :root {
@@ -39,6 +41,12 @@
     --blue-bg: #dde6ee;
     --purple: #6b4a7c;
     --purple-bg: #ebe0ee;
+    --teal: #2f6f6a;
+    --teal-bg: #dceae8;
+    --brown: #8a5a2b;
+    --brown-bg: #f3e6d6;
+    --slate: #4a5568;
+    --slate-bg: #e3e6ea;
     --serif: 'Fraunces', 'Nanum Myeongjo', serif;
     --sans: 'Pretendard', -apple-system, sans-serif;
     --mono: 'JetBrains Mono', ui-monospace, monospace;
@@ -155,6 +163,47 @@
   .hot-item .v.muted { color: var(--ink-soft); }
   .hot-empty { font-size: 11px; color: var(--ink-faint); padding: 4px 6px; }
 
+  /* ========== 섹터 ========== */
+  .sector-pill { display: inline-block; font-family: var(--mono); font-size: 9.5px; padding: 2px 7px; border-radius: 3px; letter-spacing: 0.04em; white-space: nowrap; font-weight: 500; }
+  .sector-pill.tech  { background: var(--blue-bg);   color: var(--blue); }
+  .sector-pill.media { background: var(--purple-bg); color: var(--purple); }
+  .sector-pill.ind   { background: var(--accent-bg); color: var(--accent); }
+  .sector-pill.mat   { background: var(--gold-bg);   color: var(--gold); }
+  .sector-pill.bio   { background: var(--green-bg);  color: var(--green); }
+  .sector-pill.fin   { background: var(--teal-bg);   color: var(--teal); }
+  .sector-pill.cons  { background: var(--brown-bg);  color: var(--brown); }
+  .sector-pill.infra { background: var(--slate-bg);  color: var(--slate); }
+  .sector-pill.etc   { background: var(--surface-2); color: var(--ink-soft); }
+  .research td.sector { white-space: nowrap; }
+
+  .sector-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; padding: 10px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+  .sector-chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 14px; font-size: 11px; color: var(--ink-mid); transition: all 0.12s; cursor: pointer; }
+  .sector-chip .n { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); }
+  .sector-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .sector-chip.active { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+  .sector-chip.active .n { color: var(--bg); opacity: 0.7; }
+
+  /* 섹터 구분 헤더 행 */
+  tr.sector-header { background: var(--bg-warm) !important; cursor: pointer; border-top: 2px solid var(--line-strong) !important; }
+  tr.sector-header:hover { background: var(--surface-2) !important; }
+  tr.sector-header td { padding: 10px 12px; border-left: 4px solid var(--line-strong); }
+  tr.sector-header.tone-tech  td { border-left-color: var(--blue); }
+  tr.sector-header.tone-media td { border-left-color: var(--purple); }
+  tr.sector-header.tone-ind   td { border-left-color: var(--accent); }
+  tr.sector-header.tone-mat   td { border-left-color: var(--gold); }
+  tr.sector-header.tone-bio   td { border-left-color: var(--green); }
+  tr.sector-header.tone-fin   td { border-left-color: var(--teal); }
+  tr.sector-header.tone-cons  td { border-left-color: var(--brown); }
+  tr.sector-header.tone-infra td { border-left-color: var(--slate); }
+  tr.sector-header.tone-etc   td { border-left-color: var(--line-strong); }
+  tr.sector-header .sh-name { font-family: var(--serif); font-size: 15px; font-weight: 500; margin-right: 10px; }
+  tr.sector-header .sh-count { background: var(--ink); color: var(--bg); padding: 1px 7px; border-radius: 10px; font-family: var(--mono); font-size: 10px; margin-right: 8px; }
+  tr.sector-header .sh-meta { font-family: var(--mono); font-size: 10px; color: var(--ink-soft); margin-left: 8px; letter-spacing: 0.05em; }
+  tr.sector-header .sh-toggle { float: right; font-family: var(--mono); font-size: 10px; color: var(--ink-soft); }
+  tr.sector-child { display: none; }
+  tr.sector-child.shown { display: table-row; }
+  tr.sector-child td:first-child { border-left: 3px solid var(--line-strong); }
+
   /* ========== 그룹 뷰 ========== */
   .group-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 8px 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; flex-wrap: wrap; }
   .group-toggle { padding: 4px 10px; border: 1px solid var(--line); background: var(--surface); border-radius: 14px; font-size: 11px; font-family: var(--mono); color: var(--ink-mid); cursor: pointer; transition: all 0.12s; }
@@ -213,6 +262,10 @@
     .research th, .research td { padding: 7px 8px; font-size: 12px; }
     .research td.title { min-width: 200px; }
     .research td.house { font-size: 11px; }
+    /* 좁은 화면에서는 섹터 컬럼을 접는다 — 섹터 뷰의 헤더 행에는 그대로 남는다 */
+    .research th.sector-col, .research td.sector { display: none; }
+    .sector-row { gap: 4px; padding: 8px 10px; }
+    .sector-chip { padding: 3px 8px; font-size: 10.5px; }
   }
 </style>
 </head>
@@ -257,7 +310,12 @@
       <option value="14">최근 14일</option>
     </select>
     <div class="toolbar-divider"></div>
-    <input type="text" class="search" id="search" placeholder="제목 / 종목명 / 증권사 검색" />
+    <input type="text" class="search" id="search" placeholder="제목 / 종목명 / 증권사 / 섹터 검색" />
+  </div>
+
+  <div class="sector-row" id="sector-row">
+    <span class="tlabel">섹터</span>
+    <span style="font-family:var(--mono); font-size:10px; color:var(--ink-faint);">불러오는 중…</span>
   </div>
 
   <div class="preset-row">
@@ -296,6 +354,10 @@
       <div class="hot-title">★ 내 관심종목 <span class="pill" id="hot-watch-count">—</span></div>
       <div class="hot-list" id="hot-watch"></div>
     </div>
+    <div class="hot-card">
+      <div class="hot-title">🔥 리포트 몰린 섹터 <span class="pill">현재 필터 기준</span></div>
+      <div class="hot-list" id="hot-sector"></div>
+    </div>
   </div>
 
   <div class="summary-row" id="summary">
@@ -304,13 +366,17 @@
     <div class="summary-card"><div class="lbl">▼ 목표가 하향</div><div class="val" id="cnt-down" style="color:var(--red);">—</div><div class="sub">동일 증권사 기준</div></div>
     <div class="summary-card"><div class="lbl">⬢ 신규 커버리지</div><div class="val" id="cnt-new" style="color:var(--blue);">—</div><div class="sub">제목에 명시된 종목</div></div>
     <div class="summary-card"><div class="lbl">증권사</div><div class="val" id="cnt-houses">—</div><div class="sub">고유 작성기관</div></div>
+    <div class="summary-card"><div class="lbl">커버 섹터</div><div class="val" id="cnt-sectors">—</div><div class="sub" id="cnt-sector-top">—</div></div>
   </div>
 
   <div class="group-toolbar">
     <span class="tlabel">뷰</span>
+    <button class="group-toggle" data-view="sector">섹터별 구분</button>
+    <button class="group-toggle" data-view="grouped">종목별 구분</button>
     <button class="group-toggle active" data-view="flat">평면</button>
-    <button class="group-toggle" data-view="grouped">종목별 그룹</button>
-    <span style="margin-left:8px; font-family:var(--mono); font-size:10px; color:var(--ink-soft);" id="group-hint">같은 종목에 N건 리포트가 있으면 자동으로 묶어 표시</span>
+    <span style="margin-left:8px; font-family:var(--mono); font-size:10px; color:var(--ink-soft);" id="group-hint">정렬·필터를 그대로 유지한 채 보기 방식만 바뀝니다</span>
+    <button class="group-toggle" id="expand-all" style="margin-left:auto;">모두 펼치기</button>
+    <button class="group-toggle" id="collapse-all">모두 접기</button>
   </div>
 
   <div class="table-wrap">
@@ -319,6 +385,7 @@
         <tr id="head-row">
           <th data-sort="date">날짜 <span class="arrow">↕</span></th>
           <th data-sort="type">유형 <span class="arrow">↕</span></th>
+          <th class="sector-col" data-sort="sector">섹터 <span class="arrow">↕</span></th>
           <th data-sort="title">종목 / 제목 <span class="arrow">↕</span></th>
           <th data-sort="house">증권사 <span class="arrow">↕</span></th>
           <th data-sort="opinion">의견 <span class="arrow">↕</span></th>
@@ -327,7 +394,7 @@
           <th>다운로드</th>
         </tr>
       </thead>
-      <tbody id="report-body"><tr><td colspan="5" class="empty-state">불러오는 중…</td></tr></tbody>
+      <tbody id="report-body"><tr><td colspan="9" class="empty-state">불러오는 중…</td></tr></tbody>
     </table>
   </div>
 
@@ -366,17 +433,33 @@ const REGISTRY = window.TICKER_REGISTRY || {};
 const STATE = {
   type: 'ALL',
   house: '',
+  sector: '',        // '' = 전체 섹터
   window: 7,
   query: '',
   changeFilter: '',  // '' | 'up' | 'down' | 'new' | 'flat'
   opinionFilter: '', // '' | 'buy' | 'hold' | 'sell'
-  view: 'flat',      // 'flat' | 'grouped'
-  expanded: new Set(), // group tickers currently expanded
+  view: 'flat',      // 'flat' | 'sector' | 'grouped'
+  expanded: new Set(),          // 종목 그룹 중 펼쳐진 것
+  collapsedSectors: new Set(),  // 섹터 뷰에서 접힌 섹터 (기본은 전부 펼침)
   sortKey: 'date',
   sortDir: 'desc',
   reports: [],
   generatedAt: null,
 };
+
+const COLSPAN = 9;
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function sectorPill(sector) {
+  if (!sector) return '';
+  const tone = window.SECTORS ? SECTORS.toneOf(sector) : 'etc';
+  return `<span class="sector-pill ${tone}">${escapeHtml(sector)}</span>`;
+}
 
 const WATCHLIST_KEY = 'mscan:watchlist';
 
@@ -393,6 +476,10 @@ async function loadReports() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const j = await r.json();
     STATE.reports = j.reports || [];
+    // 원본 JSON에는 섹터가 없다 — themes.js / KSIC / 네이버 업종명으로 여기서 붙인다.
+    STATE.reports.forEach(rep => {
+      rep.sector = window.SECTORS ? SECTORS.ofReport(rep) : '전략·기타';
+    });
     STATE.generatedAt = j.generatedAt;
     $('report-count').textContent = (j.count ?? STATE.reports.length).toLocaleString();
     $('generated-at').textContent = j.generatedAt
@@ -401,7 +488,7 @@ async function loadReports() {
     updateSummary();
     render();
   } catch (e) {
-    $('report-body').innerHTML = `<tr><td colspan="5" class="empty-state">
+    $('report-body').innerHTML = `<tr><td colspan="${COLSPAN}" class="empty-state">
       리포트 데이터를 불러올 수 없습니다.<br>
       <span style="font-size:10px;">${e.message} — 다음 cron(평일 21:00 KST)을 기다리거나 워크플로를 수동 실행하세요.</span>
     </td></tr>`;
@@ -428,6 +515,31 @@ function updateSummary() {
   $('cnt-down').textContent = down.toLocaleString();
   $('cnt-new').textContent = newCnt.toLocaleString();
   $('cnt-houses').textContent = houses.size.toLocaleString();
+
+  const bySector = {};
+  STATE.reports.forEach(r => { bySector[r.sector] = (bySector[r.sector] || 0) + 1; });
+  const ranked = Object.entries(bySector).sort((a, b) => b[1] - a[1]);
+  $('cnt-sectors').textContent = ranked.length.toLocaleString();
+  $('cnt-sector-top').textContent = ranked.length ? `최다 ${ranked[0][0]} ${ranked[0][1]}건` : '—';
+}
+
+/* 섹터 칩 — 현재 섹터 이외의 필터를 모두 적용한 뒤의 건수를 보여준다.
+   (섹터 자체로 필터링해버리면 나머지 칩이 전부 0이 되므로 제외하고 센다) */
+function renderSectorChips() {
+  const base = getFiltered({ ignoreSector: true });
+  const counts = {};
+  base.forEach(r => { counts[r.sector] = (counts[r.sector] || 0) + 1; });
+  const present = Object.keys(counts).sort((a, b) => SECTORS.rankOf(a) - SECTORS.rankOf(b));
+  const chip = (value, label, n, active) =>
+    `<button class="sector-chip${active ? ' active' : ''}" data-sector="${escapeHtml(value)}">
+       ${label}<span class="n">${n}</span>
+     </button>`;
+  $('sector-row').innerHTML =
+    `<span class="tlabel">섹터</span>` +
+    chip('', '전체', base.length, !STATE.sector) +
+    present.map(s => chip(s, escapeHtml(s), counts[s], STATE.sector === s)).join('') +
+    (STATE.sector && !counts[STATE.sector]
+      ? chip(STATE.sector, escapeHtml(STATE.sector), 0, true) : '');
 }
 
 function opinionClass(op) {
@@ -439,10 +551,12 @@ function opinionClass(op) {
   return 'neutral';
 }
 
-function getFiltered() {
+function getFiltered(opts) {
+  const ignoreSector = !!(opts && opts.ignoreSector);
   let list = STATE.reports.slice();
   if (STATE.type !== 'ALL') list = list.filter(r => r.type === STATE.type);
   if (STATE.house) list = list.filter(r => r.house === STATE.house);
+  if (STATE.sector && !ignoreSector) list = list.filter(r => r.sector === STATE.sector);
   if (STATE.window) {
     const cutoff = new Date();
     cutoff.setHours(0, 0, 0, 0);
@@ -458,7 +572,8 @@ function getFiltered() {
       (r.title || '').toLowerCase().includes(q) ||
       (r.stockName || '').toLowerCase().includes(q) ||
       (r.ticker || '').includes(q) ||
-      (r.house || '').toLowerCase().includes(q)
+      (r.house || '').toLowerCase().includes(q) ||
+      (r.sector || '').toLowerCase().includes(q)
     );
   }
   if (STATE.changeFilter) {
@@ -479,6 +594,11 @@ function getFiltered() {
       const aN = Number.isFinite(va) ? va : (dirMul > 0 ? Infinity : -Infinity);
       const bN = Number.isFinite(vb) ? vb : (dirMul > 0 ? Infinity : -Infinity);
       return (aN - bN) * dirMul;
+    }
+    // 섹터는 가나다순이 아니라 SECTORS.ORDER(테크→산업재→…→기타) 순서로.
+    if (k === 'sector') {
+      const d = (SECTORS.rankOf(va) - SECTORS.rankOf(vb)) * dirMul;
+      return d || String(a.stockName || '').localeCompare(String(b.stockName || ''), 'ko');
     }
     return String(va || '').localeCompare(String(vb || ''), 'ko') * dirMul;
   });
@@ -502,20 +622,18 @@ function buildHeader() {
 function render() {
   buildHeader();
   renderHotPanel();
+  renderSectorChips();
   const list = getFiltered();
   $('filtered-count').textContent = list.length.toLocaleString();
   const tbody = $('report-body');
+  $('expand-all').style.display = STATE.view === 'flat' ? 'none' : '';
+  $('collapse-all').style.display = STATE.view === 'flat' ? 'none' : '';
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="8" class="empty-state">조건에 맞는 리포트가 없습니다.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${COLSPAN}" class="empty-state">조건에 맞는 리포트가 없습니다.</td></tr>`;
     return;
   }
-  if (STATE.view === 'grouped') {
-    renderGrouped(list);
-    return;
-  }
-  const escapeHtml = s => String(s || '').replace(/[&<>"']/g, c => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[c]));
+  if (STATE.view === 'sector') { renderBySector(list); return; }
+  if (STATE.view === 'grouped') { renderGrouped(list); return; }
 
   const fmtTarget = r => {
     // Number.isFinite is strict — does NOT coerce null/undefined to 0 like the
@@ -564,6 +682,7 @@ function render() {
     return `<tr>
       <td class="date">${r.date || ''}</td>
       <td class="type"><span class="type-pill ${r.type}">${r.type === 'company' ? '종목' : '업종'}</span></td>
+      <td class="sector">${sectorPill(r.sector)}</td>
       <td class="title">${stk}<span class="ttl">${escapeHtml(r.title || '')}</span></td>
       <td class="house">${escapeHtml(r.house || '')}</td>
       <td>${opinionCell}</td>
@@ -588,9 +707,6 @@ function render() {
  * Hot panel — 오늘의 핵심 자동 큐레이션 (4 cards)
  * ===================================================================== */
 function renderHotPanel() {
-  const escapeHtml = s => String(s || '').replace(/[&<>"']/g, c => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[c]));
   const stk = (ticker, name) => `<a href="stock-deep-dive.html#${ticker}" style="color:inherit; text-decoration:none;"><strong>${escapeHtml(name || ticker)}</strong></a>`;
 
   // Most recent date in data → "today" baseline
@@ -652,39 +768,157 @@ function renderHotPanel() {
         <span class="v muted">${r.date}</span>
       </div>`).join('')
     : `<div class="hot-empty">${watchlist.size === 0 ? '시장 스캐너에서 ★ 표시한 종목이 여기 모입니다' : '관심종목 리포트 없음'}</div>`;
+
+  // 5) 🔥 리포트가 몰린 섹터 — 클릭하면 그 섹터로 필터
+  const secCounts = {};
+  getFiltered({ ignoreSector: true }).forEach(r => {
+    secCounts[r.sector] = (secCounts[r.sector] || 0) + 1;
+  });
+  const topSectors = Object.entries(secCounts).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  const secTotal = Object.values(secCounts).reduce((a, b) => a + b, 0);
+  $('hot-sector').innerHTML = topSectors.length
+    ? topSectors.map(([s, n]) => `<div class="hot-item" data-jump-sector="${escapeHtml(s)}">
+        <span class="nm">${sectorPill(s)}</span>
+        <span class="v ${STATE.sector === s ? 'up' : 'muted'}">${n}건 · ${Math.round(n / secTotal * 100)}%</span>
+      </div>`).join('')
+    : `<div class="hot-empty">조건에 맞는 리포트 없음</div>`;
+  $('hot-sector').querySelectorAll('[data-jump-sector]').forEach(el => {
+    el.addEventListener('click', () => {
+      const s = el.dataset.jumpSector;
+      STATE.sector = (STATE.sector === s) ? '' : s;
+      render();
+    });
+  });
+}
+
+/* =====================================================================
+ * Sector view — 섹터 헤더로 구간을 끊고, 그 안에서 종목명 → 날짜 순으로 정렬
+ * ===================================================================== */
+function fmtTargetCell(r) {
+  return Number.isFinite(r.targetPrice)
+    ? `<span class="target-cell">${r.targetPrice.toLocaleString()}</span>`
+    : '<span class="prev-target">—</span>';
+}
+
+function fmtChangeCell(r) {
+  if (r.targetChange === 'up' && Number.isFinite(r.prevTargetPrice) && Number.isFinite(r.targetPrice)) {
+    const pct = ((r.targetPrice / r.prevTargetPrice - 1) * 100).toFixed(1);
+    return `<span class="change-pill up" title="이전 ${r.prevTargetPrice.toLocaleString()} → ${r.targetPrice.toLocaleString()}">▲ +${pct}%</span>`;
+  }
+  if (r.targetChange === 'down' && Number.isFinite(r.prevTargetPrice) && Number.isFinite(r.targetPrice)) {
+    const pct = ((r.targetPrice / r.prevTargetPrice - 1) * 100).toFixed(1);
+    return `<span class="change-pill down" title="이전 ${r.prevTargetPrice.toLocaleString()} → ${r.targetPrice.toLocaleString()}">▼ ${pct}%</span>`;
+  }
+  if (r.targetChange === 'flat') return '<span class="change-pill flat">= 유지</span>';
+  if (r.targetChange === 'new') return '<span class="change-pill new">⬢ 신규</span>';
+  return '<span class="change-pill empty">—</span>';
+}
+
+function actionCell(r) {
+  const summarizeBtn = r.summary
+    ? `<button class="summarize-btn" data-summary-id="${escapeHtml(r.detailUrl || r.pdfUrl || r.title)}" title="분석가 본문 텍스트 보기">📝 요약</button>` : '';
+  const detailBtn = r.detailUrl
+    ? `<a class="pdf-btn" href="${escapeHtml(r.detailUrl)}" target="_blank" rel="noopener">상세</a>` : '';
+  const pdfBtn = r.pdfUrl
+    ? `<a class="pdf-btn" href="${escapeHtml(r.pdfUrl)}" target="_blank" rel="noopener" style="background:var(--accent-bg);color:var(--accent);border-color:var(--accent-bg);">📄 PDF</a>` : '';
+  return `${summarizeBtn} ${detailBtn} ${pdfBtn}`;
+}
+
+// 섹터 안에서는 섹터 컬럼이 중복이라 종목/제목만 강조한다.
+function sectorChildRow(r, sectorKey, shown) {
+  const stk = r.ticker
+    ? `<a class="stk" href="stock-deep-dive.html#${r.ticker}">${r.ticker} ${escapeHtml(r.stockName || '')}</a> · `
+    : (r.stockName ? `<span class="stk" style="cursor:default;color:var(--purple);">${escapeHtml(r.stockName)}</span> · ` : '');
+  const opinionCell = r.opinion
+    ? `<span class="opinion-pill ${opinionClass(r.opinion)}">${escapeHtml(r.opinion)}</span>`
+    : '<span class="prev-target">—</span>';
+  return `<tr class="sector-child${shown ? ' shown' : ''}" data-sector-key="${escapeHtml(sectorKey)}">
+    <td class="date">${r.date || ''}</td>
+    <td class="type"><span class="type-pill ${r.type}">${r.type === 'company' ? '종목' : '업종'}</span></td>
+    <td class="sector"></td>
+    <td class="title">${stk}<span class="ttl">${escapeHtml(r.title || '')}</span></td>
+    <td class="house">${escapeHtml(r.house || '')}</td>
+    <td>${opinionCell}</td>
+    <td>${fmtTargetCell(r)}</td>
+    <td>${fmtChangeCell(r)}</td>
+    <td class="actions">${actionCell(r)}</td>
+  </tr>`;
+}
+
+function renderBySector(list) {
+  const groups = {};
+  for (const r of list) {
+    (groups[r.sector] || (groups[r.sector] = [])).push(r);
+  }
+  const sectors = Object.keys(groups).sort((a, b) => SECTORS.rankOf(a) - SECTORS.rankOf(b));
+
+  const tbody = $('report-body');
+  tbody.innerHTML = sectors.map(sector => {
+    const rows = groups[sector].slice().sort((a, b) =>
+      String(a.stockName || '').localeCompare(String(b.stockName || ''), 'ko') ||
+      String(b.date || '').localeCompare(String(a.date || ''))
+    );
+    const shown = !STATE.collapsedSectors.has(sector);
+    const ups = rows.filter(r => r.targetChange === 'up').length;
+    const downs = rows.filter(r => r.targetChange === 'down').length;
+    const stocks = new Set(rows.filter(r => r.ticker).map(r => r.ticker)).size;
+    const houses = new Set(rows.map(r => r.house).filter(Boolean)).size;
+    const tags = [
+      ups ? `<span class="change-pill up">▲ ${ups}</span>` : '',
+      downs ? `<span class="change-pill down">▼ ${downs}</span>` : '',
+    ].filter(Boolean).join(' ');
+
+    const header = `<tr class="sector-header tone-${SECTORS.toneOf(sector)}" data-sector-key="${escapeHtml(sector)}">
+      <td colspan="${COLSPAN}">
+        <span class="sh-count">${rows.length}</span>
+        <span class="sh-name">${escapeHtml(sector)}</span>
+        ${tags}
+        <span class="sh-meta">종목 ${stocks} · 증권사 ${houses}</span>
+        <span class="sh-toggle">${shown ? '▾ 접기' : '▸ 펼치기'}</span>
+      </td>
+    </tr>`;
+    return header + rows.map(r => sectorChildRow(r, sector, shown)).join('');
+  }).join('');
+
+  tbody.querySelectorAll('.sector-header').forEach(tr => {
+    tr.addEventListener('click', () => {
+      const key = tr.dataset.sectorKey;
+      if (STATE.collapsedSectors.has(key)) STATE.collapsedSectors.delete(key);
+      else STATE.collapsedSectors.add(key);
+      render();
+    });
+  });
+
+  bindSummarizeButtons(tbody, list);
+}
+
+function bindSummarizeButtons(tbody, list) {
+  tbody.querySelectorAll('.summarize-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = btn.dataset.summaryId;
+      const report = list.find(r => (r.detailUrl || r.pdfUrl || r.title) === id);
+      if (report) openSummaryModal(report);
+    });
+  });
 }
 
 /* =====================================================================
  * Group view — 같은 종목으로 묶어서 N건 카드처럼 표시
  * ===================================================================== */
 function renderGrouped(list) {
-  const escapeHtml = s => String(s || '').replace(/[&<>"']/g, c => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[c]));
   // Group by ticker (industry reports get their own pseudo-group by stockName)
   const groups = {};
   for (const r of list) {
     const key = r.ticker || ('industry:' + (r.stockName || 'misc'));
-    if (!groups[key]) groups[key] = { ticker: r.ticker, stockName: r.stockName, type: r.type, reports: [] };
+    if (!groups[key]) groups[key] = { ticker: r.ticker, stockName: r.stockName, type: r.type, sector: r.sector, reports: [] };
     groups[key].reports.push(r);
   }
-  // Sort groups by report count desc, then ticker
-  const sorted = Object.values(groups).sort((a, b) => b.reports.length - a.reports.length || (a.ticker || '').localeCompare(b.ticker || ''));
-
-  const fmtTarget = r => Number.isFinite(r.targetPrice) ? r.targetPrice.toLocaleString() : '—';
-  const fmtChange = r => {
-    if (r.targetChange === 'up' && Number.isFinite(r.prevTargetPrice) && Number.isFinite(r.targetPrice)) {
-      const pct = ((r.targetPrice / r.prevTargetPrice - 1) * 100).toFixed(1);
-      return `<span class="change-pill up">▲ +${pct}%</span>`;
-    }
-    if (r.targetChange === 'down' && Number.isFinite(r.prevTargetPrice) && Number.isFinite(r.targetPrice)) {
-      const pct = ((r.targetPrice / r.prevTargetPrice - 1) * 100).toFixed(1);
-      return `<span class="change-pill down">▼ ${pct}%</span>`;
-    }
-    if (r.targetChange === 'flat') return '<span class="change-pill flat">= 유지</span>';
-    if (r.targetChange === 'new') return '<span class="change-pill new">⬢ 신규</span>';
-    return '<span class="prev-target">—</span>';
-  };
+  // 섹터 순 → 리포트 많은 순 → 티커 순. 같은 섹터 종목이 붙어 나오게.
+  const sorted = Object.values(groups).sort((a, b) =>
+    SECTORS.rankOf(a.sector) - SECTORS.rankOf(b.sector) ||
+    b.reports.length - a.reports.length ||
+    (a.ticker || '').localeCompare(b.ticker || ''));
 
   const tbody = $('report-body');
   tbody.innerHTML = sorted.map(g => {
@@ -704,29 +938,28 @@ function renderGrouped(list) {
       ? `<a class="stk" href="stock-deep-dive.html#${g.ticker}">${g.ticker}</a> ${escapeHtml(g.stockName || '')}`
       : `<span class="stk" style="color:var(--purple);">${escapeHtml(g.stockName || '')}</span>`;
     const headerRow = `<tr class="group-header" data-group-key="${escapeHtml(key)}">
-      <td colspan="8">
+      <td colspan="${COLSPAN}">
         <span class="gh-count">${g.reports.length}</span>
         <span class="gh-name">${titleCell}</span>
+        ${sectorPill(g.sector)}
         <span class="gh-tags">${tagSummary}</span>
         <span class="gh-toggle">${expanded ? '▾ 접기' : '▸ 펼치기'}</span>
       </td>
     </tr>`;
     const detailRows = g.reports.map(r => {
-      const summarizeBtn = r.summary ? `<button class="summarize-btn" data-summary-id="${escapeHtml(r.detailUrl || r.pdfUrl || r.title)}" title="분석가 본문">📝 요약</button>` : '';
-      const detailBtn = r.detailUrl ? `<a class="pdf-btn" href="${escapeHtml(r.detailUrl)}" target="_blank">상세</a>` : '';
-      const pdfBtn = r.pdfUrl ? `<a class="pdf-btn" href="${escapeHtml(r.pdfUrl)}" target="_blank" style="background:var(--accent-bg);color:var(--accent);border-color:var(--accent-bg);">📄</a>` : '';
       const opinionCell = r.opinion
         ? `<span class="opinion-pill ${opinionClass(r.opinion)}">${escapeHtml(r.opinion)}</span>`
         : '<span class="prev-target">—</span>';
       return `<tr class="group-row ${expanded ? 'expanded' : ''}" data-group-key="${escapeHtml(key)}">
         <td class="date">${r.date || ''}</td>
         <td class="type"><span class="type-pill ${r.type}">${r.type === 'company' ? '종목' : '업종'}</span></td>
+        <td class="sector"></td>
         <td class="title"><span class="ttl">${escapeHtml(r.title || '')}</span></td>
         <td class="house">${escapeHtml(r.house || '')}</td>
         <td>${opinionCell}</td>
-        <td>${fmtTarget(r) === '—' ? '<span class="prev-target">—</span>' : '<span class="target-cell">' + fmtTarget(r) + '</span>'}</td>
-        <td>${fmtChange(r)}</td>
-        <td class="actions">${summarizeBtn} ${detailBtn} ${pdfBtn}</td>
+        <td>${fmtTargetCell(r)}</td>
+        <td>${fmtChangeCell(r)}</td>
+        <td class="actions">${actionCell(r)}</td>
       </tr>`;
     }).join('');
     return headerRow + detailRows;
@@ -742,15 +975,7 @@ function renderGrouped(list) {
     });
   });
 
-  // Bind summarize buttons
-  tbody.querySelectorAll('.summarize-btn').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      const id = btn.dataset.summaryId;
-      const report = list.find(r => (r.detailUrl || r.pdfUrl || r.title) === id);
-      if (report) openSummaryModal(report);
-    });
-  });
+  bindSummarizeButtons(tbody, list);
 }
 
 /* =====================================================================
@@ -760,11 +985,8 @@ function renderGrouped(list) {
  * Summary modal — show analyst's body text (pre-extracted by cron, free)
  * ===================================================================== */
 function openSummaryModal(report) {
-  const escapeHtml = s => String(s || '').replace(/[&<>"']/g, c => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[c]));
   $('summary-title').textContent = (report.stockName || '') + ' — ' + (report.title || '리포트');
-  $('summary-meta').textContent = `${report.house || ''} · ${report.date || ''}${report.opinion ? ' · ' + report.opinion : ''}${Number.isFinite(report.targetPrice) ? ' · 목표가 ' + report.targetPrice.toLocaleString() : ''}`;
+  $('summary-meta').textContent = `${report.sector || ''} · ${report.house || ''} · ${report.date || ''}${report.opinion ? ' · ' + report.opinion : ''}${Number.isFinite(report.targetPrice) ? ' · 목표가 ' + report.targetPrice.toLocaleString() : ''}`;
   $('summary-pdf-link').href = report.pdfUrl || '#';
   if (report.summary) {
     $('summary-content').innerHTML = `
@@ -827,15 +1049,42 @@ $('head-row').addEventListener('click', e => {
   render();
 });
 
-// Group view toggle
-document.querySelectorAll('.group-toggle').forEach(btn => {
+// 섹터 칩 — 같은 칩을 다시 누르면 해제
+$('sector-row').addEventListener('click', e => {
+  const chip = e.target.closest('.sector-chip');
+  if (!chip) return;
+  const value = chip.dataset.sector;
+  STATE.sector = (STATE.sector === value) ? '' : value;
+  render();
+});
+
+// View toggle (섹터별 / 종목별 / 평면)
+document.querySelectorAll('.group-toggle[data-view]').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.group-toggle').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.group-toggle[data-view]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     STATE.view = btn.dataset.view;
-    STATE.expanded = new Set(); // reset
+    STATE.expanded = new Set();          // 종목 그룹은 접힌 상태로 시작
+    STATE.collapsedSectors = new Set();  // 섹터는 펼친 상태로 시작
     render();
   });
+});
+
+$('expand-all').addEventListener('click', () => {
+  if (STATE.view === 'sector') {
+    STATE.collapsedSectors = new Set();
+  } else {
+    getFiltered().forEach(r => STATE.expanded.add(r.ticker || ('industry:' + (r.stockName || 'misc'))));
+  }
+  render();
+});
+$('collapse-all').addEventListener('click', () => {
+  if (STATE.view === 'sector') {
+    getFiltered().forEach(r => STATE.collapsedSectors.add(r.sector));
+  } else {
+    STATE.expanded = new Set();
+  }
+  render();
 });
 
 // Summary modal
