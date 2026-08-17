@@ -126,11 +126,12 @@
   .col-tab.routines-tab .icon { background: var(--lime); }
   .col-tab.active.cal-tab .icon, .col-tab.active.todo-tab .icon, .col-tab.active.paused-tab .icon, .col-tab.active.deals-tab .icon, .col-tab.active.done-tab .icon, .col-tab.active.contacts-tab .icon, .col-tab.active.projects-tab .icon, .col-tab.active.stocks-tab .icon, .col-tab.active.journal-tab .icon, .col-tab.active.routines-tab .icon { background: var(--bg); }
   .col-tab .badge { font-family: var(--mono); font-size: 9px; opacity: 0.7; }
-  .board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
-  @media (max-width: 1300px) { .board { grid-template-columns: repeat(3, 1fr); } }
-  @media (max-width: 900px) { .board { grid-template-columns: 1fr 1fr; } }
+  .board { display: flex; flex-direction: row; align-items: stretch; gap: 16px; overflow-x: auto; overflow-y: hidden; padding-bottom: 14px; scroll-snap-type: x proximity; }
+  .board::-webkit-scrollbar { height: 9px; }
+  .board::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 5px; }
+  .board::-webkit-scrollbar-track { background: transparent; }
   @media (max-width: 700px) {
-    .board { grid-template-columns: 1fr; gap: 0; }
+    .board { flex-direction: column; gap: 0; overflow-x: visible; }
     .col-tabs { display: flex; }
     .col { display: none; }
     .col.col-active { display: flex; }
@@ -153,8 +154,9 @@
   @media (max-width: 380px) {
     .stat:nth-child(n+5) { display: none; }
   }
-  .col { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; display: flex; flex-direction: column; min-height: 38vh; max-height: 46vh; overflow: hidden; box-shadow: var(--shadow-sm); }
-  @media (max-width: 700px) { .col { min-height: calc(100vh - 280px); max-height: none; } }
+  .col { flex: 0 0 400px; scroll-snap-align: start; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; min-height: 64vh; max-height: 80vh; overflow: hidden; box-shadow: var(--shadow-sm); }
+  @media (max-width: 1100px) { .col { flex-basis: 360px; } }
+  @media (max-width: 700px) { .col { flex: 1 1 auto; width: 100%; min-height: calc(100vh - 280px); max-height: none; } }
   .col-header { padding: 14px 16px 10px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
   .col-title { font-family: var(--serif); font-weight: 500; font-size: 14px; color: var(--ink); display: flex; align-items: center; gap: 8px; }
   .col-title .icon { width: 6px; height: 6px; border-radius: 50%; }
