@@ -410,6 +410,11 @@
   /* ========== US market panel ========== */
   .stagger { opacity: 0; transform: translateY(4px); animation: stagger 0.5s ease-out forwards; }
   @keyframes stagger { to { opacity: 1; transform: translateY(0); } }
+
+  /* ===== Hidden board columns (완료 / 잠시중단) — data kept, UI hidden ===== */
+  .col.done, .col.paused { display: none !important; }
+  .col-tab.done-tab, .col-tab.paused-tab { display: none !important; }
+  .stat[data-stat-jump="done"], .stat[data-stat-jump="paused"] { display: none !important; }
 </style>
 </head>
 <body>
