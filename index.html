@@ -512,17 +512,6 @@
     <a href="alarm.html" target="_blank" rel="noopener">⏰ 알람</a>
   </nav>
   <div class="toolbar stagger" style="animation-delay:0.05s;">
-    <div class="tabs">
-      <button class="tab active" data-tab="all">전체</button>
-      <button class="tab" data-tab="work">회사</button>
-      <button class="tab" data-tab="personal">개인</button>
-    </div>
-    <div class="toolbar-divider"></div>
-    <span class="filter-label">우선순위</span>
-    <button class="filter-btn active" data-pri="all">전체</button>
-    <button class="filter-btn" data-pri="1">P1</button>
-    <button class="filter-btn" data-pri="2">P2</button>
-    <button class="filter-btn" data-pri="3">P3</button>
     <div class="toolbar-spacer"></div>
     <button class="notif-pill" id="notif-pill" type="button" title="알림 권한 / 켤 때는 한 번 클릭"><span>🔔</span><span class="lbl">OFF</span></button>
     <span class="sync-pill" id="sync-pill"><span class="dot"></span><span class="lbl">SYNC</span></span>
@@ -2221,8 +2210,8 @@ async function bootstrap() {
   renderHeader(); tickClock(); setInterval(tickClock, 30000);
   state.token = localStorage.getItem(STORAGE_KEY.TOKEN);
   state.calendarGistId = localStorage.getItem(STORAGE_KEY.CALENDAR_GIST_ID);
-  state.activeTab = localStorage.getItem(STORAGE_KEY.TAB) || 'all';
-  state.priFilter = localStorage.getItem(STORAGE_KEY.PRI_FILTER) || 'all';
+  state.activeTab = 'all';   // category/priority filters removed from the UI
+  state.priFilter = 'all';
   state.activeCol = localStorage.getItem(STORAGE_KEY.COL) || 'all';
   if (state.activeCol === 'doing') state.activeCol = 'deals';
   document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.tab === state.activeTab));
