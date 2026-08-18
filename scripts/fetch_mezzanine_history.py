@@ -679,10 +679,12 @@ def parse_shares_at_issue(text):
 # 콜옵션(매도청구권) 행사 비율: bodies state the issuer's call limit as e.g.
 # "전자등록총액의 60%를 초과하여 매도청구권을 행사할 수 없다" or
 # "발행총액의 30%에 해당하는 금액까지 매도청구권 행사가 가능하다".
-# The percentage may be bracketed ("[50]%") and the option may be called
-# either 매도청구권 or 콜옵션 / Call Option.
-_CALL_TERM = r"(?:매도청구권|콜옵션|call\s*option)"
+# The percentage may be bracketed ("[50]%") and the issuer's buy-back right
+# goes by several names: 매도청구권 / 콜옵션 / Call Option, and — when the
+# issuer acquires a mid-term redemption right — 중도상환청구권.
+_CALL_TERM = r"(?:매도청구권|콜옵션|call\s*option|중도상환청구권)"
 _CALL_PCT = r"\[?\s*(\d{1,3}(?:\.\d+)?)\s*\]?\s*%"
+_RATIO_BASE = r"(?:인수금액의|발행가액의|권면금액의|발행총액의|전자등록총액의)?"
 _CALL_RATIO_PATTERNS = [
     re.compile(_CALL_PCT + r"\s*를?\s*초과하여\s*[^.]{0,45}?" + _CALL_TERM, re.I),
     re.compile(_CALL_PCT + r"\s*에\s*해당하는\s*금액까지\s*[^.]{0,30}?" + _CALL_TERM, re.I),
@@ -691,6 +693,9 @@ _CALL_RATIO_PATTERNS = [
     # Retention structure: "콜옵션/매도청구권 … 전자등록총액의 N%를 미전환
     # 상태로 보유하여야 한다" — the retained %, i.e. the callable portion.
     re.compile(_CALL_TERM + r"[^.]{0,140}?" + _CALL_PCT + r"[^.]{0,22}?보유", re.I),
+    # 행사가능비율: "중도상환청구권 행사가능비율(인수금액의 50%)".
+    re.compile(_CALL_TERM + r"[^.]{0,20}?행사\s*가능\s*비율\s*\(?\s*"
+               + _RATIO_BASE + r"\s*" + _CALL_PCT, re.I),
 ]
 
 
