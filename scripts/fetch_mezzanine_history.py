@@ -673,6 +673,32 @@ def parse_shares_at_issue(text):
     return None
 
 
+# 콜옵션(매도청구권) 행사 비율: bodies state the issuer's call limit as e.g.
+# "전자등록총액의 60%를 초과하여 매도청구권을 행사할 수 없다" or
+# "발행총액의 30%에 해당하는 금액까지 매도청구권 행사가 가능하다".
+_CALL_RATIO_PATTERNS = [
+    re.compile(r"(\d{1,3}(?:\.\d+)?)\s*%\s*를?\s*초과하여\s*[^.]{0,30}?매도청구권"),
+    re.compile(r"(\d{1,3}(?:\.\d+)?)\s*%\s*에\s*해당하는\s*금액까지\s*[^.]{0,25}?매도청구권"),
+]
+
+
+def parse_call_ratio(text):
+    """Issuer call-option (매도청구권) exercise ratio as a 'NN%' string, or None."""
+    if not text:
+        return None
+    for pat in _CALL_RATIO_PATTERNS:
+        m = pat.search(text)
+        if not m:
+            continue
+        try:
+            f = float(m.group(1))
+        except ValueError:
+            continue
+        if 0 < f <= 100:
+            return (str(int(f)) if f == int(f) else str(f)) + "%"
+    return None
+
+
 NAVER_PRICE_URL = "https://api.finance.naver.com/siseJson.naver"
 
 
@@ -741,10 +767,13 @@ def enrich_with_details(sess, ticker, issuances):
                 merged["detailDone"] = 1
                 inv = parse_investor(body)
                 sh = parse_shares_at_issue(body)
+                cr = parse_call_ratio(body)
                 if inv:
                     merged["investor"] = inv
                 if sh:
                     merged["sharesAtIssue"] = sh
+                if cr:
+                    merged["callPct"] = cr
                 _cache_put(rcept_no, merged)
                 cached = merged
 
@@ -752,11 +781,17 @@ def enrich_with_details(sess, ticker, issuances):
         sh = cached.get("sharesAtIssue")
         if inv:
             x["investor"] = inv
+        if cached.get("callPct"):
+            x["callPct"] = cached["callPct"]
         if sh:
             x["sharesAtIssue"] = sh
+            # Shares come from the disclosure (≈ receipt date), so pair them
+            # with the close price on the SAME date — using the issue date can
+            # be years off for late/amended filings and inflate market cap.
+            price_date = x.get("rceptDt") or x.get("issueDate")
             price = cached.get("priceAtIssue")
-            if price is None and x.get("issueDate"):
-                price = fetch_close_on_date(sess, ticker, x["issueDate"])
+            if price is None and price_date:
+                price = fetch_close_on_date(sess, ticker, price_date)
                 if price:
                     merged = dict(cached)
                     merged["priceAtIssue"] = price
