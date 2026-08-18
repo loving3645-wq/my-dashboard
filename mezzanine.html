@@ -93,6 +93,7 @@
   .type-pill.cb { background: var(--accent-bg); color: var(--accent); }
   .type-pill.bw { background: var(--gold-bg); color: var(--gold); }
   .type-pill.eb { background: var(--purple-bg); color: var(--purple); }
+  .corr-pill { font-family: var(--mono); font-size: 9px; padding: 1px 5px; border-radius: 2px; letter-spacing: 0.04em; background: var(--gold-bg); color: var(--gold); margin-right: 5px; }
 
   .day-pill { font-family: var(--mono); font-size: 10px; padding: 2px 6px; border-radius: 3px; display: inline-block; min-width: 56px; text-align: center; letter-spacing: 0.04em; }
   .day-pill.today { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
@@ -645,7 +646,7 @@ function renderRecent() {
       <td class="num">${iss.callPct ? escapeHtml(iss.callPct) : '—'}</td>
       <td class="left muted">${escapeHtml(iss.maturityDate || '—')}</td>
       <td class="left">${iss.investor ? `<span title="${escapeHtml(iss.investor)}">${escapeHtml(iss.investor.length > 18 ? iss.investor.slice(0, 18) + '…' : iss.investor)}</span>` : '<span class="muted">—</span>'}</td>
-      <td class="left">${dartLink(iss.rceptNo)}</td>
+      <td class="left">${iss.corrected ? '<span class="corr-pill">정정</span>' : ''}${dartLink(iss.rceptNo)}</td>
     </tr>`;
   }).join('');
 }
