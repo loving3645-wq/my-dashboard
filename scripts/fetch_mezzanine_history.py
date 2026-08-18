@@ -454,9 +454,10 @@ def extract_round(text):
 
 
 def scan_events(sess, corp_code, bgn_de, end_de):
-    """List.json scan for mezzanine action events. Title patterns only —
-    body parsing for amounts is deferred to v3. Returns list of dicts."""
+    """List.json scan for mezzanine action events + 전환가액의조정(리픽싱)
+    filings. Returns (events, refixes)."""
     events = []
+    refixes = []
     for page_no in range(1, LIST_MAX_PAGES + 1):
         params = {
             "crtfc_key": DART_KEY,
@@ -499,12 +500,20 @@ def scan_events(sess, corp_code, bgn_de, end_de):
         try:
             for row in (body.get("list") or []):
                 title = (row.get("report_nm") or "").strip()
+                rdate = _to_iso_date(row.get("rcept_dt") or "")
+                rcept_no = (row.get("rcept_no") or "").strip() or None
+                if "전환가액" in title and "조정" in title:
+                    refixes.append({
+                        "date": rdate, "rceptNo": rcept_no,
+                        "round": extract_round(title),
+                    })
+                    continue
                 kind = categorize_event(title)
                 if not kind:
                     continue
                 events.append({
-                    "date": _to_iso_date(row.get("rcept_dt") or ""),
-                    "rceptNo": (row.get("rcept_no") or "").strip() or None,
+                    "date": rdate,
+                    "rceptNo": rcept_no,
                     "title": title,
                     "type": kind,
                     "round": extract_round(title),
@@ -516,7 +525,8 @@ def scan_events(sess, corp_code, bgn_de, end_de):
             break
     # Newest first.
     events.sort(key=lambda e: e["date"] or "0000-00-00", reverse=True)
-    return events
+    refixes.sort(key=lambda e: e["date"] or "0000-00-00", reverse=True)
+    return events, refixes
 
 
 def fetch_disclosure_body(sess, rcept_no):
@@ -716,6 +726,30 @@ def parse_call_ratio(text):
     return None
 
 
+# 전환가액의조정(리픽싱): the adjustment filing carries a row
+#   "회차 상장여부 조정전 전환가액(원) 조정후 전환가액(원)  5 비상장 24,575 17,203".
+# We take the round and the 조정후 (last) value; callers keep the latest per round.
+_REFIX_RE = re.compile(
+    r"조정\s*후\s*전환가액\s*\(?\s*원?\s*\)?\s*(\d+)\s+[가-힣]+\s+[\d,]+\s+([\d,]+)"
+)
+
+
+def parse_refix(text):
+    """(round, 조정후 전환가액) from a 전환가액의조정 body, or None."""
+    if not text:
+        return None
+    m = _REFIX_RE.search(text)
+    if not m:
+        return None
+    try:
+        adj = int(m.group(2).replace(",", ""))
+    except ValueError:
+        return None
+    if adj <= 0:
+        return None
+    return m.group(1), adj
+
+
 # 정정공시 여부: correction filings open with a "정정신고(보고)" block listing
 # 정정대상 공시서류 / 정정사유 / 정정 전·후. Table-cell stripping can space the
 # characters out ("정 정 신 고"), so match loosely and only near the head.
@@ -870,11 +904,38 @@ def enrich_with_details(sess, ticker, issuances):
                 x["mcapAtIssue"] = int(round(implied_shares * price))
 
         # Parity = current price ÷ conversion price (×100). >100 = 전환 이익
-        # (in-the-money). Meaningful for older issues; ~100 for fresh ones.
-        conv = x.get("conversionPrice")
+        # (in-the-money). Use the latest refixed conversion price when known,
+        # since 리픽싱 lowers the effective conversion price over time.
+        conv = x.get("refixedConversionPrice") or x.get("conversionPrice")
         if cur_price and conv and conv > 0:
             x["currentPrice"] = int(round(cur_price))
             x["parity"] = round(cur_price / conv * 100, 1)
+
+
+def apply_refixes(sess, issuances, refixes):
+    """Attach the latest 조정후 전환가액 (refixed conversion price) to each
+    issuance by round, from the company's 전환가액의조정 filings."""
+    if not refixes:
+        return
+    rounds_needed = {str(x.get("round")) for x in issuances if x.get("round")}
+    if not rounds_needed:
+        return
+    latest = {}                      # round -> 조정후 전환가액 (first seen = newest)
+    fetched = 0
+    for rf in refixes:               # sorted newest-first by scan_events
+        if rounds_needed <= set(latest) or fetched >= 20:
+            break
+        body = fetch_disclosure_body(sess, rf.get("rceptNo"))
+        fetched += 1
+        parsed = parse_refix(body)
+        if not parsed:
+            continue
+        rnd, adj = parsed
+        latest.setdefault(rnd, adj)
+    for x in issuances:
+        r = str(x.get("round")) if x.get("round") else None
+        if r and r in latest:
+            x["refixedConversionPrice"] = latest[r]
 
 
 def _abs_day_gap(iso_a, iso_b):
@@ -1259,8 +1320,10 @@ def fetch_one(sess, ticker, name, corp_code, bgn_de, end_de):
     )
     # Only scan list.json for tickers that actually issued mezzanine —
     # avoids 2K+ wasted calls per run.
-    events = scan_events(sess, corp_code, bgn_de, end_de)
+    events, refixes = scan_events(sess, corp_code, bgn_de, end_de)
     unmatched = attach_events(issuances, events)
+    # 리픽싱: latest 조정후 전환가액 per round → attach to each issuance.
+    apply_refixes(sess, issuances, refixes)
     # For issuances with action events, fetch + parse the latest event's
     # body to recover the actual post-exercise outstanding face amount.
     enrich_with_outstanding(sess, issuances)
