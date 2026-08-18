@@ -869,6 +869,13 @@ def enrich_with_details(sess, ticker, issuances):
                 x["sharesAtIssue"] = int(round(implied_shares))
                 x["mcapAtIssue"] = int(round(implied_shares * price))
 
+        # Parity = current price ÷ conversion price (×100). >100 = 전환 이익
+        # (in-the-money). Meaningful for older issues; ~100 for fresh ones.
+        conv = x.get("conversionPrice")
+        if cur_price and conv and conv > 0:
+            x["currentPrice"] = int(round(cur_price))
+            x["parity"] = round(cur_price / conv * 100, 1)
+
 
 def _abs_day_gap(iso_a, iso_b):
     """Days between two YYYY-MM-DD strings (None-safe). Used to detect
