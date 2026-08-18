@@ -27,6 +27,7 @@ import sys
 import threading
 import time
 import zipfile
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, date, timedelta, timezone
 from xml.etree import ElementTree as ET
@@ -613,34 +614,36 @@ _INVESTOR_RE = re.compile(
 )
 
 
-# A real acquirer name is a legal entity — reject rows that captured the
-# bond description or a table header by mistake.
-_INVESTOR_ENTITY_RE = re.compile(
-    r"주식회사|㈜|유한회사|증권|은행|조합|펀드|자산운용|운용|캐피[탈털]|"
-    r"파트너스|인베스트|벤처|투자|holdings|capital|partners",
-    re.I,
-)
-_INVESTOR_REJECT_RE = re.compile(
-    r"사채|전환|무보증|무기명|무이권|신주인수|교환사채|발행|대상자|권면|"
-    r"성명|관계|선정|내역"
-)
+# The real investor is the asset manager (집합투자업자 / 운용사) behind each
+# fund — NOT the trustee (신탁업자) bank/broker that the 특정인 table lists
+# "…의 신탁업자 지위에서". Managers are named "○○자산운용". When money comes in
+# directly through an 조합 (no manager), use the 조합 name instead.
+_MANAGER_RE = re.compile(r"([가-힣A-Za-z0-9]{2,12}자산운용)")
+_COMBO_RE = re.compile(r"([가-힣A-Za-z0-9]{2,16}조합)")
 
 
 def parse_investor(text):
-    """First 발행대상자명 from the 특정인 table, or None."""
+    """Primary investor: the asset manager with the most funds ("○○자산운용
+    외 N"), or the direct 조합 name, or None."""
     if not text:
         return None
+    managers = _MANAGER_RE.findall(text)
+    if managers:
+        counts = Counter(re.sub(r"\s+", "", x) for x in managers)
+        primary = counts.most_common(1)[0][0]
+        others = len(counts) - 1
+        return primary + (f" 외{others}" if others > 0 else "")
+    # No manager → a 조합 invested directly. Prefer the 조합 named in the
+    # 특정인 대상자 table; fall back to the most frequent 조합 in the body.
     m = _INVESTOR_RE.search(text)
-    if not m:
-        return None
-    name = re.sub(r"\s+", " ", m.group(1)).strip(" ·-,")
-    if len(name) < 2 or name.isdigit():
-        return None
-    if _INVESTOR_REJECT_RE.search(name):
-        return None
-    if not _INVESTOR_ENTITY_RE.search(name):
-        return None
-    return name[:45]
+    if m:
+        name = re.sub(r"\s+", "", m.group(1))
+        if "조합" in name:
+            return name[:45]
+    combos = _COMBO_RE.findall(text)
+    if combos:
+        return Counter(re.sub(r"\s+", "", x) for x in combos).most_common(1)[0][0][:45]
+    return None
 
 
 # 발행시점 발행주식총수: bodies state the new shares from the issue and
@@ -676,9 +679,18 @@ def parse_shares_at_issue(text):
 # 콜옵션(매도청구권) 행사 비율: bodies state the issuer's call limit as e.g.
 # "전자등록총액의 60%를 초과하여 매도청구권을 행사할 수 없다" or
 # "발행총액의 30%에 해당하는 금액까지 매도청구권 행사가 가능하다".
+# The percentage may be bracketed ("[50]%") and the option may be called
+# either 매도청구권 or 콜옵션 / Call Option.
+_CALL_TERM = r"(?:매도청구권|콜옵션|call\s*option)"
+_CALL_PCT = r"\[?\s*(\d{1,3}(?:\.\d+)?)\s*\]?\s*%"
 _CALL_RATIO_PATTERNS = [
-    re.compile(r"(\d{1,3}(?:\.\d+)?)\s*%\s*를?\s*초과하여\s*[^.]{0,30}?매도청구권"),
-    re.compile(r"(\d{1,3}(?:\.\d+)?)\s*%\s*에\s*해당하는\s*금액까지\s*[^.]{0,25}?매도청구권"),
+    re.compile(_CALL_PCT + r"\s*를?\s*초과하여\s*[^.]{0,45}?" + _CALL_TERM, re.I),
+    re.compile(_CALL_PCT + r"\s*에\s*해당하는\s*금액까지\s*[^.]{0,30}?" + _CALL_TERM, re.I),
+    re.compile(_CALL_TERM + r"[^.]{0,45}?" + _CALL_PCT + r"\s*를?\s*초과", re.I),
+    re.compile(_CALL_PCT + r"\s*를?\s*(?:총\s*)?한도로\s*[^.]{0,25}?" + _CALL_TERM, re.I),
+    # Retention structure: "콜옵션/매도청구권 … 전자등록총액의 N%를 미전환
+    # 상태로 보유하여야 한다" — the retained %, i.e. the callable portion.
+    re.compile(_CALL_TERM + r"[^.]{0,140}?" + _CALL_PCT + r"[^.]{0,22}?보유", re.I),
 ]
 
 
@@ -697,6 +709,20 @@ def parse_call_ratio(text):
         if 0 < f <= 100:
             return (str(int(f)) if f == int(f) else str(f)) + "%"
     return None
+
+
+# 정정공시 여부: correction filings open with a "정정신고(보고)" block listing
+# 정정대상 공시서류 / 정정사유 / 정정 전·후. Table-cell stripping can space the
+# characters out ("정 정 신 고"), so match loosely and only near the head.
+_CORRECTION_RE = re.compile(
+    r"정\s*정\s*신\s*고|정\s*정\s*대\s*상\s*공\s*시|정\s*정\s*사\s*유"
+)
+
+
+def parse_is_correction(text):
+    if not text:
+        return False
+    return bool(_CORRECTION_RE.search(text[:2500]))
 
 
 NAVER_PRICE_URL = "https://api.finance.naver.com/siseJson.naver"
@@ -742,6 +768,46 @@ def fetch_close_on_date(sess, ticker, iso_date):
     return None
 
 
+NAVER_INTEGRATION_URL = "https://m.stock.naver.com/api/stock/{}/integration"
+
+
+def fetch_naver_mktcap(sess, ticker):
+    """(market_cap_won, current_price) from Naver, or (None, None). The
+    implied share count (mcap/price) is authoritative and survives 감자/증자,
+    unlike the disclosure's coarse dilution ratio."""
+    if not ticker:
+        return None, None
+    try:
+        r = sess.get(NAVER_INTEGRATION_URL.format(ticker), timeout=TIMEOUT)
+        if r.status_code != 200:
+            return None, None
+        infos = {it.get("key"): it.get("value")
+                 for it in r.json().get("totalInfos", []) if isinstance(it, dict)}
+    except (requests.RequestException, ValueError):
+        return None, None
+
+    def _won(s):
+        if not s:
+            return None
+        s = s.replace(" ", "").replace(",", "")
+        total = 0.0
+        jo = re.search(r"([\d.]+)조", s)
+        eok = re.search(r"([\d.]+)억", s)
+        if jo:
+            total += float(jo.group(1)) * 1e12
+        if eok:
+            total += float(eok.group(1)) * 1e8
+        return total or None
+
+    mcap = _won(infos.get("시총"))
+    price = infos.get("전일")
+    try:
+        price = float(price.replace(",", "")) if price and price != "-" else None
+    except (ValueError, AttributeError):
+        price = None
+    return mcap, price
+
+
 # Only enrich issuances filed within this window — investor / issuance-time
 # market cap matter for the recent-issuance table, and it bounds body fetches.
 DETAIL_LOOKBACK_DAYS = 900
@@ -752,12 +818,16 @@ def enrich_with_details(sess, ticker, issuances):
     issuances. Reuses the body-parse cache (keyed by rceptNo) so bodies and
     Naver prices are fetched at most once each."""
     cutoff = (date.today() - timedelta(days=DETAIL_LOOKBACK_DAYS)).isoformat()
-    for x in issuances:
-        if (x.get("rceptDt") or "") < cutoff:
-            continue
-        rcept_no = x.get("rceptNo")
-        if not rcept_no:
-            continue
+    in_window = [x for x in issuances if (x.get("rceptDt") or "") >= cutoff
+                 and x.get("rceptNo")]
+    if not in_window:
+        return
+    # Naver market cap is per-issuer — fetch once and derive implied shares.
+    mcap_won, cur_price = fetch_naver_mktcap(sess, ticker)
+    implied_shares = (mcap_won / cur_price) if (mcap_won and cur_price) else None
+
+    for x in in_window:
+        rcept_no = x["rceptNo"]
         cached = _cache_get(rcept_no) or {}
 
         if not cached.get("detailDone"):
@@ -774,31 +844,25 @@ def enrich_with_details(sess, ticker, issuances):
                     merged["sharesAtIssue"] = sh
                 if cr:
                     merged["callPct"] = cr
+                merged["corrected"] = 1 if parse_is_correction(body) else 0
                 _cache_put(rcept_no, merged)
                 cached = merged
 
-        inv = cached.get("investor")
-        sh = cached.get("sharesAtIssue")
-        if inv:
-            x["investor"] = inv
+        if cached.get("investor"):
+            x["investor"] = cached["investor"]
         if cached.get("callPct"):
             x["callPct"] = cached["callPct"]
-        if sh:
-            x["sharesAtIssue"] = sh
-            # Shares come from the disclosure (≈ receipt date), so pair them
-            # with the close price on the SAME date — using the issue date can
-            # be years off for late/amended filings and inflate market cap.
+        if cached.get("corrected"):
+            x["corrected"] = True
+
+        # Market cap at issuance = Naver implied shares × close on receipt date.
+        if implied_shares:
             price_date = x.get("rceptDt") or x.get("issueDate")
-            price = cached.get("priceAtIssue")
-            if price is None and price_date:
-                price = fetch_close_on_date(sess, ticker, price_date)
-                if price:
-                    merged = dict(cached)
-                    merged["priceAtIssue"] = price
-                    _cache_put(rcept_no, merged)
+            price = fetch_close_on_date(sess, ticker, price_date) if price_date else None
             if price:
                 x["priceAtIssue"] = price
-                x["mcapAtIssue"] = int(round(sh * price))
+                x["sharesAtIssue"] = int(round(implied_shares))
+                x["mcapAtIssue"] = int(round(implied_shares * price))
 
 
 def _abs_day_gap(iso_a, iso_b):
