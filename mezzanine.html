@@ -221,6 +221,7 @@
           <th class="left">회차</th>
           <th>발행액</th>
           <th>전환가</th>
+          <th>Parity</th>
           <th>표면이율</th>
           <th>YTM</th>
           <th>콜옵션</th>
@@ -229,7 +230,7 @@
           <th class="left">공시</th>
         </tr>
       </thead>
-      <tbody id="recent-body"><tr><td colspan="14" class="empty-state">불러오는 중…</td></tr></tbody>
+      <tbody id="recent-body"><tr><td colspan="15" class="empty-state">불러오는 중…</td></tr></tbody>
     </table>
   </div>
 
@@ -369,6 +370,15 @@ function fmtMcap(n) {
   const eok = 100_000_000, jo = 1_000_000_000_000;
   if (n >= jo) return (n / jo).toFixed(2).replace(/\.?0+$/, '') + '조';
   return Math.round(n / eok).toLocaleString() + '억';
+}
+
+function fmtParity(iss) {
+  const p = iss && iss.parity;
+  if (!Number.isFinite(p)) return '<span class="muted">—</span>';
+  const color = p >= 100 ? 'var(--green)' : 'var(--red)';
+  const tip = Number.isFinite(iss.currentPrice)
+    ? `현재가 ${iss.currentPrice.toLocaleString()}원 / 전환가 ${(iss.conversionPrice||0).toLocaleString()}원` : '';
+  return `<span style="color:${color};font-weight:600" title="${tip}">${p}%</span>`;
 }
 
 function fmtPct(n) {
@@ -549,7 +559,7 @@ function renderPuts() {
   const tbody = $('put-body');
   const flat = flatIssuances();
   if (!flat.length) {
-    tbody.innerHTML = `<tr><td colspan="14" class="empty-state">
+    tbody.innerHTML = `<tr><td colspan="15" class="empty-state">
       메자닌 데이터가 없습니다.<br>
       <span style="font-size:10px;">data/mezzanine.json 미생성 — Actions의 'DART Mezzanine' 워크플로 수동 실행 필요</span>
     </td></tr>`;
@@ -623,7 +633,7 @@ function renderRecent() {
   items.sort((a, b) => b.refDate.localeCompare(a.refDate));
 
   if (!items.length) {
-    tbody.innerHTML = `<tr><td colspan="14" class="empty-state">선택한 기간 내 신규 발행건이 없습니다.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="15" class="empty-state">선택한 기간 내 신규 발행건이 없습니다.</td></tr>`;
     return;
   }
   tbody.innerHTML = items.map(({ ticker, name, iss, refDate, days, delisted }) => {
@@ -641,6 +651,7 @@ function renderRecent() {
       <td class="left">${escapeHtml(iss.round || '—')}</td>
       <td class="num">${fmtKRW(iss.faceAmount)}</td>
       <td class="num">${cv}</td>
+      <td class="num">${fmtParity(iss)}</td>
       <td class="num">${fmtPct(iss.couponRate)}</td>
       <td class="num">${fmtPct(iss.ytmRate)}</td>
       <td class="num">${iss.callPct ? escapeHtml(iss.callPct) : '—'}</td>
