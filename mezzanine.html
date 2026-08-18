@@ -376,8 +376,9 @@ function fmtParity(iss) {
   const p = iss && iss.parity;
   if (!Number.isFinite(p)) return '<span class="muted">—</span>';
   const color = p >= 100 ? 'var(--green)' : 'var(--red)';
+  const conv = Number.isFinite(iss.refixedConversionPrice) ? iss.refixedConversionPrice : iss.conversionPrice;
   const tip = Number.isFinite(iss.currentPrice)
-    ? `현재가 ${iss.currentPrice.toLocaleString()}원 / 전환가 ${(iss.conversionPrice||0).toLocaleString()}원` : '';
+    ? `현재가 ${iss.currentPrice.toLocaleString()}원 / ${Number.isFinite(iss.refixedConversionPrice)?'리픽스 ':''}전환가 ${(conv||0).toLocaleString()}원` : '';
   return `<span style="color:${color};font-weight:600" title="${tip}">${p}%</span>`;
 }
 
@@ -637,8 +638,10 @@ function renderRecent() {
     return;
   }
   tbody.innerHTML = items.map(({ ticker, name, iss, refDate, days, delisted }) => {
-    const cv = Number.isFinite(iss.conversionPrice)
-      ? iss.conversionPrice.toLocaleString() + '원' : '—';
+    const rfx = iss.refixedConversionPrice;
+    const cv = Number.isFinite(rfx)
+      ? `<span title="최초 ${(iss.conversionPrice||0).toLocaleString()}원 → 리픽스 ${rfx.toLocaleString()}원" style="color:var(--gold)">${rfx.toLocaleString()}원<span style="font-size:9px"> ▾</span></span>`
+      : (Number.isFinite(iss.conversionPrice) ? iss.conversionPrice.toLocaleString() + '원' : '—');
     return `<tr>
       <td class="left">${escapeHtml(refDate)} <span class="muted" style="font-size:10px;">${days === 0 ? '오늘' : 'D+' + (-days)}</span></td>
       <td class="left muted">${escapeHtml(iss.issueDate || '—')}</td>
@@ -741,7 +744,10 @@ function issuanceHtml(iss) {
       <div class="kv"><span class="k">잔량 추정</span><span class="v ${live ? 'accent' : 'faint'}">${fmtKRW(out)} ${outBadge}</span></div>
       <div class="kv"><span class="k">표면이율</span><span class="v">${fmtPct(iss.couponRate)}</span></div>
       <div class="kv"><span class="k">YTM</span><span class="v">${fmtPct(iss.ytmRate)}</span></div>
-      <div class="kv"><span class="k">전환가</span><span class="v">${Number.isFinite(iss.conversionPrice) ? iss.conversionPrice.toLocaleString() + '원' : '—'}</span></div>
+      <div class="kv"><span class="k">전환가</span><span class="v">${Number.isFinite(iss.refixedConversionPrice)
+          ? `<span style="color:var(--gold)" title="최초 ${(iss.conversionPrice||0).toLocaleString()}원">${iss.refixedConversionPrice.toLocaleString()}원 <span style="font-size:9px">리픽스</span></span>`
+          : (Number.isFinite(iss.conversionPrice) ? iss.conversionPrice.toLocaleString() + '원' : '—')}</span></div>
+      <div class="kv"><span class="k">Parity</span><span class="v">${fmtParity(iss)}</span></div>
       <div class="kv"><span class="k">전환비율</span><span class="v">${fmtPct(iss.conversionRatio)}</span></div>
       <div class="kv"><span class="k">전환청구</span><span class="v ${putSoon ? 'accent' : 'faint'}">${escapeHtml(iss.convertStart || '?')} ~ ${escapeHtml(iss.convertEnd || '?')}</span></div>
       <div class="kv">
