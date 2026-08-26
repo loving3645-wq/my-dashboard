@@ -4,6 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#0c0e13" />
+<meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="pragma" content="no-cache" />
+<meta http-equiv="expires" content="0" />
 <title>지니의 대시보드</title>
 
 <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22%EC%A7%80%EB%8B%88%EB%8C%80%EC%89%AC%EB%B3%B4%EB%93%9C%22%2C%22short_name%22%3A%22Dashboard%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230c0e13%22%2C%22theme_color%22%3A%22%230c0e13%22%7D" />
@@ -811,25 +814,44 @@ const STOCK_STATUS_LABEL = { watching: '보고있는', todo: '봐야할' };
  * Loaded lazily on first render. Once data arrives, renderStocks()
  * is re-invoked so the chips show up. Files missing → cards stay
  * plain (no error UI — graceful degradation). */
-const _dashStockCache = { snap: null, mezz: null, disc: null, loaded: false, loading: false };
-async function loadDashStockData() {
-  if (_dashStockCache.loaded || _dashStockCache.loading) return;
+const _dashStockCache = { snap: null, mezz: null, disc: null, loaded: false, loading: false, fetchedAt: 0 };
+async function loadDashStockData({ force = false } = {}) {
+  if (_dashStockCache.loading) return;
+  if (_dashStockCache.loaded && !force) return;
   _dashStockCache.loading = true;
-  const get = url => fetch(url, { cache: 'force-cache' })
+  // 'no-cache' revalidates with the server every time (ETag → 304 when the
+  // daily cron hasn't committed anything), so a window left open for days
+  // still picks up new data. 'force-cache' used to pin the very first
+  // response for the lifetime of the browser cache.
+  const get = url => fetch(url, { cache: 'no-cache' })
     .then(r => r.ok ? r.json() : null).catch(() => null);
   const [snap, mezz, disc] = await Promise.all([
     get('data/market-snapshot.json'),
     get('data/mezzanine.json'),
     get('data/disclosures.json'),
   ]);
-  _dashStockCache.snap = snap;
-  _dashStockCache.mezz = mezz;
-  _dashStockCache.disc = disc;
+  // A failed refresh keeps the previous (stale but real) data on screen.
+  if (snap) _dashStockCache.snap = snap;
+  if (mezz) _dashStockCache.mezz = mezz;
+  if (disc) _dashStockCache.disc = disc;
   _dashStockCache.loaded = true;
   _dashStockCache.loading = false;
+  _dashStockCache.fetchedAt = Date.now();
   // Refresh cards now that enrichment is available.
   if (typeof renderStocks === 'function') renderStocks();
   if (typeof buildMezzAlerts === 'function') buildMezzAlerts();
+}
+
+/* Re-pull the JSON files once they are older than this. The dashboard is
+ * often pinned to the taskbar and left open for days, so a one-shot load
+ * would show the same numbers all week. */
+const DASH_DATA_MAX_AGE = 10 * 60 * 1000;
+async function refreshDashStockDataIfStale() {
+  if (document.hidden) return;
+  // Only refresh what a render already pulled in; never eager-load 5MB.
+  if (!_dashStockCache.loaded) return;
+  if (Date.now() - _dashStockCache.fetchedAt < DASH_DATA_MAX_AGE) return;
+  await loadDashStockData({ force: true });
 }
 
 /* ---- Mezzanine alerts bar (top of dashboard) ----
@@ -2224,7 +2246,10 @@ async function bootstrap() {
   await Promise.all([loadCalendar(), loadTodos()]);
   setInterval(() => { if (!document.hidden) loadCalendar(); }, 5 * 60 * 1000);
   setInterval(() => { if (!document.hidden) checkAlerts(); }, 5 * 60 * 1000);
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) { loadCalendar(); checkAlerts(); } });
+  setInterval(refreshDashStockDataIfStale, DASH_DATA_MAX_AGE);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) { loadCalendar(); checkAlerts(); refreshDashStockDataIfStale(); }
+  });
   setTimeout(checkAlerts, 3000);
 }
 bootstrap();
