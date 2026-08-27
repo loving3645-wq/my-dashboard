@@ -190,8 +190,13 @@ def load_ticker_master():
 
 
 def normalize_name(name):
-    """'채비(구.대영채비)' → '채비'. KRX 마스터 매칭용."""
-    return re.sub(r"\s*\(구\.[^)]+\)\s*$", "", name or "").strip()
+    """'채비(구.대영채비)' → '채비', '대신밸류리츠(유가)' → '대신밸류리츠'.
+    38.co.kr은 이름 뒤에 (구.구명)·(유가)/(코스닥) 시장 표기를 붙이는데 거래소
+    상장명에는 없어 이름 완전일치 조회가 실패한다 — 매칭 전에 벗겨낸다."""
+    n = name or ""
+    n = re.sub(r"\s*\((?:유가|유가증권|코스닥|KOSPI|KOSDAQ)\)\s*$", "", n)
+    n = re.sub(r"\s*\(구\.[^)]+\)\s*$", "", n)
+    return n.strip()
 
 
 def naver_ticker_by_name(session, name):
@@ -217,6 +222,47 @@ def naver_ticker_by_name(session, name):
         mkt = (it.get("typeCode") or "").strip().upper()
         if code and cand == clean and mkt in ("KOSPI", "KOSDAQ"):
             return code, mkt
+    return None
+
+
+# 38.co.kr의 스팩 표기('한국스팩16호')는 거래소 상장명('한국제16호스팩',
+# '엔에이치스팩33호', '교보20호스팩' 등)과 달라 이름 완전일치 조회가 실패한다.
+# 하우스별 표기가 제각각이라 번호 매칭으로 회수한다.
+_SPAC_HOUSE_KO = {"NH": "엔에이치", "KB": "케이비", "IBKS": "아이비케이에스",
+                  "DB": "디비", "LS": "엘에스", "SK": "에스케이", "BNK": "비엔케이"}
+_SPAC_RE = re.compile(r"^(.+?)스팩\s*제?\s*(\d+)\s*호$")
+
+
+def _ac_candidates(session, q):
+    try:
+        r = session.get(NAVER_AC, params={"q": q, "target": "stock"}, timeout=15)
+        if r.status_code != 200:
+            return []
+        return [(it.get("code"), it.get("name"), (it.get("typeCode") or "").upper())
+                for it in r.json().get("items", [])
+                if isinstance(it, dict) and it.get("code")]
+    except Exception:
+        return []
+
+
+def resolve_spac_ticker(session, name):
+    """SPAC 상장명 표기 차이를 흡수해 (code, market)을 회수. 번호(N호)가 일치하는
+    코스닥/코스피 스팩 항목만 채택."""
+    m = _SPAC_RE.match(name or "")
+    if not m:
+        return None
+    house, n = m.group(1), int(m.group(2))
+    houses = [house] + ([_SPAC_HOUSE_KO[house]] if house in _SPAC_HOUSE_KO else [])
+    num_ok = re.compile(rf"(?<!\d){n}(?!\d)\s*호")
+    queries = []
+    for h in houses:
+        queries += [f"{h}제{n}호스팩", f"{h}{n}호스팩", f"{h}스팩{n}호"]
+    for h in houses:
+        queries += [f"{h}스팩", f"{h}제", h]
+    for q in queries:
+        for code, nm, mkt in _ac_candidates(session, q):
+            if nm and "스팩" in nm and num_ok.search(nm) and mkt in ("KOSPI", "KOSDAQ"):
+                return code, mkt
     return None
 
 
@@ -417,6 +463,9 @@ def main():
                 # 3차 폴백 — Naver 자동완성으로 신규 상장 종목 코드 해석.
                 # 정적 master(tickers-full.js)에 아직 없는 최신 상장이 여기서 잡힌다.
                 ac = naver_ticker_by_name(sess, ipo["name"])
+                if not ac and "스팩" in (ipo.get("name") or ""):
+                    # SPAC 상장명 표기 차이 흡수 (한국스팩16호 → 한국제16호스팩)
+                    ac = resolve_spac_ticker(sess, ipo["name"])
                 if ac:
                     ticker, ac_mkt = ac
                     if not market:
