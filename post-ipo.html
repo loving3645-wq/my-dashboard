@@ -128,6 +128,7 @@
   .ipo td.left { text-align: left; }
   .ipo td.muted { color: var(--ink-faint); }
   .muted { color: var(--ink-faint); }
+  .est { color: var(--ink-faint); font-size: 0.85em; margin-left: 1px; cursor: help; }
 
   .name-cell { display: flex; align-items: center; gap: 8px; min-width: 180px; }
   .name-cell .code { font-family: var(--mono); font-size: 11px; color: var(--ink-soft); width: 50px; flex-shrink: 0; }
@@ -220,6 +221,7 @@
           <th class="left" data-sort="name">종목 <span class="arrow">↕</span></th>
           <th data-sort="ipoPrice">공모가 <span class="arrow">↕</span></th>
           <th data-sort="marketCapAtListing">상장 시총 <span class="arrow">↕</span></th>
+          <th data-sort="currentMarketCap">현재 시총 <span class="arrow">↕</span></th>
           <th data-sort="firstDayReturn">상장일 <span class="arrow">↕</span></th>
           <th data-sort="r1w">+1W <span class="arrow">↕</span></th>
           <th data-sort="r1m">+1M <span class="arrow">↕</span></th>
@@ -234,14 +236,15 @@
           <th class="left dart-col" data-sort="dartStockKind" style="display:none;">주식종류 <span class="arrow">↕</span></th>
         </tr>
       </thead>
-      <tbody id="ipo-body"><tr><td colspan="16" class="empty-state">불러오는 중…</td></tr></tbody>
+      <tbody id="ipo-body"><tr><td colspan="17" class="empty-state">불러오는 중…</td></tr></tbody>
     </table>
   </div>
 
   <div class="footer-info">
     <span>데이터: KRX 신규상장 통계 (MDCSTAT08001) + Naver siseJson</span>
     <span>매주 일요일 09:00 UTC (월요일 06:00 KST) 자동 갱신</span>
-    <span>시총 = 공모가 × 상장주식수</span>
+    <span>상장 시총 = 공모가 × 상장주식수 (~ = 현재 주식수 기준 추정)</span>
+    <span>현재 시총 = Naver 실시간 시가총액</span>
     <span>모든 수익률은 공모가 대비 (상장일 시초 진입 가정)</span>
   </div>
 </div>
@@ -293,6 +296,9 @@ async function load() {
             r.currentReturn = (px / r.ipoPrice - 1) * 100;
           }
         }
+        // snapshot.marketCap is in 억 → 원 (fresher than the stored value)
+        const mc = snap[r.ticker].marketCap;
+        if (Number.isFinite(mc) && mc > 0) r.currentMarketCap = mc * 1e8;
       }
     }
     STATE.hasDart = hasDart;
@@ -307,7 +313,7 @@ async function load() {
     renderLockups();
     render();
   } catch (e) {
-    $('ipo-body').innerHTML = `<tr><td colspan="16" class="empty-state">
+    $('ipo-body').innerHTML = `<tr><td colspan="17" class="empty-state">
       IPO 데이터를 불러올 수 없습니다.<br>
       <span style="font-size:10px;">${e.message} — 매주 일요일 cron이 돌면 자동 채워져요. 또는 Actions에서 'Weekly IPO History' 워크플로 수동 실행.</span>
     </td></tr>`;
@@ -389,7 +395,7 @@ function render() {
   updateSummary(list);
   const tbody = $('ipo-body');
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="16" class="empty-state">조건에 맞는 IPO가 없습니다.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="17" class="empty-state">조건에 맞는 IPO가 없습니다.</td></tr>`;
     return;
   }
   const escapeHtml = s => String(s || '').replace(/[&<>"']/g, c => ({
@@ -416,7 +422,10 @@ function render() {
         <span class="mkt-pill ${mktKey}">${mktLabel}</span>
       </div></td>
       <td>${fmtNum(r.ipoPrice)}</td>
-      <td>${fmtCap(r.marketCapAtListing)}</td>
+      <td>${r.marketCapAtListingEst && r.marketCapAtListing
+        ? `<span title="상장 당시 상장주식수 미공개 — 공모가 × 현재 상장주식수로 추정">${fmtCap(r.marketCapAtListing)}<span class="est">~</span></span>`
+        : fmtCap(r.marketCapAtListing)}</td>
+      <td>${fmtCap(r.currentMarketCap)}</td>
       ${cells}
       ${curPriceCell}
       ${curRetCell}
