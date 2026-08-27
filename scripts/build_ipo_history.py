@@ -46,6 +46,14 @@ NAVER_HISTORY = (
 # (신규 상장 종목은 '0039P0' 같은 영숫자 임시코드가 오지만 siseJson이 이를 받는다).
 NAVER_AC = "https://ac.stock.naver.com/ac"
 
+# 현재 시가총액 / 현재가. 38.co.kr 상세페이지는 상장주식수를 거의 안 주기 때문에
+# 상장 시총이 대부분 비어 있었다 — Naver의 시총(÷현재가 = 내재 주식수)이 사실상
+# 모든 상장 종목에 대해 존재하므로 이걸로 현재 시총을 채우고, 최근 상장(주식수
+# 변동 미미)에 한해 공모가 × 내재주식수로 상장 시총을 추정한다.
+NAVER_INTEGRATION = "https://m.stock.naver.com/api/stock/{}/integration"
+# 상장 후 이 기간 이내면 현재 주식수 ≈ 상장 당시 주식수 → 상장 시총 추정 허용.
+RECENT_LISTING_DAYS = 550
+
 START_DATE = "2016-01-01"
 DETAIL_WORKERS = 12
 PRICE_WORKERS = 16
@@ -326,6 +334,43 @@ def compute_returns(session, ipo):
     return ipo
 
 
+def fetch_market_cap(session, code):
+    """(market_cap_won, current_price) from Naver integration, or (None, None).
+    The implied share count (시총 ÷ 현재가) survives 증자/감자, so it is a better
+    basis for market cap than the disclosure's coarse share fields."""
+    if not code:
+        return None, None
+    try:
+        r = session.get(NAVER_INTEGRATION.format(code), timeout=15)
+        if r.status_code != 200:
+            return None, None
+        infos = {it.get("key"): it.get("value")
+                 for it in r.json().get("totalInfos", []) if isinstance(it, dict)}
+    except Exception:
+        return None, None
+
+    def _won(s):
+        if not s:
+            return None
+        s = s.replace(" ", "").replace(",", "")
+        total = 0.0
+        jo = re.search(r"([\d.]+)조", s)
+        eok = re.search(r"([\d.]+)억", s)
+        if jo:
+            total += float(jo.group(1)) * 1e12
+        if eok:
+            total += float(eok.group(1)) * 1e8
+        return total or None
+
+    mcap = _won(infos.get("시총"))
+    price = infos.get("전일")
+    try:
+        price = float(price.replace(",", "")) if price and price != "-" else None
+    except (ValueError, AttributeError):
+        price = None
+    return mcap, price
+
+
 def main():
     print(f"Fetching 38.co.kr listings since {START_DATE}...", flush=True)
     sess = make_session()
@@ -419,6 +464,50 @@ def main():
 
     with ThreadPoolExecutor(max_workers=PRICE_WORKERS) as ex:
         listings = list(ex.map(enrich_prices, listings))
+
+    # Current market cap (+ listing-time estimate) from Naver — 38.co.kr rarely
+    # exposes listed shares, so 상장 시총 was mostly empty. One integration call
+    # per distinct ticker; delisted/merged SPACs simply return nothing.
+    print("Enriching with Naver market cap...", flush=True)
+    mkt = make_session()
+    today = datetime.now(KST).date()
+    codes = sorted({r["ticker"] for r in listings if r.get("ticker")})
+
+    def fetch_mc(code):
+        return code, fetch_market_cap(mkt, code)
+
+    quote = {}
+    completed[0] = 0
+    with ThreadPoolExecutor(max_workers=PRICE_WORKERS) as ex:
+        for code, mc in ex.map(fetch_mc, codes):
+            quote[code] = mc
+            completed[0] += 1
+            if completed[0] % 200 == 0:
+                print(f"  mktcap {completed[0]}/{len(codes)}", flush=True)
+
+    filled_cur = filled_est = 0
+    for r in listings:
+        mc, px = quote.get(r.get("ticker"), (None, None))
+        if mc and mc > 0:
+            r["currentMarketCap"] = int(round(mc))   # 원
+            filled_cur += 1
+        if px and px > 0:
+            r["currentPrice"] = int(round(px))
+            ipo_p = r.get("ipoPrice")
+            if isinstance(ipo_p, (int, float)) and ipo_p > 0:
+                r["currentReturn"] = round((px / ipo_p - 1) * 100, 1)
+        # Listing-time market cap estimate for recent IPOs lacking exact shares.
+        if not r.get("marketCapAtListing") and mc and px and px > 0:
+            try:
+                age = (today - datetime.strptime(r.get("listingDate", ""), "%Y-%m-%d").date()).days
+            except ValueError:
+                age = 10 ** 9
+            ipo_p = r.get("ipoPrice")
+            if age <= RECENT_LISTING_DAYS and isinstance(ipo_p, (int, float)) and ipo_p > 0:
+                r["marketCapAtListing"] = int(round(ipo_p * (mc / px)))
+                r["marketCapAtListingEst"] = True
+                filled_est += 1
+    print(f"  current market cap: {filled_cur} · listing-time estimate: {filled_est}", flush=True)
 
     # Compute marketCapAtListing if we ever have shares (not from 38.co.kr — leave None)
     for r in listings:
