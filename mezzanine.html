@@ -155,12 +155,40 @@
     .section { padding: 14px 14px; }
     .issuer-head .summary { width: 100%; margin-left: 0; }
   }
+
+  /* persistent-top-nav */
+  .top-nav { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 18px; padding: 6px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    position: sticky; top: 0; z-index: 60; }
+  .top-nav a { padding: 7px 14px; font-size: 12px; font-weight: 600; color: var(--ink-mid);
+    text-decoration: none; border-radius: 5px; letter-spacing: 0.02em; transition: all 0.15s;
+    white-space: nowrap; }
+  .top-nav a:hover { background: var(--bg-warm); color: var(--accent); }
+  .top-nav a.active { background: var(--accent); color: #fff; }
+  @media (max-width: 640px) {
+    .top-nav { gap: 4px; padding: 4px; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+    .top-nav a { padding: 6px 10px; font-size: 11px; }
+  }
 </style>
 </head>
 <body>
 <div class="app">
 
-  <nav class="topnav">
+  <!-- persistent-top-nav -->
+  <nav class="top-nav">
+    <a href="index.html">🏠 대시보드</a>
+    <a href="portfolio.html">💼 포트폴리오</a>
+    <a href="stock-deep-dive.html">종목 딥다이브</a>
+    <a href="market-scan.html">시장 스캐너</a>
+    <a href="us-market.html">미국 스캐너</a>
+    <a href="research.html">증권사 리서치</a>
+    <a href="news.html">뉴스 크롤링</a>
+    <a href="post-ipo.html">Post-IPO</a>
+    <a href="ipo-calendar.html">IPO 캘린더</a>
+    <a href="mezzanine.html" class="active">메자닌</a>
+    <a href="alarm.html" target="_blank" rel="noopener">⏰ 알람</a>
+  </nav>
+    <nav class="topnav">
     <div>
       <div class="brand">지니<em>.</em></div>
       <div class="crumbs">
