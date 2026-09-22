@@ -1,0 +1,74 @@
+name: Data Health
+
+# Watches every data feed the dashboard reads and raises a GitHub issue
+# when one stops updating. Deliberately self-contained: no external
+# service, no API keys, no assistant in the loop — GitHub's own issue
+# notifications do the telling.
+#
+# Two triggers, because they catch different failures:
+#   - workflow_run fires within a minute of any data workflow finishing,
+#     so a cancelled or failed run is reported the same night. This is
+#     the case that used to be invisible: a job killed by its timeout
+#     skips its commit step and leaves nothing behind but a grey
+#     "cancelled" badge nobody looks at.
+#   - the daily cron catches what workflow_run cannot see at all — a
+#     schedule that never fired, or a run that went green while writing
+#     stale or truncated data.
+on:
+  schedule:
+    - cron: '0 23 * * *'
+  workflow_run:
+    workflows:
+      - DART Mezzanine
+      - DART Recent Disclosures
+      - Daily Market Snapshot
+      - Fetch News
+      - Daily Research Reports
+      - Daily IPO Calendar
+      - Weekly IPO History
+    types:
+      - completed
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+concurrency:
+  group: data-health
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # Explicit ref, not the event's SHA. On a workflow_run event that SHA
+      # is the default branch as it was when the TRIGGERING run started —
+      # i.e. before that run pushed its data commit — so a freshness check
+      # against it would read the previous file and cry stale.
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install --quiet requests
+
+      - name: Check every feed
+        id: check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/check_data_health.py
+
+      - name: Open / update / close the alert issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STATUS: ${{ steps.check.outputs.status }}
+          FINGERPRINT: ${{ steps.check.outputs.fingerprint }}
+        run: bash .github/scripts/report-data-health.sh

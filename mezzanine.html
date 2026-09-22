@@ -503,8 +503,7 @@ function renderMeta() {
     $('meta-extra').textContent = '—';
     return;
   }
-  $('meta-asof').textContent = d.asOf
-    ? new Date(d.asOf).toLocaleString('ko-KR') : '—';
+  renderAsOf(d);
   $('meta-issuers').textContent = (d.issuersWithMezzanine ?? '—').toLocaleString
     ? (d.issuersWithMezzanine ?? 0).toLocaleString() + '곳'
     : '—';
@@ -513,6 +512,45 @@ function renderMeta() {
   $('meta-extra').textContent = d.extraTotal
     ? `${d.extraIssuers}곳 · ${d.extraTotal}건`
     : '0';
+}
+
+/* The collector runs daily. A plain timestamp reads the same whether the
+ * data is 2 hours or 2 weeks old, which is exactly how a stalled feed goes
+ * unnoticed — so say so in words next to it. Thresholds mirror
+ * scripts/check_data_health.py (34h = one missed daily run plus GitHub's
+ * scheduling slack). */
+const ASOF_STALE_HOURS = 34;
+
+function renderAsOf(d) {
+  const el = $('meta-asof');
+  if (!d || !d.asOf) { el.textContent = '—'; return; }
+  const when = new Date(d.asOf);
+  const ageH = (Date.now() - when.getTime()) / 36e5;
+  const parts = [when.toLocaleString('ko-KR')];
+  el.textContent = parts[0];
+  el.style.color = '';
+  el.title = '';
+
+  const run = d.lastRun || null;
+  const partial = run && run.complete === false;
+  if (ageH <= ASOF_STALE_HOURS && !partial) return;
+
+  const chip = document.createElement('span');
+  chip.className = 'status-pill';
+  chip.style.cssText =
+    'margin-left:6px;background:var(--accent-bg);color:var(--accent);';
+  if (ageH > ASOF_STALE_HOURS) {
+    const days = Math.floor(ageH / 24);
+    chip.textContent = days >= 1 ? `${days}일 지연` : `${Math.round(ageH)}시간 지연`;
+    chip.title = '수집 워크플로가 예정대로 돌지 않았습니다. '
+      + 'GitHub Actions의 DART Mezzanine 실행 기록을 확인하세요.';
+    el.style.color = 'var(--accent)';
+  } else {
+    chip.textContent = '부분 수집';
+    chip.title = '마지막 수집이 일부 종목을 받지 못한 채 끝났습니다 '
+      + '(이전 데이터는 유지됨). 다음 실행에서 자동으로 다시 시도합니다.';
+  }
+  el.appendChild(chip);
 }
 
 function flatIssuances() {

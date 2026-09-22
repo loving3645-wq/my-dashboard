@@ -1,13 +1,32 @@
 name: DART Mezzanine
 
 # Mezzanine (CB/BW/EB) issuance announcements appear ad-hoc, mostly for
-# small caps. Run daily so new issuances and refixings show up within a day
-# instead of waiting up to a week. 19:00 UTC = 04:00 KST next day (after the
-# KST business day's disclosures have all posted).
+# small caps, so the feed is checked every day.
+#
+# Daily runs are INCREMENTAL: a market-wide list.json sweep finds the
+# handful of issuers that actually filed something mezzanine-related,
+# and only those are re-fetched and merged into the existing file. ~2-3
+# minutes instead of the 20-45 the per-ticker sweep took.
+#
+# Saturday's run (19:00 UTC Sat = 04:00 KST Sun) is FULL: every ticker is
+# re-fetched, which is what picks up corrections and re-applies the
+# rolling 7-year window. Only a full run may prune issuers.
+#
+# 19:00 UTC = 04:00 KST next day, after the KST business day's
+# disclosures have all posted. GitHub routinely starts scheduled runs
+# 1-3h late; both modes tolerate that.
 on:
   schedule:
     - cron: '0 19 * * *'
   workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Run mode'
+        type: choice
+        options:
+          - incremental
+          - full
+        default: incremental
 
 permissions:
   contents: write
@@ -19,6 +38,10 @@ concurrency:
 jobs:
   fetch:
     runs-on: ubuntu-latest
+    # Backstop only. The script keeps its own, shorter wall-clock budget
+    # (MEZZ_BUDGET_MIN) and writes + commits what it has when that runs
+    # out. Relying on this timeout instead is what used to throw away a
+    # whole run: a cancelled job skips the commit step entirely.
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
@@ -31,9 +54,24 @@ jobs:
       - name: Install deps
         run: pip install --quiet requests
 
+      - name: Pick run mode
+        id: mode
+        run: |
+          MODE="${{ github.event.inputs.mode }}"
+          if [ -z "$MODE" ]; then
+            # %u: 1=Mon … 6=Sat. Sat 19:00 UTC = Sun 04:00 KST.
+            if [ "$(date -u +%u)" = "6" ]; then MODE=full; else MODE=incremental; fi
+          fi
+          if [ "$MODE" = "full" ]; then BUDGET=38; else BUDGET=15; fi
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+          echo "budget=$BUDGET" >> "$GITHUB_OUTPUT"
+          echo "Running in $MODE mode (budget ${BUDGET}m)"
+
       - name: Fetch mezzanine history
         env:
           OPENDART_KEY: ${{ secrets.OPENDART_KEY }}
+          MEZZ_MODE: ${{ steps.mode.outputs.mode }}
+          MEZZ_BUDGET_MIN: ${{ steps.mode.outputs.budget }}
         run: python scripts/fetch_mezzanine_history.py
 
       - name: Commit if changed
@@ -45,9 +83,12 @@ jobs:
             echo "No changes — nothing to commit"
           else
             STAMP=$(date -u +"%Y-%m-%d")
+            MODE="${{ steps.mode.outputs.mode }}"
             ISSUERS=$(python -c "import json; print(json.load(open('data/mezzanine.json'))['issuersWithMezzanine'])")
             ISS=$(python -c "import json; print(json.load(open('data/mezzanine.json'))['totalIssuances'])")
-            PARSED=$(python -c "import json; d=json.load(open('data/mezzanine.json')); print(d.get('totalOutstandingParsed', 0))")
-            git commit -m "💳 Mezzanine ${STAMP} (${ISSUERS} issuers, ${ISS} issuances, ${PARSED} parsed)"
+            # A run that knows it only got part of the data says so in the
+            # log, so a partial commit is never mistaken for a clean one.
+            PARTIAL=$(python -c "import json; r=(json.load(open('data/mezzanine.json')).get('lastRun') or {}); print('' if r.get('complete', True) else ' (partial)')")
+            git commit -m "💳 Mezzanine ${STAMP} (${MODE} · ${ISSUERS} issuers, ${ISS} issuances)${PARTIAL}"
             git push
           fi
