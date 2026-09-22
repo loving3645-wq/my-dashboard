@@ -23,6 +23,7 @@ import io
 import json
 import os
 import re
+import signal
 import sys
 import threading
 import time
@@ -49,6 +50,82 @@ DART_KEY = os.environ.get("OPENDART_KEY", "").strip()
 CORP_CODE_URL = "https://opendart.fss.or.kr/api/corpCode.xml"
 LIST_URL = "https://opendart.fss.or.kr/api/list.json"
 DOCUMENT_URL = "https://opendart.fss.or.kr/api/document.xml"
+
+# ---- Run mode -------------------------------------------------------
+# "incremental" (daily): a market-wide list.json sweep finds the handful
+# of issuers that actually filed something mezzanine-related in the last
+# few days, and only those are re-fetched and merged into the existing
+# data/mezzanine.json. ~40 API calls of discovery + a few hundred for the
+# hits, versus ~10,000 for a full sweep — 2-3 minutes instead of 45.
+#
+# "full" (weekly): re-fetch every ticker. Picks up corrections and
+# re-applies the rolling LOOKBACK_YEARS window. It is the only mode
+# allowed to prune issuers out of the file.
+MODE = os.environ.get("MEZZ_MODE", "incremental").strip().lower()
+INCREMENTAL_LOOKBACK_DAYS = int(os.environ.get("MEZZ_LOOKBACK_DAYS", "10"))
+
+# Wall-clock budget, shorter than the job's timeout-minutes. The job
+# timeout used to kill the sweep mid-flight, which skipped the commit
+# step and threw away the entire run — the dashboard then sat on stale
+# data for days with nothing in the log but "cancelled". Now the run
+# stops handing out new work once the budget is spent, writes what it
+# has (merged over the previous file, so nothing is lost) and exits 0.
+BUDGET_SECONDS = int(float(os.environ.get("MEZZ_BUDGET_MIN", "30")) * 60)
+
+# Incremental discovery: KOSPI + KOSDAQ only, 100 filings per page.
+DISCOVERY_CORP_CLS = ("Y", "K")
+DISCOVERY_MAX_PAGES = 120
+
+# Titles meaning "this issuer's mezzanine state may have moved" — both
+# the 발행결정 filings and every action event that changes outstanding.
+# Deliberately a superset of EVENT_PATTERNS: a false positive costs one
+# re-fetch, a false negative costs a missing issuance on the dashboard.
+DISCOVERY_TITLE_RE = re.compile(
+    r"전환사채|신주인수권부사채|교환사채|"
+    r"전환청구권행사|신주인수권행사|교환청구권행사|"
+    r"조기상환|매도청구|콜옵션|만기상환|"
+    r"전환가액의?\s*조정|전환가격의?\s*조정"
+)
+
+
+class DiscoveryError(RuntimeError):
+    """The discovery sweep came back incomplete, so the set of issuers to
+    re-fetch cannot be trusted."""
+
+
+_DEADLINE = None
+
+
+def _arm_budget(at):
+    global _DEADLINE
+    _DEADLINE = at
+
+
+def _expired():
+    return _DEADLINE is not None and time.monotonic() >= _DEADLINE
+
+
+def _on_signal(signum, frame):
+    # The runner sends SIGTERM when it cancels a job. Wind down and write
+    # what we have instead of dying mid-sweep with nothing on disk.
+    print(
+        f"Signal {signum} received — winding down, writing partial results",
+        flush=True,
+    )
+    _arm_budget(time.monotonic())
+
+
+def _budget_sleep(seconds):
+    """Retry backoff that gives up the moment the budget is spent.
+
+    Without this, a DART outage mid-run makes every remaining call burn
+    its full retry ladder and throughput collapses ~15x — exactly how the
+    45-minute timeouts happened.
+    """
+    if _expired():
+        return False
+    time.sleep(seconds)
+    return not _expired()
 
 # 7-year lookback covers virtually all live mezzanine — typical CB tenor
 # is 3-5 years; even rare 7-year issues with year-2 puts will be picked up.
@@ -195,15 +272,26 @@ def load_body_cache():
     return len(_BODY_CACHE)
 
 
-def save_body_cache():
-    if not _BODY_CACHE_DIRTY:
-        return False
+def _write_body_cache_locked():
+    """Caller must hold _BODY_CACHE_LOCK. Writes via a temp file so a kill
+    mid-write can't leave a truncated cache behind."""
+    global _BODY_CACHE_DIRTY
     os.makedirs(os.path.dirname(BODY_CACHE_FILE), exist_ok=True)
-    with open(BODY_CACHE_FILE, "w", encoding="utf-8") as f:
+    tmp = BODY_CACHE_FILE + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
         json.dump(
             _BODY_CACHE, f, ensure_ascii=False,
             separators=(",", ":"), sort_keys=True,
         )
+    os.replace(tmp, BODY_CACHE_FILE)
+    _BODY_CACHE_DIRTY = False
+
+
+def save_body_cache():
+    with _BODY_CACHE_LOCK:
+        if not _BODY_CACHE_DIRTY:
+            return False
+        _write_body_cache_locked()
     return True
 
 
@@ -212,12 +300,23 @@ def _cache_get(rcept_no):
         return _BODY_CACHE.get(rcept_no)
 
 
+# Flush the cache to disk every N new parses. A run that gets killed
+# (or runs out of budget) then still leaves its body-parse work on disk
+# instead of making the next run redo all of it.
+CACHE_FLUSH_EVERY = 250
+_CACHE_UNFLUSHED = 0
+
+
 def _cache_put(rcept_no, entry):
-    global _BODY_CACHE_DIRTY
+    global _BODY_CACHE_DIRTY, _CACHE_UNFLUSHED
     compact = {k: v for k, v in entry.items() if v is not None}
     with _BODY_CACHE_LOCK:
         _BODY_CACHE[rcept_no] = compact
         _BODY_CACHE_DIRTY = True
+        _CACHE_UNFLUSHED += 1
+        if _CACHE_UNFLUSHED >= CACHE_FLUSH_EVERY:
+            _CACHE_UNFLUSHED = 0
+            _write_body_cache_locked()
 
 
 def _record_parse(outcome):
@@ -1254,6 +1353,9 @@ def summarize(issuances, unmatched_events):
 
 
 def fetch_kind(sess, corp_code, kind, bgn_de, end_de):
+    """Returns (issuances, ok). `ok` is False when DART never actually
+    answered — an empty list then means "we don't know", not "none".
+    Callers must not delete existing data on a not-ok result."""
     url = ENDPOINTS[kind]
     params = {
         "crtfc_key": DART_KEY,
@@ -1268,51 +1370,63 @@ def fetch_kind(sess, corp_code, kind, bgn_de, end_de):
             if r.status_code == 429 or 500 <= r.status_code < 600:
                 # HTTP-level rate limit / server error. Back off and retry.
                 last_reason = "ratelimit" if r.status_code == 429 else "http_error"
-                time.sleep(2 * (attempt + 1))
+                if not _budget_sleep(2 * (attempt + 1)):
+                    break
                 continue
             if r.status_code != 200:
                 _record_failure("http_error")
-                return []
+                return [], False
             body = r.json()
             status = body.get("status")
             if status == "000":
                 rows = body.get("list") or []
-                return [normalize_issuance(row, kind) for row in rows]
+                return [normalize_issuance(row, kind) for row in rows], True
+            if status == "013":
+                # "no data" is a real answer: this issuer has no filings
+                # of this kind in the window.
+                return [], True
             if status in HARD_FAIL_STATUSES:
-                # "013" = no data is legitimate. The others ("010" missing
-                # key, "011" expired, "012" IP block, "014" no file) are
-                # job-level fatal; surface in the silent-failure counter
-                # so the run summary shows the cause.
-                if status != "013":
-                    _record_failure("http_error")
-                return []
+                # "010" missing key, "011" expired, "012" IP block,
+                # "014" no file — job-level fatal; surface in the
+                # silent-failure counter so the run summary shows why.
+                _record_failure("http_error")
+                return [], False
             if status in RATELIMIT_STATUSES:
                 last_reason = "ratelimit"
                 # 2s, 4s, 8s, 16s — DART rate limit window is ~1 minute.
-                time.sleep(2 ** (attempt + 1))
+                if not _budget_sleep(2 ** (attempt + 1)):
+                    break
                 continue
             if status in TRANSIENT_STATUSES:
                 last_reason = "transient"
-                time.sleep(0.5 * (attempt + 1))
+                if not _budget_sleep(0.5 * (attempt + 1)):
+                    break
                 continue
             # Unknown status — log as http_error so it doesn't silently
             # vanish, but don't retry.
             _record_failure("http_error")
-            return []
-        except requests.RequestException:
+            return [], False
+        except (requests.RequestException, ValueError):
             last_reason = "network"
-            time.sleep(0.5 * (attempt + 1))
+            if not _budget_sleep(0.5 * (attempt + 1)):
+                break
             continue
     _record_failure(last_reason)
-    return []
+    return [], False
 
 
 def fetch_one(sess, ticker, name, corp_code, bgn_de, end_de):
+    """Returns (entry, ok). (None, True) means "confirmed no mezzanine";
+    (None, False) means DART didn't answer and the caller should keep
+    whatever it already had for this ticker."""
     issuances = []
+    all_ok = True
     for kind in ENDPOINTS:
-        issuances.extend(fetch_kind(sess, corp_code, kind, bgn_de, end_de))
+        rows, ok = fetch_kind(sess, corp_code, kind, bgn_de, end_de)
+        issuances.extend(rows)
+        all_ok = all_ok and ok
     if not issuances:
-        return None
+        return None, all_ok
     # Sort newest first (by 공시일).
     issuances.sort(
         key=lambda x: x["rceptDt"] or "0000-00-00",
@@ -1338,20 +1452,196 @@ def fetch_one(sess, ticker, name, corp_code, bgn_de, end_de):
         "issuances": issuances,
         "unmatchedEvents": unmatched,
         "summary": summarize(issuances, unmatched),
-    }
+    }, True
+
+
+def load_existing_payload():
+    """The previous data/mezzanine.json, or {} on a first run.
+
+    Every run merges onto this rather than rebuilding from nothing. That
+    is the difference between "DART didn't answer for 600 tickers, so we
+    kept what we had" and the old behaviour, where those 600 issuers were
+    silently dropped from the dashboard until a luckier run.
+    """
+    try:
+        with open(OUTPUT_FILE, encoding="utf-8") as f:
+            data = json.load(f)
+    except (FileNotFoundError, ValueError):
+        return {}
+    if not isinstance(data, dict) or not isinstance(data.get("mezzanine"), dict):
+        return {}
+    return data
+
+
+def _list_request(sess, params):
+    """One list.json call with the shared retry ladder. Returns the parsed
+    body, or None when the call could not be completed. Status 013 (no
+    data) is a successful empty result, not a failure."""
+    last_reason = "network"
+    for attempt in range(RETRY_COUNT + 1):
+        try:
+            r = sess.get(LIST_URL, params=params, timeout=TIMEOUT)
+            if r.status_code == 429 or 500 <= r.status_code < 600:
+                last_reason = "ratelimit" if r.status_code == 429 else "http_error"
+                if not _budget_sleep(2 * (attempt + 1)):
+                    break
+                continue
+            if r.status_code != 200:
+                _record_failure("http_error")
+                return None
+            body = r.json()
+            status = body.get("status")
+            if status == "000":
+                return body
+            if status == "013":
+                return {"list": [], "total_page": 0}
+            if status in RATELIMIT_STATUSES:
+                last_reason = "ratelimit"
+                if not _budget_sleep(2 ** (attempt + 1)):
+                    break
+                continue
+            if status in TRANSIENT_STATUSES:
+                last_reason = "transient"
+                if not _budget_sleep(0.5 * (attempt + 1)):
+                    break
+                continue
+            _record_failure("http_error")
+            return None
+        except (requests.RequestException, ValueError):
+            last_reason = "network"
+            if not _budget_sleep(0.5 * (attempt + 1)):
+                break
+            continue
+    _record_failure(last_reason)
+    return None
+
+
+def discover_recent_filers(sess, days):
+    """Market-wide list.json sweep over the last `days` days.
+
+    Returns (hits, scanned, pages, bgn, end) where `hits` maps stock code
+    -> the matching filing titles. One page carries 100 filings and only
+    KOSPI/KOSDAQ are swept, so a 10-day window is ~40 calls — against the
+    ~8,000 the per-ticker sweep needs to learn the same thing.
+
+    Raises DiscoveryError rather than returning a short list: a truncated
+    sweep is indistinguishable from "nothing was filed", and acting on it
+    would quietly skip real issuances.
+    """
+    today = datetime.now(KST).date()
+    bgn = (today - timedelta(days=days)).strftime("%Y%m%d")
+    end = today.strftime("%Y%m%d")
+    hits = {}
+    scanned = 0
+    pages = 0
+    for corp_cls in DISCOVERY_CORP_CLS:
+        total_page = None
+        for page_no in range(1, DISCOVERY_MAX_PAGES + 1):
+            body = _list_request(sess, {
+                "crtfc_key": DART_KEY,
+                "bgn_de": bgn,
+                "end_de": end,
+                "corp_cls": corp_cls,
+                "page_count": LIST_PAGE_SIZE,
+                "page_no": page_no,
+            })
+            if body is None:
+                raise DiscoveryError(
+                    f"list.json failed (corp_cls={corp_cls}, page={page_no})"
+                )
+            pages += 1
+            rows = body.get("list") or []
+            for row in rows:
+                scanned += 1
+                code = (row.get("stock_code") or "").strip()
+                if not code or len(code) != 6:
+                    continue
+                title = (row.get("report_nm") or "").strip()
+                if not DISCOVERY_TITLE_RE.search(title):
+                    continue
+                hits.setdefault(code, []).append(title)
+            if total_page is None:
+                try:
+                    total_page = int(body.get("total_page") or 1)
+                except (TypeError, ValueError):
+                    total_page = 1
+            if page_no >= total_page:
+                break
+            if not rows:
+                break
+        else:
+            if total_page and total_page > DISCOVERY_MAX_PAGES:
+                raise DiscoveryError(
+                    f"corp_cls={corp_cls} needs {total_page} pages, "
+                    f"DISCOVERY_MAX_PAGES={DISCOVERY_MAX_PAGES}"
+                )
+    return hits, scanned, pages, bgn, end
+
+
+def resolve_targets(sess, previous, tickers, ticker_names):
+    """The (ticker, name) list this run will re-fetch."""
+    if MODE == "full":
+        return list(tickers)
+
+    # Widen the discovery window to cover however long the data has been
+    # stale, so one bad week doesn't leave a permanent hole. list.json
+    # caps a query at 3 months.
+    lookback = INCREMENTAL_LOOKBACK_DAYS
+    prev_as_of = previous.get("asOf")
+    if prev_as_of:
+        try:
+            gap = (datetime.now(KST) - datetime.fromisoformat(prev_as_of)).days
+            lookback = max(lookback, gap + 3)
+        except (TypeError, ValueError):
+            pass
+    lookback = min(lookback, 80)
+
+    hits, scanned, pages, dbgn, dend = discover_recent_filers(sess, lookback)
+    targets = [(t, ticker_names[t]) for t in sorted(hits) if t in ticker_names]
+    print(
+        f"Discovery {dbgn} → {dend} ({lookback}d): {pages} pages, "
+        f"{scanned:,} filings scanned, {len(hits)} mezzanine filers, "
+        f"{len(targets)} of them in the ticker universe",
+        flush=True,
+    )
+    return targets
 
 
 def main():
     if not DART_KEY:
         print("ERROR: OPENDART_KEY env var not set", file=sys.stderr)
         sys.exit(1)
+    if MODE not in ("incremental", "full"):
+        print(
+            f"ERROR: unknown MEZZ_MODE={MODE!r} "
+            f"(expected 'incremental' or 'full')",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    started = time.monotonic()
+    _arm_budget(started + BUDGET_SECONDS)
+    signal.signal(signal.SIGTERM, _on_signal)
+    signal.signal(signal.SIGINT, _on_signal)
 
     sess = make_session()
     cache_loaded = load_body_cache()
     print(
+        f"Mode: {MODE} · budget {BUDGET_SECONDS // 60} min", flush=True,
+    )
+    print(
         f"Loaded body-parse cache: {cache_loaded:,} entries",
         flush=True,
     )
+
+    previous = load_existing_payload()
+    prev_mezz = previous.get("mezzanine") or {}
+    print(
+        f"Existing data: {len(prev_mezz):,} issuers "
+        f"(asOf {previous.get('asOf') or '—'})",
+        flush=True,
+    )
+
     print("Fetching DART corp_code master…", flush=True)
     try:
         code_map = download_corp_code_map(sess)
@@ -1361,6 +1651,7 @@ def main():
     print(f"  loaded {len(code_map):,} listed corp_code entries", flush=True)
 
     tickers = load_tickers()
+    ticker_names = dict(tickers)
     print(f"Loaded {len(tickers):,} tickers", flush=True)
 
     today = datetime.now(KST).date()
@@ -1368,68 +1659,143 @@ def main():
     end = today.strftime("%Y%m%d")
     print(f"Range {bgn} → {end} (CB/BW/EB)…", flush=True)
 
-    results = {}
-    skipped_no_corp = 0
-    total_issuances = 0
-    total_events = 0
-    total_parsed = 0
+    try:
+        targets = resolve_targets(sess, previous, tickers, ticker_names)
+    except DiscoveryError as e:
+        # Leave the previous file completely untouched: better a day of
+        # stale data with a loud failure than a quiet partial write.
+        print(f"ERROR: discovery sweep incomplete — {e}", file=sys.stderr)
+        sys.exit(1)
+
+    merged = dict(prev_mezz)
+    if MODE == "full":
+        # Issuers that left the ticker universe (delisted). Curated
+        # history for those lives in data/mezzanine-extra.json.
+        for gone in [t for t in merged if t not in ticker_names]:
+            merged.pop(gone)
+
+    stats = Counter()
 
     def task(ticker, name):
+        if _expired():
+            return ticker, None, "budget"
         cc = code_map.get(ticker)
         if not cc:
             return ticker, None, "no_corp"
-        entry = fetch_one(sess, ticker, name, cc, bgn, end)
+        entry, ok = fetch_one(sess, ticker, name, cc, bgn, end)
+        if entry is None and not ok:
+            return ticker, None, "api_fail"
         return ticker, entry, None
 
-    with ThreadPoolExecutor(max_workers=WORKERS) as ex:
-        futures = {ex.submit(task, t, n): t for t, n in tickers}
-        done = 0
-        total = len(futures)
-        for fut in as_completed(futures):
-            done += 1
-            ticker, entry, reason = fut.result()
-            if entry is not None:
-                results[ticker] = entry
-                total_issuances += entry["summary"]["issuanceCount"]
-                total_events += entry["summary"]["totalEvents"]
-                total_parsed += entry["summary"]["outstandingParsedCount"]
-            elif reason == "no_corp":
-                skipped_no_corp += 1
-            if done % 200 == 0:
-                print(
-                    f"  {done}/{total} · with_mezz={len(results)} "
-                    f"issuances={total_issuances} events={total_events} "
-                    f"parsed={total_parsed} no_corp={skipped_no_corp}",
-                    flush=True,
-                )
+    if targets:
+        with ThreadPoolExecutor(max_workers=WORKERS) as ex:
+            futures = {ex.submit(task, t, n): t for t, n in targets}
+            done = 0
+            total = len(futures)
+            for fut in as_completed(futures):
+                done += 1
+                ticker, entry, reason = fut.result()
+                if reason is None:
+                    if entry is not None:
+                        merged[ticker] = entry
+                        stats["updated"] += 1
+                    elif merged.pop(ticker, None) is not None:
+                        # DART confirmed no mezzanine in the window —
+                        # e.g. the last issuance aged out of the 7-year
+                        # lookback. Safe to drop.
+                        stats["removed"] += 1
+                    else:
+                        stats["no_mezz"] += 1
+                else:
+                    # Failures never delete: the previous entry stands.
+                    stats[reason] += 1
+                if done % 200 == 0 or done == total:
+                    print(
+                        f"  {done}/{total} · updated={stats['updated']} "
+                        f"removed={stats['removed']} "
+                        f"api_fail={stats['api_fail']} "
+                        f"budget_skip={stats['budget']} "
+                        f"no_corp={stats['no_corp']}",
+                        flush=True,
+                    )
+    else:
+        print("  nothing to re-fetch this run", flush=True)
+
+    over_budget = stats["budget"] > 0
+    clean = not over_budget and stats["api_fail"] == 0
+    total_issuances = sum(
+        len(e.get("issuances") or []) for e in merged.values()
+    )
+    total_events = sum(
+        (e.get("summary") or {}).get("totalEvents", 0) for e in merged.values()
+    )
+    total_parsed = sum(
+        (e.get("summary") or {}).get("outstandingParsedCount", 0)
+        for e in merged.values()
+    )
+    now_iso = datetime.now(KST).isoformat(timespec="seconds")
 
     payload = {
-        "asOf": datetime.now(KST).isoformat(timespec="seconds"),
-        "rangeStart": bgn,
+        "asOf": now_iso,
+        # Incremental runs only touch the issuers that filed, so the
+        # rolling window on everything else is whatever the last full
+        # sweep applied. Only a full run may move rangeStart.
+        "rangeStart": (
+            bgn if MODE == "full" else (previous.get("rangeStart") or bgn)
+        ),
         "rangeEnd": end,
         "count": len(tickers),
-        "issuersWithMezzanine": len(results),
+        "issuersWithMezzanine": len(merged),
         "totalIssuances": total_issuances,
         "totalEvents": total_events,
         "totalOutstandingParsed": total_parsed,
-        "mezzanine": results,
+        # Run provenance. scripts/check_data_health.py reads this to tell
+        # "quiet day, nothing was filed" apart from "the run broke".
+        "lastRun": {
+            "mode": MODE,
+            "at": now_iso,
+            "targets": len(targets),
+            "updated": stats["updated"],
+            "removed": stats["removed"],
+            "apiFailed": stats["api_fail"],
+            "budgetSkipped": stats["budget"],
+            "elapsedSec": int(time.monotonic() - started),
+            "complete": clean,
+        },
+        "lastFullRun": (
+            now_iso if MODE == "full" and clean else previous.get("lastFullRun")
+        ),
+        "mezzanine": merged,
     }
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
-    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+    tmp_path = OUTPUT_FILE + ".tmp"
+    with open(tmp_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, separators=(",", ":"))
+    os.replace(tmp_path, OUTPUT_FILE)
 
     print(
-        f"Wrote {OUTPUT_FILE} · issuers={len(results)} "
+        f"Wrote {OUTPUT_FILE} · issuers={len(merged)} "
         f"issuances={total_issuances} events={total_events} "
-        f"parsed_outstanding={total_parsed}",
+        f"parsed_outstanding={total_parsed} "
+        f"({'complete' if clean else 'PARTIAL'})",
         flush=True,
     )
+    if over_budget:
+        print(
+            f"  NOTE: {BUDGET_SECONDS // 60}-minute budget spent — "
+            f"{stats['budget']} tickers were not re-fetched. Their previous "
+            f"data was kept and the next run picks them up.",
+            flush=True,
+        )
 
     if save_body_cache():
         print(
             f"Wrote {BODY_CACHE_FILE} · {len(_BODY_CACHE):,} cached entries",
             flush=True,
         )
+
+    # Downstream diagnostics report on the file we just wrote.
+    results = merged
 
     # Per-field fill rate. A field that suddenly drops to 0% almost always
     # means DART renamed a response key — easier to catch in CI than to
