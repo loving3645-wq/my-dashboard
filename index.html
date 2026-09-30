@@ -220,6 +220,8 @@
   .card-btn.complete:hover { background: var(--green); color: white; border-color: var(--green); }
   .card-btn.deal { color: var(--blue); }
   .card-btn.deal:hover { color: var(--blue); border-color: var(--blue); }
+  .card-btn.edit { font-size: 12px; }
+  .card-btn.edit:hover { color: var(--gold); border-color: var(--gold); }
   .card-btn.pause { color: var(--paused); }
   .card-btn.pause:hover { color: var(--paused); border-color: var(--paused); background: var(--paused-bg); }
 
@@ -1362,7 +1364,7 @@ function cardHTML(t) {
     actionBtns = `<button class="card-btn move" data-action="move" data-target="todo" title="할일로 되돌리기">↺</button>`;
   }
   const dealBlock = status === 'deals' ? dealStagesHTML(t) : '';
-  return `<div class="card${status==='done'?' done':''}" draggable="true" data-id="${t.id}"><div class="card-text">${escapeHTML(t.text)}</div><div class="card-meta">${meta.join('')}</div>${dealBlock}<div class="card-actions">${actionBtns}<button class="card-btn del" data-action="delete" title="삭제">×</button></div></div>`;
+  return `<div class="card${status==='done'?' done':''}" draggable="true" data-id="${t.id}"><div class="card-text">${escapeHTML(t.text)}</div><div class="card-meta">${meta.join('')}</div>${dealBlock}<div class="card-actions">${actionBtns}<button class="card-btn edit" data-action="edit" title="수정">✎</button><button class="card-btn del" data-action="delete" title="삭제">×</button></div></div>`;
 }
 function escapeHTML(s) { return String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
 
@@ -1969,6 +1971,16 @@ document.addEventListener('click', e => {
     moveTodo(card.dataset.id, moveBtn.dataset.target);
     return;
   }
+  const editBtn = e.target.closest('[data-action="edit"]');
+  if (editBtn) {
+    const card = editBtn.closest('.card'); if (!card) return;
+    const todo = state.todos.find(t => t.id === card.dataset.id);
+    if (todo) openTodoModal({
+      mode: 'edit', editId: todo.id, targetStatus: todo.status || 'todo',
+      preset: { text: todo.text, category: todo.category, priority: todo.priority, time: todo.time },
+    });
+    return;
+  }
   const delBtn = e.target.closest('[data-action="delete"]');
   if (delBtn) {
     const card = delBtn.closest('.card'); if (!card) return;
@@ -2048,7 +2060,8 @@ function openTodoModal(ctx) {
   state.modalContext = ctx;
   const isFromCal = ctx.mode === 'add-from-calendar';
   let titleHTML;
-  if (isFromCal) titleHTML = '캘린더 → <span class="accent">할 일</span>';
+  if (ctx.mode === 'edit') titleHTML = '할 일 <span class="accent">수정</span>';
+  else if (isFromCal) titleHTML = '캘린더 → <span class="accent">할 일</span>';
   else if (ctx.targetStatus === 'deals') titleHTML = '검토 딜 <span class="accent">추가</span>';
   else titleHTML = `${ctx.statusLabel || '할 일'} <span class="accent">추가</span>`;
   document.getElementById('todo-modal-title').innerHTML = titleHTML;
@@ -2065,6 +2078,17 @@ function confirmTodoModal() {
   const text = document.getElementById('todo-text').value.trim();
   if (!text) { document.getElementById('todo-text').focus(); return; }
   const ctx = state.modalContext || {};
+  if (ctx.editId) {
+    const t = state.todos.find(x => x.id === ctx.editId);
+    if (t) {
+      t.text = text;
+      t.category = document.getElementById('todo-cat').value;
+      t.priority = parseInt(document.getElementById('todo-pri').value) || null;
+      t.time = document.getElementById('todo-time').value || null;
+    }
+    closeTodoModal(); renderBoard(); scheduleSave();
+    return;
+  }
   const status = ctx.targetStatus || 'todo';
   const todo = {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
