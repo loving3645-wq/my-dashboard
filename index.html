@@ -207,6 +207,9 @@
   .tag.pri-3 { background: var(--bg-warm); color: var(--p3-color); }
   .tag.time { background: var(--bg-warm); color: var(--ink-mid); }
   .tag.from-cal { background: var(--surface-2); color: var(--ink-soft); border: 1px dashed var(--line-strong); }
+  .tag.daily { background: var(--lime-bg, var(--green-bg)); color: var(--lime, var(--green)); border: 1px solid var(--lime, var(--green)); }
+  .todo-daily-toggle { display: flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 13px; color: var(--ink-mid); cursor: pointer; user-select: none; }
+  .todo-daily-toggle input { width: 16px; height: 16px; accent-color: var(--lime, var(--green)); cursor: pointer; }
   .card-actions { position: absolute; top: 6px; right: 6px; display: flex; gap: 2px; opacity: 0; transition: opacity 0.15s; }
   .card:hover .card-actions { opacity: 1; }
   @media (max-width: 700px) { .card-actions { opacity: 1; gap: 4px; } }
@@ -438,6 +441,9 @@
   .board.show-all { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; align-items: start; }
   .board.show-all .col { display: flex; width: auto; min-height: 56vh; max-height: 74vh; }
   @media (max-width: 700px) { .board.show-all { grid-template-columns: 1fr; } }
+  /* "할 일" view: 데일리 + 그때그때 두 칸을 한 화면에 나란히 */
+  .board.todo-split { display: flex; gap: 16px; align-items: stretch; }
+  .board.todo-split .col.col-active { flex: 1 1 0; width: auto; min-height: 72vh; max-height: 82vh; }
   @media (max-width: 700px) {
     .workspace { grid-template-columns: 1fr; gap: 12px; }
     .col-tabs { flex-direction: row; overflow-x: auto; position: static; }
@@ -445,6 +451,8 @@
     .col-tab { flex: 1 0 auto; justify-content: center; }
     .col-tab .badge { margin-left: 4px; }
     .col.col-active { min-height: calc(100vh - 300px); max-height: none; }
+    .board.todo-split { flex-direction: column; }
+    .board.todo-split .col.col-active { min-height: calc(50vh - 150px); }
   }
 
   /* ===== Larger, more readable text (main + detail) ===== */
@@ -562,9 +570,17 @@
       </div>
       <div class="col-body" id="col-cal"></div>
     </div>
-    <div class="col todo" data-col="todo" data-status="todo">
+    <div class="col todo todo-daily" data-col="todo" data-status="todo">
       <div class="col-header">
-        <div class="col-title"><span class="icon"></span>할 일</div>
+        <div class="col-title"><span class="icon"></span>데일리 할 일</div>
+        <div class="col-count" id="cnt-todo-daily">0</div>
+      </div>
+      <div class="col-body" id="col-todo-daily" data-drop="todo" data-drop-daily="1"></div>
+      <div class="col-add"><button class="col-add-btn" data-add="todo" data-add-daily="1">+ 데일리 할 일 추가</button></div>
+    </div>
+    <div class="col todo todo-adhoc" data-col="todo" data-status="todo">
+      <div class="col-header">
+        <div class="col-title"><span class="icon"></span>그때그때 할 일</div>
         <div class="col-count" id="cnt-todo">0</div>
       </div>
       <div class="col-body" id="col-todo" data-drop="todo"></div>
@@ -682,6 +698,7 @@
         <input type="time" id="todo-time" />
       </div>
     </div>
+    <label class="todo-daily-toggle"><input type="checkbox" id="todo-daily" /> 매일 반복하는 데일리 할 일</label>
     <div class="modal-actions">
       <button class="secondary" id="todo-cancel">취소</button>
       <button class="primary" id="todo-confirm">저장</button>
@@ -1266,7 +1283,19 @@ function renderBoard() {
     return sorter(a,b);
   });
   buckets.done.sort((a,b) => (b.completedAt||0) - (a.completedAt||0));
-  for (const status of ['todo','paused','deals','done']) {
+  // 할 일은 데일리(매일 반복) / 그때그때 두 칸으로 나눠 렌더
+  const dailyTodos = buckets.todo.filter(t => t.daily);
+  const adhocTodos = buckets.todo.filter(t => !t.daily);
+  const fillCol = (id, arr) => {
+    const el = document.getElementById(id);
+    el.innerHTML = arr.length ? arr.map(cardHTML).join('') : '<div class="empty">비어있음</div>';
+  };
+  fillCol('col-todo-daily', dailyTodos);
+  fillCol('col-todo', adhocTodos);
+  document.getElementById('cnt-todo-daily').textContent = dailyTodos.length;
+  document.getElementById('cnt-todo').textContent = adhocTodos.length;
+  document.getElementById('ct-todo').textContent = buckets.todo.length;
+  for (const status of ['paused','deals','done']) {
     const el = document.getElementById('col-' + status);
     document.getElementById('cnt-' + status).textContent = buckets[status].length;
     document.getElementById('ct-' + status).textContent = buckets[status].length;
@@ -1342,6 +1371,7 @@ function cardHTML(t) {
   const cat = { work: '회사', personal: '개인' }[t.category] || '회사';
   const meta = [];
   meta.push(`<span class="tag cat-${t.category}">${cat}</span>`);
+  if (t.daily) meta.push(`<span class="tag daily">데일리</span>`);
   if (t.priority) meta.push(`<span class="tag pri-${t.priority}">P${t.priority}</span>`);
   if (t.time) meta.push(`<span class="tag time">${escapeHTML(t.time)}</span>`);
   if (t.fromCalendar) meta.push(`<span class="tag from-cal">캘린더</span>`);
@@ -1937,7 +1967,13 @@ document.querySelectorAll('[data-drop]').forEach(zone => {
   zone.addEventListener('drop', e => {
     e.preventDefault(); zone.classList.remove('drag-over');
     if (!draggedId) return;
+    // 할 일 칸끼리(데일리 ↔ 그때그때) 드래그하면 데일리 여부도 바꿔준다
+    if (zone.dataset.drop === 'todo') {
+      const t = state.todos.find(x => x.id === draggedId);
+      if (t) t.daily = zone.dataset.dropDaily === '1';
+    }
     moveTodo(draggedId, zone.dataset.drop);
+    renderBoard(); scheduleSave();
   });
 });
 function moveTodo(id, newStatus) {
@@ -1977,7 +2013,7 @@ document.addEventListener('click', e => {
     const todo = state.todos.find(t => t.id === card.dataset.id);
     if (todo) openTodoModal({
       mode: 'edit', editId: todo.id, targetStatus: todo.status || 'todo',
-      preset: { text: todo.text, category: todo.category, priority: todo.priority, time: todo.time },
+      preset: { text: todo.text, category: todo.category, priority: todo.priority, time: todo.time, daily: todo.daily },
     });
     return;
   }
@@ -2012,7 +2048,10 @@ function setActiveCol(colName) {
   localStorage.setItem(STORAGE_KEY.COL, colName);
   document.querySelectorAll('.col-tab').forEach(b => b.classList.toggle('active', b.dataset.col === colName));
   const board = document.querySelector('.board');
-  if (board) board.classList.toggle('show-all', colName === 'all');
+  if (board) {
+    board.classList.toggle('show-all', colName === 'all');
+    board.classList.toggle('todo-split', colName === 'todo');
+  }
   document.querySelectorAll('.col').forEach(c => c.classList.toggle('col-active', c.dataset.col === colName));
 }
 document.querySelectorAll('.col-tab').forEach(btn => {
@@ -2063,6 +2102,7 @@ function openTodoModal(ctx) {
   if (ctx.mode === 'edit') titleHTML = '할 일 <span class="accent">수정</span>';
   else if (isFromCal) titleHTML = '캘린더 → <span class="accent">할 일</span>';
   else if (ctx.targetStatus === 'deals') titleHTML = '검토 딜 <span class="accent">추가</span>';
+  else if (ctx.daily) titleHTML = '데일리 할 일 <span class="accent">추가</span>';
   else titleHTML = `${ctx.statusLabel || '할 일'} <span class="accent">추가</span>`;
   document.getElementById('todo-modal-title').innerHTML = titleHTML;
   const preset = ctx.preset || {};
@@ -2070,6 +2110,13 @@ function openTodoModal(ctx) {
   document.getElementById('todo-cat').value = preset.category || (state.activeTab !== 'all' ? state.activeTab : 'work');
   document.getElementById('todo-pri').value = preset.priority || '';
   document.getElementById('todo-time').value = preset.time || '';
+  const dailyBox = document.getElementById('todo-daily');
+  if (dailyBox) {
+    dailyBox.checked = ctx.mode === 'edit' ? !!preset.daily : !!ctx.daily;
+    // 데일리 토글은 할 일(todo) 상태에서만 의미가 있음
+    dailyBox.closest('.todo-daily-toggle').style.display =
+      (ctx.targetStatus === 'deals' || ctx.targetStatus === 'paused') ? 'none' : '';
+  }
   document.getElementById('todo-modal').style.display = 'flex';
   setTimeout(() => document.getElementById('todo-text').focus(), 50);
 }
@@ -2085,6 +2132,7 @@ function confirmTodoModal() {
       t.category = document.getElementById('todo-cat').value;
       t.priority = parseInt(document.getElementById('todo-pri').value) || null;
       t.time = document.getElementById('todo-time').value || null;
+      t.daily = !!document.getElementById('todo-daily').checked;
     }
     closeTodoModal(); renderBoard(); scheduleSave();
     return;
@@ -2096,6 +2144,7 @@ function confirmTodoModal() {
     category: document.getElementById('todo-cat').value,
     priority: parseInt(document.getElementById('todo-pri').value) || null,
     time: document.getElementById('todo-time').value || null,
+    daily: status === 'todo' && !!document.getElementById('todo-daily').checked,
     status,
     dealStage: status === 'deals' ? 0 : undefined,
     pausedAt: status === 'paused' ? Date.now() : undefined,
@@ -2110,7 +2159,7 @@ document.querySelectorAll('[data-add]').forEach(btn => {
   btn.addEventListener('click', () => {
     const status = btn.dataset.add;
     const labels = { todo: '할 일', deals: '검토 딜', paused: '잠시중단' };
-    openTodoModal({ mode: 'add', targetStatus: status, statusLabel: labels[status] });
+    openTodoModal({ mode: 'add', targetStatus: status, statusLabel: labels[status], daily: btn.dataset.addDaily === '1' });
   });
 });
 document.getElementById('todo-cancel').addEventListener('click', closeTodoModal);
