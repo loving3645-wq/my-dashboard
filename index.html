@@ -1268,13 +1268,19 @@ function renderBoard() {
   const filtered = filterTodos();
   const buckets = { todo: [], paused: [], deals: [], done: [] };
   for (const t of filtered) { const s = t.status || 'todo'; if (buckets[s]) buckets[s].push(t); }
-  const sorter = (a,b) => {
+  /* 우선순위 → 시각 순은 공통. 마지막 동점 처리만 칸마다 다르다:
+   * 데일리는 매일 같은 목록이라 적어둔 순서 그대로가 읽기 좋고,
+   * 그때그때는 방금 적은 게 바로 눈에 들어와야 해서 최신순으로 뒤집는다. */
+  const makeSorter = newestFirst => (a,b) => {
     const pa = a.priority || 99, pb = b.priority || 99;
     if (pa !== pb) return pa - pb;
     if (a.time && b.time) return a.time.localeCompare(b.time);
     if (a.time) return -1; if (b.time) return 1;
-    return (a.created || 0) - (b.created || 0);
+    const ca = a.created || 0, cb = b.created || 0;
+    return newestFirst ? cb - ca : ca - cb;
   };
+  const sorter = makeSorter(false);
+  const adhocSorter = makeSorter(true);
   buckets.todo.sort(sorter);
   buckets.paused.sort((a,b) => (b.pausedAt||b.created||0) - (a.pausedAt||a.created||0));
   buckets.deals.sort((a,b) => {
@@ -1285,7 +1291,8 @@ function renderBoard() {
   buckets.done.sort((a,b) => (b.completedAt||0) - (a.completedAt||0));
   // 할 일은 데일리(매일 반복) / 그때그때 두 칸으로 나눠 렌더
   const dailyTodos = buckets.todo.filter(t => t.daily);
-  const adhocTodos = buckets.todo.filter(t => !t.daily);
+  // filter()가 새 배열을 주므로 여기서 정렬해도 buckets.todo 순서는 그대로다.
+  const adhocTodos = buckets.todo.filter(t => !t.daily).sort(adhocSorter);
   const fillCol = (id, arr) => {
     const el = document.getElementById(id);
     el.innerHTML = arr.length ? arr.map(cardHTML).join('') : '<div class="empty">비어있음</div>';
