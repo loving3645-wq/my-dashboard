@@ -88,6 +88,16 @@ FEEDS = [
         "workflow": "research-reports.yml",
     },
     {
+        "id": "financials",
+        "label": "실적 (분기·연간)",
+        "file": "financials.json",
+        "ts": "asOf",
+        "maxAgeHours": 34,         # daily cron + delay margin
+        "count": "covered",
+        "minCount": 1500,
+        "workflow": "fetch-financials.yml",
+    },
+    {
         "id": "ipo-calendar",
         "label": "IPO 캘린더",
         "file": "ipo-calendar.json",
@@ -112,6 +122,11 @@ FEEDS = [
 # data/us-market-snapshot.json and data/mezzanine-extra.json are produced
 # by manual scripts with no cron, so staleness there is expected — they
 # are deliberately not monitored.
+#
+# financials.json was missing from this list while it did not exist, which
+# is precisely why nobody noticed that its workflow had been failing every
+# single run since it was written. A feed is added here when its workflow
+# is added, not when its data first shows up.
 
 
 def _parse_ts(raw):

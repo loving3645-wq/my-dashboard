@@ -1424,26 +1424,46 @@ function renderPeers(s) {
   `).join('');
 }
 
+/* 금액 단위는 데이터마다 다르다. 큐레이션 종목은 조원, DART 피드는 억원
+ * (시장 대부분이 소형주라 조원으로는 0.0으로 뭉개진다). 억원일 때는 1조
+ * 이상만 조 단위로 접어 큰 종목도 같이 읽히게 한다. */
+function fmtFinAmount(v, unit) {
+  if (typeof v !== 'number' || !isFinite(v)) return '—';
+  if (unit !== '억원') return v.toFixed(1) + '조';
+  if (Math.abs(v) >= 10000) return (v / 10000).toFixed(2) + '조';
+  return v.toLocaleString('ko-KR', { maximumFractionDigits: 0 }) + '억';
+}
+
 function renderIncome(s) {
   const f = s.fin;
+  const unit = f.unit || '조';
   const tbl = $('income-tbl');
   tbl.querySelector('thead').innerHTML = '<tr><th>Item</th>' + f.years.map(y => `<th class="num">${y}</th>`).join('') + '</tr>';
-  const cogs = f.revenue.map((r, i) => +(r * (1 - f.grossMargin[i]/100)).toFixed(1));
-  const gross = f.revenue.map((r, i) => +(r * f.grossMargin[i]/100).toFixed(1));
-  const op = f.revenue.map((r, i) => +(r * f.opMargin[i]/100).toFixed(1));
+  const has = arr => Array.isArray(arr) && arr.some(v => v != null);
+  // 매출총이익률이 없으면 매출원가·매출총이익은 계산 자체가 불가능하다.
+  // 0으로 채우면 "매출원가 = 매출액"이라는 거짓말이 되므로 행을 뺀다.
+  const canGross = has(f.grossMargin);
+  const cogs = canGross ? f.revenue.map((r, i) => +(r * (1 - f.grossMargin[i]/100)).toFixed(1)) : null;
+  const gross = canGross ? f.revenue.map((r, i) => +(r * f.grossMargin[i]/100).toFixed(1)) : null;
+  // 영업이익은 실값이 있으면 그대로, 없으면 마진에서 역산(큐레이션 데이터).
+  const op = has(f.operatingIncome)
+    ? f.operatingIncome
+    : f.revenue.map((r, i) => +(r * f.opMargin[i]/100).toFixed(1));
   const rows = [
     { lbl: '매출액', vals: f.revenue, cls: 'label' },
-    { lbl: '매출원가', vals: cogs },
-    { lbl: '매출총이익', vals: gross, cls: 'label' },
+    canGross ? { lbl: '매출원가', vals: cogs } : null,
+    canGross ? { lbl: '매출총이익', vals: gross, cls: 'label' } : null,
     { lbl: '영업이익', vals: op, cls: 'label' },
     { lbl: '당기순이익', vals: f.netIncome, cls: 'label' },
     { lbl: '매출성장률', vals: f.revGrowth, suffix: '%' },
     { lbl: '순이익률', vals: f.netMargin, suffix: '%' },
-  ];
+  ].filter(Boolean);
   tbl.querySelector('tbody').innerHTML = rows.map(r => `
     <tr>
       <td class="${r.cls||''}">${r.lbl}</td>
-      ${r.vals.map(v => `<td class="num">${typeof v === 'number' ? (r.suffix ? v.toFixed(1) + r.suffix : v.toFixed(1) + '조') : v}</td>`).join('')}
+      ${r.vals.map(v => `<td class="num">${typeof v === 'number'
+        ? (r.suffix ? v.toFixed(1) + r.suffix : fmtFinAmount(v, unit))
+        : '—'}</td>`).join('')}
     </tr>
   `).join('');
 }
@@ -2129,14 +2149,22 @@ async function loadFinancialsForTicker(stock, ticker) {
   const entry = payload && payload.financials && payload.financials[ticker];
   if (!entry) return false;
   // Reshape to the {fin} schema renderIncome / buildRevChart expect.
+  // null은 0으로 바꾸지 않는다. DART 주요계정에는 매출총이익이 없어
+  // grossMargin이 통째로 null인데, 이를 0으로 치면 renderIncome이
+  // 매출원가 = 매출액, 매출총이익 = 0으로 그려 버린다.
+  const zero = v => (v == null ? 0 : v);
   stock.fin = {
+    unit: payload.unit || '조',          // DART 피드는 억원, 큐레이션 데이터는 조원
     years: entry.years,
-    revenue: entry.revenue.map(v => v == null ? 0 : v),
-    netIncome: entry.netIncome.map(v => v == null ? 0 : v),
-    grossMargin: entry.grossMargin.map(v => v == null ? 0 : v),
-    opMargin: entry.opMargin.map(v => v == null ? 0 : v),
-    netMargin: entry.netMargin.map(v => v == null ? 0 : v),
-    revGrowth: entry.revGrowth.map(v => v == null ? 0 : v),
+    revenue: entry.revenue.map(zero),
+    operatingIncome: entry.operatingIncome,  // 마진에서 역산하지 않고 실값 사용
+    netIncome: entry.netIncome.map(zero),
+    grossMargin: entry.grossMargin,          // null 그대로 → 해당 행 생략
+    opMargin: entry.opMargin.map(zero),
+    netMargin: entry.netMargin.map(zero),
+    revGrowth: entry.revGrowth.map(zero),
+    quarters: entry.quarters || [],
+    lastReport: entry.lastReport || null,
   };
   renderIncome(stock);
   buildRevChart(stock.fin);
@@ -2681,10 +2709,13 @@ async function loadStock(ticker) {
     if (stock.own) renderOwn(stock);
     if (stock.peers && stock.peers.length) renderPeers(stock);
     if (stock.news && stock.news.length) renderNews(stock);
-    // Try DART 3Y financials — replaces income table + rev/margin charts on hit.
-    loadFinancialsForTicker(stock, ticker);
   }
 
+  // DART financials run for curated stocks too, for the same reason
+  // ownership does: the feed is filed quarterly by the company, while the
+  // curated numbers are hand-tuned and go stale. On a miss the curated
+  // table stays as it was.
+  loadFinancialsForTicker(stock, ticker);
   // Mezzanine card is independent of curation (some curated big caps
   // also have CBs). Always try; the section stays hidden if there's none.
   loadMezzanineForTicker(ticker);

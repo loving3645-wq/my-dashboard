@@ -1,26 +1,44 @@
 #!/usr/bin/env python3
-"""3-year annual financials for every KOSPI/KOSDAQ ticker via OpenDART.
+"""Quarterly + annual earnings for every KOSPI/KOSDAQ ticker via OpenDART.
 
-Pipeline:
-  1) Load tickers from tickers-full.js (KOSPI/KOSDAQ corporate stocks).
-  2) Download OpenDART corpCode.xml master, build stock_code → corp_code map.
-  3) For each ticker, call fnlttSinglAcntAll (annual, 사업보고서) and pull
-     매출액 / 매출원가 / 매출총이익 / 영업이익 / 당기순이익 across 3 fiscal years.
-  4) Compute margins + revenue growth, emit data/financials.json.
+Why this is a bulk pipeline
+---------------------------
+The previous version called fnlttSinglAcntAll once per ticker (up to four
+attempts each: CFS/OFS x two fiscal years). That is ~10,000 HTTP calls per
+run, and it never once finished: all 29 scheduled runs were killed by the
+job's 30-minute timeout, which skips the commit step, so data/financials.json
+was never produced at all.
 
-The frontend (stock-deep-dive.html) loads the JSON and replaces the
-"데이터 준비 중" placeholders with real DART numbers.
+This version uses fnlttMultiAcnt (다중회사 주요계정), which takes up to 99
+corp_codes per call. ~2,600 tickers x 4 report codes x 2 base years is about
+210 calls instead of 10,000 — a couple of minutes instead of never.
 
-Run weekly — annual filings only update around March each year.
+The trade-off: 주요계정 carries 매출액 / 영업이익 / 당기순이익 but not
+매출원가 / 매출총이익, so those stay null. For earnings tracking that is the
+right trade: the three headline lines, every quarter, for the whole market.
+
+Report codes map to quarters: 11013 -> Q1, 11012 -> 반기(Q2 누적),
+11014 -> Q3 누적, 11011 -> 사업보고서(FY 누적).
+
+Units
+-----
+Amounts are stored in 억원, not 조원. Most of the market is small caps; at
+조원 with two decimals a 500억 revenue rounds to 0.0 and the number is
+useless. 억원 keeps every listed company legible.
+
+Output: data/financials.json
 """
 
 import io
 import json
 import os
 import re
+import signal
 import sys
+import threading
 import time
 import zipfile
+from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from xml.etree import ElementTree as ET
@@ -35,53 +53,85 @@ OUTPUT_FILE = os.path.join(ROOT, "data", "financials.json")
 
 DART_KEY = os.environ.get("OPENDART_KEY", "").strip()
 CORP_CODE_URL = "https://opendart.fss.or.kr/api/corpCode.xml"
-ACNT_URL = "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json"
+MULTI_ACNT_URL = "https://opendart.fss.or.kr/api/fnlttMultiAcnt.json"
+LIST_URL = "https://opendart.fss.or.kr/api/list.json"
 
-REPRT_ANNUAL = "11011"  # 사업보고서
+# DART caps corp_code at 99 per fnlttMultiAcnt call.
+BATCH_SIZE = 99
 
-WORKERS = 8
-TIMEOUT = 15
-RETRY_COUNT = 2
+# How many fiscal years back to query. Each call also returns the prior
+# year's same period (frmtrm), so 2 query years yield ~3 years of history.
+QUERY_YEARS = int(os.environ.get("FIN_QUERY_YEARS", "2"))
 
-# As of run-time, query this fiscal year first (most recent annual report
-# available). Each call returns thstrm/frmtrm/bfefrmtrm = 3 years. If the
-# response is empty (filing not yet published for small caps), step back one
-# year.
-def latest_fiscal_year():
-    today = datetime.now(KST)
-    # Annual reports are due by end of March for prior FY. If we're past
-    # April, FY-1 should be available; otherwise FY-2 is the safer baseline.
-    return today.year - 1 if today.month >= 4 else today.year - 2
+# Wall-clock budget, deliberately shorter than the job's timeout-minutes.
+# A run that overruns writes what it has and exits 0 rather than being
+# killed with its commit step skipped.
+BUDGET_SECONDS = int(float(os.environ.get("FIN_BUDGET_MIN", "20")) * 60)
 
+WORKERS = 6
+TIMEOUT = 20
+RETRY_COUNT = 3
 
-# Account matching. Primary key is account_id (standard XBRL element);
-# account_nm is the fallback for corporates that report with non-standard
-# IDs. Order within each list is preference order.
-ACCOUNT_KEYS = {
-    "revenue": {
-        "ids": ["ifrs-full_Revenue", "ifrs_Revenue"],
-        "names": ["매출액", "수익(매출액)", "영업수익"],
-    },
-    "cogs": {
-        "ids": ["ifrs-full_CostOfSales", "ifrs_CostOfSales"],
-        "names": ["매출원가"],
-    },
-    "grossProfit": {
-        "ids": ["ifrs-full_GrossProfit", "ifrs_GrossProfit"],
-        "names": ["매출총이익"],
-    },
-    "operatingIncome": {
-        "ids": [
-            "dart_OperatingIncomeLoss",
-            "ifrs-full_ProfitLossFromOperatingActivities",
-        ],
-        "names": ["영업이익", "영업이익(손실)"],
-    },
-    "netIncome": {
-        "ids": ["ifrs-full_ProfitLoss", "ifrs_ProfitLoss"],
-        "names": ["당기순이익", "당기순이익(손실)"],
-    },
+# reprt_code -> (quarter number, label)
+REPORTS = {
+    "11013": (1, "1분기보고서"),
+    "11012": (2, "반기보고서"),
+    "11014": (3, "3분기보고서"),
+    "11011": (4, "사업보고서"),
 }
+
+# 주요계정 only exposes account_nm (no account_id), so matching is by name.
+# Filers vary: 수익(매출액) and 영업수익 are both 매출액 for our purposes.
+ACCOUNT_NAMES = {
+    "revenue": ["매출액", "수익(매출액)", "영업수익"],
+    "operatingIncome": ["영업이익", "영업이익(손실)"],
+    "netIncome": ["당기순이익", "당기순이익(손실)"],
+}
+
+HARD_FAIL_STATUSES = frozenset({"010", "011", "012", "014"})
+TRANSIENT_STATUSES = frozenset({"100", "101", "800", "900"})
+RATELIMIT_STATUSES = frozenset({"020"})
+
+_API_FAILURES = Counter()
+_FAIL_LOCK = threading.Lock()
+_DIAGS = Counter()
+_DIAG_LOCK = threading.Lock()
+
+
+def _fail(kind):
+    with _FAIL_LOCK:
+        _API_FAILURES[kind] += 1
+
+
+def _diag(kind, n=1):
+    with _DIAG_LOCK:
+        _DIAGS[kind] += n
+
+
+_DEADLINE = None
+
+
+def _arm(at):
+    global _DEADLINE
+    _DEADLINE = at
+
+
+def _expired():
+    return _DEADLINE is not None and time.monotonic() >= _DEADLINE
+
+
+def _on_signal(signum, frame):
+    print(f"Signal {signum} — winding down, writing partial results", flush=True)
+    _arm(time.monotonic())
+
+
+def _sleep(seconds):
+    """Backoff that gives up as soon as the budget is spent, so a DART
+    outage degrades the run instead of stalling it past the job timeout."""
+    if _expired():
+        return False
+    time.sleep(seconds)
+    return not _expired()
 
 
 def make_session():
@@ -91,227 +141,452 @@ def make_session():
 
 
 def load_tickers():
-    """Return ordered list of (ticker, name) from tickers-full.js."""
     with open(TICKERS_FILE, encoding="utf-8") as f:
         text = f.read()
     out = []
-    for m in re.finditer(
-        r"'([0-9A-Z]{6})':\s*\{\s*name:\s*'([^']+)'", text
-    ):
+    for m in re.finditer(r"'([0-9A-Z]{6})':\s*\{\s*name:\s*'([^']+)'", text):
         out.append((m.group(1), m.group(2)))
     return out
 
 
 def download_corp_code_map(sess):
-    """Fetch DART corpCode.xml.zip and return {stock_code: corp_code}."""
-    r = sess.get(CORP_CODE_URL, params={"crtfc_key": DART_KEY}, timeout=30)
+    r = sess.get(CORP_CODE_URL, params={"crtfc_key": DART_KEY}, timeout=60)
     r.raise_for_status()
-    # DART returns a JSON error body (HTTP 200) instead of a zip when the
-    # API key is invalid, expired, or the daily quota is exhausted. Detect
-    # that case explicitly so the failure surfaces an actionable message
-    # instead of an opaque zipfile.BadZipFile traceback.
+    # DART answers HTTP 200 with a JSON error body (not a zip) when the key
+    # is invalid, expired or over quota. Say so instead of raising BadZipFile.
     if not r.content.startswith(b"PK"):
         try:
             body = r.json()
             raise RuntimeError(
-                f"corpCode.xml not a zip — DART responded with "
-                f"status={body.get('status')!r} message={body.get('message')!r}"
+                f"corpCode.xml not a zip — DART status={body.get('status')!r} "
+                f"message={body.get('message')!r}"
             )
         except ValueError:
             raise RuntimeError(
-                f"corpCode.xml not a zip — first 200 bytes: "
-                f"{r.content[:200]!r}"
+                f"corpCode.xml not a zip — first 200 bytes: {r.content[:200]!r}"
             )
     zf = zipfile.ZipFile(io.BytesIO(r.content))
-    xml_bytes = zf.read(zf.namelist()[0])
-    root = ET.fromstring(xml_bytes)
+    root = ET.fromstring(zf.read(zf.namelist()[0]))
     mapping = {}
     for elt in root.findall("list"):
-        stock_code = (elt.findtext("stock_code") or "").strip()
-        corp_code = (elt.findtext("corp_code") or "").strip()
-        if stock_code and corp_code:
-            mapping[stock_code] = corp_code
+        sc = (elt.findtext("stock_code") or "").strip()
+        cc = (elt.findtext("corp_code") or "").strip()
+        if sc and cc:
+            mapping[sc] = cc
     return mapping
-
-
-def _matches(row, spec):
-    aid = (row.get("account_id") or "").strip()
-    if aid in spec["ids"]:
-        return True
-    nm = (row.get("account_nm") or "").strip()
-    return nm in spec["names"]
 
 
 def _amount(row, key):
     raw = (row.get(key) or "").replace(",", "").strip()
-    if not raw or raw == "-":
+    if not raw or raw in ("-", "―"):
         return None
+    neg = raw.startswith("(") and raw.endswith(")")
+    if neg:
+        raw = raw[1:-1]
     try:
-        return float(raw)
+        v = float(raw)
     except ValueError:
         return None
+    return -v if neg else v
 
 
-def parse_acnt_response(rows):
-    """Extract 3-year time series in 조원 from a fnlttSinglAcntAll list.
+def _account_key(row):
+    nm = (row.get("account_nm") or "").strip()
+    for key, names in ACCOUNT_NAMES.items():
+        if nm in names:
+            return key
+    return None
 
-    Returns dict with year-aligned arrays, or None if revenue is missing
-    (we treat absence of 매출액 as "no usable data" since the whole UI
-    keys off it)."""
-    # Pick 손익계산서 rows preferentially. DART labels: 'IS' (손익계산서) or
-    # 'CIS' (포괄손익계산서). When a company files only CIS, use that.
-    is_rows = [r for r in rows if (r.get("sj_div") or "") in ("IS", "CIS")]
-    if not is_rows:
-        return None
 
-    # Grab fiscal years from the header row. Every row carries the same
-    # thstrm_nm/frmtrm_nm/bfefrmtrm_nm — read from the first.
-    head = is_rows[0]
+_DATE_RANGE_RE = re.compile(r"(\d{4})\.(\d{2})\.(\d{2})\s*~\s*(\d{4})\.(\d{2})\.(\d{2})")
 
-    def year_from(label):
-        # label looks like "제 56 기" or "2024.01.01 ~ 2024.12.31".
-        # The thstrm_dt field (e.g. "2024.01.01 ~ 2024.12.31") is the
-        # reliable source for the fiscal year.
-        if not label:
-            return None
-        m = re.search(r"(\d{4})", label)
-        return m.group(1) if m else None
 
-    y_curr = year_from(head.get("thstrm_dt") or head.get("thstrm_nm"))
-    y_prev = year_from(head.get("frmtrm_dt") or head.get("frmtrm_nm"))
-    y_prev2 = year_from(head.get("bfefrmtrm_dt") or head.get("bfefrmtrm_nm"))
-    years = [y for y in (y_prev2, y_prev, y_curr) if y]
-    if len(years) < 2:
-        return None
+def _span_months(dt_label):
+    """Months covered by a DART period label like '2025.01.01 ~ 2025.09.30'.
 
-    out = {k: [None] * len(years) for k in ACCOUNT_KEYS}
-    amount_cols = ["bfefrmtrm_amount", "frmtrm_amount", "thstrm_amount"]
-    # Align amount_cols index with `years` (which we built from oldest to
-    # newest, dropping any missing). Re-derive index map from year labels.
-    col_for_year = {
-        y_prev2: "bfefrmtrm_amount",
-        y_prev: "frmtrm_amount",
-        y_curr: "thstrm_amount",
+    This is how we tell a cumulative figure from a three-month one without
+    guessing: a 반기/3분기 주요계정 row that starts on Jan 1 is year-to-date.
+    Returns (months, end_year) or (None, None) when the label is unparseable.
+    """
+    if not dt_label:
+        return None, None
+    m = _DATE_RANGE_RE.search(dt_label)
+    if not m:
+        # Some rows carry only an end date (재무상태표 style).
+        m2 = re.search(r"(\d{4})\.(\d{2})\.(\d{2})", dt_label)
+        return None, (int(m2.group(1)) if m2 else None)
+    y1, m1, _d1, y2, m2_, _d2 = (int(g) for g in m.groups())
+    months = (y2 - y1) * 12 + (m2_ - m1) + 1
+    return months, y2
+
+
+def fetch_batch(sess, corp_codes, year, reprt_code):
+    """One fnlttMultiAcnt call. Returns (rows, ok)."""
+    params = {
+        "crtfc_key": DART_KEY,
+        "corp_code": ",".join(corp_codes),
+        "bsns_year": str(year),
+        "reprt_code": reprt_code,
     }
-    cols = [col_for_year[y] for y in years]
-
-    for key, spec in ACCOUNT_KEYS.items():
-        for row in is_rows:
-            if _matches(row, spec):
-                for i, col in enumerate(cols):
-                    if out[key][i] is None:
-                        v = _amount(row, col)
-                        if v is not None:
-                            out[key][i] = v
-                # Don't break — multiple rows may match; later ones can
-                # fill gaps left by earlier rows. But if every slot is
-                # filled, stop.
-                if all(v is not None for v in out[key]):
+    last = "network"
+    for attempt in range(RETRY_COUNT + 1):
+        try:
+            r = sess.get(MULTI_ACNT_URL, params=params, timeout=TIMEOUT)
+            if r.status_code == 429 or 500 <= r.status_code < 600:
+                last = "ratelimit" if r.status_code == 429 else "http_error"
+                if not _sleep(2 * (attempt + 1)):
                     break
+                continue
+            if r.status_code != 200:
+                _fail("http_error")
+                return [], False
+            body = r.json()
+            status = body.get("status")
+            if status == "000":
+                return body.get("list") or [], True
+            if status == "013":
+                # No filings for this (year, report) across the whole batch.
+                return [], True
+            if status in HARD_FAIL_STATUSES:
+                _fail("http_error")
+                return [], False
+            if status in RATELIMIT_STATUSES:
+                last = "ratelimit"
+                if not _sleep(2 ** (attempt + 1)):
+                    break
+                continue
+            if status in TRANSIENT_STATUSES:
+                last = "transient"
+                if not _sleep(0.5 * (attempt + 1)):
+                    break
+                continue
+            _fail("http_error")
+            return [], False
+        except (requests.RequestException, ValueError):
+            last = "network"
+            if not _sleep(0.5 * (attempt + 1)):
+                break
+            continue
+    _fail(last)
+    return [], False
 
-    if not any(v is not None for v in out["revenue"]):
+
+def collect_periods(sess, corp_codes, years, by_corp):
+    """Fill by_corp[corp][(year, quarter)][metric] = (value, span_months).
+
+    Each call also carries the prior year's same period (frmtrm), so two
+    query years give roughly three years of quarters.
+    """
+    batches = [
+        corp_codes[i:i + BATCH_SIZE]
+        for i in range(0, len(corp_codes), BATCH_SIZE)
+    ]
+    jobs = [
+        (batch, year, code)
+        for year in years
+        for code in REPORTS
+        for batch in batches
+    ]
+    lock = threading.Lock()
+    done = 0
+    total = len(jobs)
+
+    def run(job):
+        batch, year, code = job
+        if _expired():
+            return "budget", None
+        rows, ok = fetch_batch(sess, batch, year, code)
+        return ("ok" if ok else "fail"), (rows, year, code)
+
+    with ThreadPoolExecutor(max_workers=WORKERS) as ex:
+        futures = {ex.submit(run, j): j for j in jobs}
+        for fut in as_completed(futures):
+            outcome, payload = fut.result()
+            with lock:
+                done += 1
+                _diag(outcome)
+                if outcome == "ok" and payload:
+                    rows, year, code = payload
+                    quarter = REPORTS[code][0]
+                    _ingest(rows, year, quarter, by_corp)
+                if done % 40 == 0 or done == total:
+                    print(
+                        f"  {done}/{total} calls · ok={_DIAGS['ok']} "
+                        f"fail={_DIAGS['fail']} budget_skip={_DIAGS['budget']}",
+                        flush=True,
+                    )
+
+
+def _ingest(rows, year, quarter, by_corp):
+    """Pull 매출/영업이익/순이익 out of a batch response.
+
+    Consolidated (CFS) wins over standalone (OFS) when a filer reports both;
+    the frontend shows group numbers everywhere else.
+    """
+    for row in rows:
+        key = _account_key(row)
+        if key is None:
+            continue
+        corp = (row.get("corp_code") or "").strip()
+        if not corp:
+            continue
+        prefer_cfs = (row.get("fs_div") or "").strip().upper() == "CFS"
+        for col_amt, col_dt, yr in (
+            ("thstrm_amount", "thstrm_dt", year),
+            ("frmtrm_amount", "frmtrm_dt", year - 1),
+        ):
+            val = _amount(row, col_amt)
+            if val is None:
+                continue
+            months, end_year = _span_months(row.get(col_dt))
+            slot = by_corp[corp][(end_year or yr, quarter)]
+            prev = slot.get(key)
+            # First writer wins unless this row is consolidated and the
+            # stored one was standalone.
+            if prev is None or (prefer_cfs and not prev[2]):
+                slot[key] = (val, months, prefer_cfs)
+
+
+def derive_quarters(periods):
+    """Turn year-to-date figures into discrete quarters.
+
+    DART's 주요계정 reports 손익 year-to-date for 반기/3분기/사업보고서, which
+    is why Q2 = 반기 - 1분기 and so on. We confirm that from each row's own
+    period label rather than assuming it: a row whose span is three months is
+    already discrete and is taken as-is. A subtraction that would make revenue
+    negative means the two periods disagree (restatement, a filer who reports
+    three-month figures without saying so), so that quarter is dropped rather
+    than published wrong.
+    """
+    out = {}
+    for (year, q), metrics in periods.items():
+        if year is None:
+            continue
+        out.setdefault(year, {})[q] = metrics
+
+    quarters = []
+    for year in sorted(out):
+        byq = out[year]
+        for q in sorted(byq):
+            metrics = byq[q]
+            rec = {"year": year, "quarter": q}
+            usable = False
+            for key in ACCOUNT_NAMES:
+                cur = metrics.get(key)
+                if cur is None:
+                    rec[key] = None
+                    continue
+                val, months, _cfs = cur
+                if months is not None and months <= 4:
+                    # Already a three-month figure.
+                    rec[key] = val
+                    usable = True
+                    _diag("span_discrete")
+                    continue
+                if q == 1:
+                    rec[key] = val
+                    usable = True
+                    continue
+                prev = byq.get(q - 1, {}).get(key)
+                if prev is None:
+                    rec[key] = None
+                    _diag("missing_prev_quarter")
+                    continue
+                diff = val - prev[0]
+                if key == "revenue" and diff < 0:
+                    rec[key] = None
+                    _diag("negative_derived_revenue")
+                    continue
+                rec[key] = diff
+                usable = True
+                _diag("span_cumulative")
+            if usable:
+                quarters.append(rec)
+    return quarters
+
+
+def to_eok(v):
+    """KRW -> 억원, one decimal. 억원 keeps micro caps readable where the
+    previous 조원 scale rounded most of KOSDAQ to zero."""
+    return round(v / 1e8, 1) if v is not None else None
+
+
+def pct(num, den):
+    if num is None or den in (None, 0):
         return None
+    return round(num / den * 100, 1)
 
-    # Convert KRW → 조원 (1조 = 1e12 KRW). Round to 2 decimals.
-    def to_jo(v):
-        return round(v / 1e12, 2) if v is not None else None
 
-    for k in ACCOUNT_KEYS:
-        out[k] = [to_jo(v) for v in out[k]]
+def build_entry(name, corp_code, periods):
+    quarters = derive_quarters(periods)
 
-    # Margins (%). Guard against None and zero revenue.
-    def pct(num, den):
-        if num is None or den is None or den == 0:
-            return None
-        return round(num / den * 100, 1)
+    # Annual series: prefer the 사업보고서 cumulative (q=4), which is the
+    # full-year figure, rather than summing derived quarters.
+    annual = {}
+    for (year, q), metrics in periods.items():
+        if q != 4 or year is None:
+            continue
+        annual[year] = {
+            k: (metrics[k][0] if metrics.get(k) else None)
+            for k in ACCOUNT_NAMES
+        }
 
-    grossMargin = []
-    opMargin = []
-    netMargin = []
-    for i in range(len(years)):
-        r = out["revenue"][i]
-        # Some filers report 매출원가 + 매출총이익 explicitly; others omit
-        # 매출총이익 and we compute it. Same for the reverse.
-        gp = out["grossProfit"][i]
-        if gp is None and out["cogs"][i] is not None and r is not None:
-            gp = round(r - out["cogs"][i], 2)
-            out["grossProfit"][i] = gp
-        grossMargin.append(pct(gp, r))
-        opMargin.append(pct(out["operatingIncome"][i], r))
-        netMargin.append(pct(out["netIncome"][i], r))
+    years = sorted(annual)[-3:]
+    rev = [to_eok(annual[y]["revenue"]) for y in years]
+    op = [to_eok(annual[y]["operatingIncome"]) for y in years]
+    net = [to_eok(annual[y]["netIncome"]) for y in years]
 
-    revGrowth = [None]
+    rev_growth = [None]
     for i in range(1, len(years)):
-        prev = out["revenue"][i - 1]
-        curr = out["revenue"][i]
-        if prev and curr and prev != 0:
-            revGrowth.append(round((curr / prev - 1) * 100, 1))
-        else:
-            revGrowth.append(None)
+        p, c = rev[i - 1], rev[i]
+        rev_growth.append(round((c / p - 1) * 100, 1) if p and c and p != 0 else None)
+
+    q_out = []
+    by_key = {(r["year"], r["quarter"]): r for r in quarters}
+    for r in quarters:
+        prev_year = by_key.get((r["year"] - 1, r["quarter"]))
+        revenue = to_eok(r["revenue"])
+        opi = to_eok(r["operatingIncome"])
+        entry = {
+            "period": f"{r['year']}Q{r['quarter']}",
+            "year": r["year"],
+            "quarter": r["quarter"],
+            "revenue": revenue,
+            "operatingIncome": opi,
+            "netIncome": to_eok(r["netIncome"]),
+            "opMargin": pct(opi, revenue),
+            "revYoY": None,
+            "opYoY": None,
+            "turnaround": None,
+        }
+        if prev_year:
+            pr = to_eok(prev_year["revenue"])
+            po = to_eok(prev_year["operatingIncome"])
+            if pr and revenue is not None and pr != 0:
+                entry["revYoY"] = round((revenue / pr - 1) * 100, 1)
+            if po is not None and opi is not None:
+                if po != 0 and (po > 0) == (opi > 0):
+                    entry["opYoY"] = round((opi / abs(po) - 1) * 100, 1) if po > 0 else None
+                # Sign flips are the headline, not a percentage.
+                if po < 0 <= opi:
+                    entry["turnaround"] = "흑자전환"
+                elif po >= 0 > opi:
+                    entry["turnaround"] = "적자전환"
+        q_out.append(entry)
+
+    q_out.sort(key=lambda e: (e["year"], e["quarter"]))
+
+    if not any(v is not None for v in rev) and not q_out:
+        return None
 
     return {
-        "years": years,
-        "revenue": out["revenue"],
-        "cogs": out["cogs"],
-        "grossProfit": out["grossProfit"],
-        "operatingIncome": out["operatingIncome"],
-        "netIncome": out["netIncome"],
-        "grossMargin": grossMargin,
-        "opMargin": opMargin,
-        "netMargin": netMargin,
-        "revGrowth": revGrowth,
+        "name": name,
+        "corpCode": corp_code,
+        # Annual block keeps the shape stock-deep-dive.html already reads.
+        "years": [str(y) for y in years],
+        "revenue": rev,
+        "cogs": [None] * len(years),
+        "grossProfit": [None] * len(years),
+        "operatingIncome": op,
+        "netIncome": net,
+        "grossMargin": [None] * len(years),
+        "opMargin": [pct(op[i], rev[i]) for i in range(len(years))],
+        "netMargin": [pct(net[i], rev[i]) for i in range(len(years))],
+        "revGrowth": rev_growth,
+        "quarters": q_out[-12:],
+        "latest": q_out[-1] if q_out else None,
     }
 
 
-def fetch_one(sess, ticker, name, corp_code, base_year):
-    """Try CFS first, then OFS; try base_year, then base_year-1."""
-    last_error = None
-    for fs_div in ("CFS", "OFS"):
-        for year_offset in (0, 1):
-            year = base_year - year_offset
+def fetch_report_filings(sess, days=120):
+    """Periodic-report filings (정기공시) market-wide, for 실적 발표일.
+
+    fnlttMultiAcnt carries no receipt date, so when a result was actually
+    announced comes from the disclosure list instead. pblntf_ty=A is 정기공시
+    (사업/반기/분기보고서), which is exactly the set we want, and one page
+    carries 100 filings — the whole window is a few dozen calls.
+    """
+    today = datetime.now(KST).date()
+    bgn = (today - timedelta(days=days)).strftime("%Y%m%d")
+    end = today.strftime("%Y%m%d")
+    out = {}
+    pages = 0
+    for corp_cls in ("Y", "K"):
+        total_page = None
+        for page_no in range(1, 60):
+            if _expired():
+                _diag("filings_budget_stop")
+                return out, pages
             params = {
                 "crtfc_key": DART_KEY,
-                "corp_code": corp_code,
-                "bsns_year": str(year),
-                "reprt_code": REPRT_ANNUAL,
-                "fs_div": fs_div,
+                "bgn_de": bgn,
+                "end_de": end,
+                "corp_cls": corp_cls,
+                "pblntf_ty": "A",
+                "page_count": 100,
+                "page_no": page_no,
             }
+            body = None
             for attempt in range(RETRY_COUNT + 1):
                 try:
-                    r = sess.get(ACNT_URL, params=params, timeout=TIMEOUT)
+                    r = sess.get(LIST_URL, params=params, timeout=TIMEOUT)
                     if r.status_code != 200:
-                        last_error = f"HTTP {r.status_code}"
                         break
-                    body = r.json()
-                    status = body.get("status")
-                    # 000 = OK, 013 = no data (skip silently),
-                    # 020 = key invalid, 100/101/800/900 = transient
-                    if status == "013":
-                        last_error = "no-data"
+                    j = r.json()
+                    st = j.get("status")
+                    if st == "000":
+                        body = j
                         break
-                    if status != "000":
-                        if status in ("100", "101", "800", "900"):
-                            time.sleep(0.5 * (attempt + 1))
-                            continue
-                        last_error = f"status={status}"
+                    if st == "013":
+                        body = {"list": [], "total_page": 0}
                         break
-                    rows = body.get("list") or []
-                    parsed = parse_acnt_response(rows)
-                    if parsed:
-                        return {
-                            "name": name,
-                            "corpCode": corp_code,
-                            "fsDiv": fs_div,
-                            "fiscalYear": int(parsed["years"][-1]),
-                            **parsed,
-                        }
-                    last_error = "parse-empty"
+                    if st in RATELIMIT_STATUSES or st in TRANSIENT_STATUSES:
+                        if not _sleep(1.5 * (attempt + 1)):
+                            break
+                        continue
                     break
-                except requests.RequestException as e:
-                    last_error = f"net:{e.__class__.__name__}"
-                    time.sleep(0.5 * (attempt + 1))
+                except (requests.RequestException, ValueError):
+                    if not _sleep(0.5 * (attempt + 1)):
+                        break
                     continue
-    return None
+            if body is None:
+                _diag("filings_page_failed")
+                break
+            pages += 1
+            rows = body.get("list") or []
+            for row in rows:
+                code = (row.get("stock_code") or "").strip()
+                if len(code) != 6:
+                    continue
+                title = (row.get("report_nm") or "").strip()
+                if not re.search(r"분기보고서|반기보고서|사업보고서", title):
+                    continue
+                dt = (row.get("rcept_dt") or "").strip()
+                iso = f"{dt[:4]}-{dt[4:6]}-{dt[6:8]}" if len(dt) == 8 else None
+                prev = out.get(code)
+                if prev is None or (iso or "") > (prev.get("date") or ""):
+                    out[code] = {
+                        "date": iso,
+                        "title": title,
+                        "rceptNo": (row.get("rcept_no") or "").strip() or None,
+                    }
+            if total_page is None:
+                try:
+                    total_page = int(body.get("total_page") or 1)
+                except (TypeError, ValueError):
+                    total_page = 1
+            if page_no >= total_page or not rows:
+                break
+    return out, pages
+
+
+def load_existing():
+    try:
+        with open(OUTPUT_FILE, encoding="utf-8") as f:
+            data = json.load(f)
+    except (FileNotFoundError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
 
 
 def main():
@@ -319,7 +594,19 @@ def main():
         print("ERROR: OPENDART_KEY env var not set", file=sys.stderr)
         sys.exit(1)
 
+    started = time.monotonic()
+    _arm(started + BUDGET_SECONDS)
+    signal.signal(signal.SIGTERM, _on_signal)
+    signal.signal(signal.SIGINT, _on_signal)
+    print(f"Budget {BUDGET_SECONDS // 60} min · {QUERY_YEARS} query years",
+          flush=True)
+
     sess = make_session()
+    previous = load_existing()
+    prev_fin = previous.get("financials") or {}
+    print(f"Existing data: {len(prev_fin):,} tickers "
+          f"(asOf {previous.get('asOf') or '—'})", flush=True)
+
     print("Fetching DART corp_code master…", flush=True)
     try:
         code_map = download_corp_code_map(sess)
@@ -329,61 +616,93 @@ def main():
     print(f"  loaded {len(code_map):,} listed corp_code entries", flush=True)
 
     tickers = load_tickers()
-    print(f"Loaded {len(tickers):,} tickers from tickers-full.js", flush=True)
+    names = dict(tickers)
+    pairs = [(t, code_map[t]) for t, _ in tickers if t in code_map]
+    corp_to_ticker = {cc: t for t, cc in pairs}
+    print(f"Loaded {len(tickers):,} tickers · {len(pairs):,} with corp_code",
+          flush=True)
 
-    base_year = latest_fiscal_year()
-    print(f"Querying base fiscal year {base_year}…", flush=True)
+    today = datetime.now(KST)
+    # The newest fiscal year worth querying. Before April the current year
+    # has no annual report yet, but its quarters do exist.
+    years = [today.year - i for i in range(QUERY_YEARS)]
+    print(f"Querying fiscal years {years} x {len(REPORTS)} report codes…",
+          flush=True)
+
+    by_corp = defaultdict(lambda: defaultdict(dict))
+    collect_periods(sess, [cc for _t, cc in pairs], years, by_corp)
+
+    print("Fetching 정기공시 filing dates…", flush=True)
+    filings, filing_pages = fetch_report_filings(sess)
+    print(f"  {filing_pages} pages · {len(filings):,} tickers with a recent "
+          f"periodic report", flush=True)
 
     results = {}
-    skipped_no_corp = 0
-    skipped_no_data = 0
+    for corp, periods in by_corp.items():
+        ticker = corp_to_ticker.get(corp)
+        if not ticker:
+            continue
+        entry = build_entry(names.get(ticker, ticker), corp, periods)
+        if entry is None:
+            continue
+        f = filings.get(ticker)
+        if f:
+            entry["lastReport"] = f
+        results[ticker] = entry
 
-    def task(ticker, name):
-        corp_code = code_map.get(ticker)
-        if not corp_code:
-            return ticker, None, "no_corp"
-        fin = fetch_one(sess, ticker, name, corp_code, base_year)
-        if fin is None:
-            return ticker, None, "no_data"
-        return ticker, fin, None
+    # Never let a degraded run shrink the dataset: tickers this run could
+    # not reach keep whatever they already had.
+    merged = dict(prev_fin)
+    merged.update(results)
 
-    with ThreadPoolExecutor(max_workers=WORKERS) as ex:
-        futures = {ex.submit(task, t, n): t for t, n in tickers}
-        done = 0
-        total = len(futures)
-        for fut in as_completed(futures):
-            done += 1
-            ticker, fin, reason = fut.result()
-            if fin is not None:
-                results[ticker] = fin
-            elif reason == "no_corp":
-                skipped_no_corp += 1
-            else:
-                skipped_no_data += 1
-            if done % 200 == 0:
-                print(
-                    f"  {done}/{total} · ok={len(results)} "
-                    f"no_corp={skipped_no_corp} no_data={skipped_no_data}",
-                    flush=True,
-                )
+    over_budget = _DIAGS["budget"] > 0
+    api_failed = _DIAGS["fail"] > 0
+    clean = not over_budget and not api_failed
+    now_iso = datetime.now(KST).isoformat(timespec="seconds")
 
+    with_quarters = sum(1 for e in merged.values() if e.get("quarters"))
     payload = {
-        "asOf": datetime.now(KST).isoformat(timespec="seconds"),
-        "fiscalYearBase": base_year,
-        "count": len(results),
-        "skippedNoCorp": skipped_no_corp,
-        "skippedNoData": skipped_no_data,
-        "financials": results,
+        "asOf": now_iso,
+        "unit": "억원",
+        "queryYears": years,
+        "count": len(tickers),
+        "covered": len(merged),
+        "withQuarters": with_quarters,
+        "lastRun": {
+            "at": now_iso,
+            "fetched": len(results),
+            "apiFailedCalls": _DIAGS["fail"],
+            "budgetSkipped": _DIAGS["budget"],
+            "elapsedSec": int(time.monotonic() - started),
+            "complete": clean,
+        },
+        "financials": merged,
     }
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
-    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+    tmp = OUTPUT_FILE + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, separators=(",", ":"))
+    os.replace(tmp, OUTPUT_FILE)
 
     print(
-        f"Wrote {OUTPUT_FILE} · ok={len(results)} "
-        f"no_corp={skipped_no_corp} no_data={skipped_no_data}",
+        f"Wrote {OUTPUT_FILE} · covered={len(merged):,} "
+        f"(this run {len(results):,}) withQuarters={with_quarters:,} "
+        f"({'complete' if clean else 'PARTIAL'})",
         flush=True,
     )
+
+    print("\nPeriod-span diagnostics (how 분기 수치를 유도했는지):", flush=True)
+    for k in ("span_cumulative", "span_discrete", "missing_prev_quarter",
+              "negative_derived_revenue"):
+        print(f"  {k:<26} {_DIAGS[k]:,}", flush=True)
+    if _DIAGS["negative_derived_revenue"] > _DIAGS["span_cumulative"]:
+        print(
+            "  WARN: more negative derivations than clean ones — DART may be "
+            "returning three-month figures where we assumed year-to-date.",
+            flush=True,
+        )
+    if sum(_API_FAILURES.values()):
+        print(f"\nAPI failures: {dict(_API_FAILURES)}", flush=True)
 
 
 if __name__ == "__main__":
