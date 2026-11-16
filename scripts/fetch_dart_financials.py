@@ -50,6 +50,12 @@ KST = timezone(timedelta(hours=9))
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TICKERS_FILE = os.path.join(ROOT, "tickers-full.js")
 OUTPUT_FILE = os.path.join(ROOT, "data", "financials.json")
+# The corpCode.xml master is a ~4,000-entry zip that took 3m56s of a
+# 20-minute budget on the first real run — a fifth of the run spent before
+# any work started. The mapping only changes when a company lists or
+# delists, so it is cached and refreshed weekly.
+CORP_CACHE_FILE = os.path.join(ROOT, "data", "dart-corpcode.json")
+CORP_CACHE_MAX_AGE_DAYS = 7
 
 DART_KEY = os.environ.get("OPENDART_KEY", "").strip()
 CORP_CODE_URL = "https://opendart.fss.or.kr/api/corpCode.xml"
@@ -66,9 +72,9 @@ QUERY_YEARS = int(os.environ.get("FIN_QUERY_YEARS", "2"))
 # Wall-clock budget, deliberately shorter than the job's timeout-minutes.
 # A run that overruns writes what it has and exits 0 rather than being
 # killed with its commit step skipped.
-BUDGET_SECONDS = int(float(os.environ.get("FIN_BUDGET_MIN", "20")) * 60)
+BUDGET_SECONDS = int(float(os.environ.get("FIN_BUDGET_MIN", "25")) * 60)
 
-WORKERS = 6
+WORKERS = 10
 TIMEOUT = 20
 RETRY_COUNT = 3
 
@@ -147,6 +153,37 @@ def load_tickers():
     for m in re.finditer(r"'([0-9A-Z]{6})':\s*\{\s*name:\s*'([^']+)'", text):
         out.append((m.group(1), m.group(2)))
     return out
+
+
+def load_corp_code_cache():
+    """Cached {stock_code: corp_code}, or None when missing or stale."""
+    try:
+        with open(CORP_CACHE_FILE, encoding="utf-8") as f:
+            data = json.load(f)
+    except (FileNotFoundError, ValueError):
+        return None
+    mapping = data.get("map")
+    if not isinstance(mapping, dict) or not mapping:
+        return None
+    try:
+        age = datetime.now(KST) - datetime.fromisoformat(data["asOf"])
+    except (KeyError, TypeError, ValueError):
+        return None
+    if age > timedelta(days=CORP_CACHE_MAX_AGE_DAYS):
+        return None
+    return mapping
+
+
+def save_corp_code_cache(mapping):
+    os.makedirs(os.path.dirname(CORP_CACHE_FILE), exist_ok=True)
+    tmp = CORP_CACHE_FILE + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(
+            {"asOf": datetime.now(KST).isoformat(timespec="seconds"),
+             "count": len(mapping), "map": mapping},
+            f, ensure_ascii=False, separators=(",", ":"), sort_keys=True,
+        )
+    os.replace(tmp, CORP_CACHE_FILE)
 
 
 def download_corp_code_map(sess):
@@ -348,58 +385,73 @@ def _ingest(rows, year, quarter, by_corp):
 
 
 def derive_quarters(periods):
-    """Turn year-to-date figures into discrete quarters.
+    """Turn each report's figures into discrete quarters.
 
-    DART's 주요계정 reports 손익 year-to-date for 반기/3분기/사업보고서, which
-    is why Q2 = 반기 - 1분기 and so on. We confirm that from each row's own
-    period label rather than assuming it: a row whose span is three months is
-    already discrete and is taken as-is. A subtraction that would make revenue
-    negative means the two periods disagree (restatement, a filer who reports
-    three-month figures without saying so), so that quarter is dropped rather
-    than published wrong.
+    DART mixes the two shapes. In the first full run 20,116 account rows
+    carried a year-to-date span and 17,101 carried a three-month span, so
+    neither can be assumed — each row's own period label decides.
+
+    The subtlety that matters: when a year-to-date row IS differenced, it
+    must be differenced against the cumulative total of the quarters
+    already resolved, not against the previous row's raw value. The
+    previous row may itself have been a three-month figure, and
+    `cumulative - three_month` is a meaningless number. So we walk Q1..Q4
+    carrying a running total of resolved quarters and subtract that.
+
+    A gap in the ladder (a quarter we have no row for) makes every later
+    year-to-date figure underivable, so the running total is marked
+    untrustworthy rather than silently reused. A difference that would
+    make revenue negative means the two reports disagree (restatement,
+    or a filer whose labels lie), so that quarter is dropped.
     """
-    out = {}
+    by_year = {}
     for (year, q), metrics in periods.items():
         if year is None:
             continue
-        out.setdefault(year, {})[q] = metrics
+        by_year.setdefault(year, {})[q] = metrics
 
     quarters = []
-    for year in sorted(out):
-        byq = out[year]
-        for q in sorted(byq):
-            metrics = byq[q]
+    for year in sorted(by_year):
+        byq = by_year[year]
+        resolved = {k: {} for k in ACCOUNT_NAMES}
+        for key in ACCOUNT_NAMES:
+            running = 0.0
+            have_running = True
+            for q in (1, 2, 3, 4):
+                cell = byq.get(q, {}).get(key)
+                if cell is None:
+                    # No row for this quarter: later YTD figures can no
+                    # longer be differenced against a known total.
+                    have_running = False
+                    continue
+                val, months, _cfs = cell
+                # Q1 is three months either way, so it needs no differencing.
+                is_discrete = q == 1 or (months is not None and months <= 4)
+                if is_discrete:
+                    value = val
+                    _diag("span_q1" if q == 1 else "span_discrete")
+                else:
+                    if not have_running:
+                        _diag("missing_prev_quarter")
+                        continue
+                    value = val - running
+                    if key == "revenue" and value < 0:
+                        _diag("negative_derived_revenue")
+                        have_running = False
+                        continue
+                    _diag("span_cumulative")
+                resolved[key][q] = value
+                if have_running:
+                    running += value
+
+        for q in (1, 2, 3, 4):
             rec = {"year": year, "quarter": q}
             usable = False
             for key in ACCOUNT_NAMES:
-                cur = metrics.get(key)
-                if cur is None:
-                    rec[key] = None
-                    continue
-                val, months, _cfs = cur
-                if months is not None and months <= 4:
-                    # Already a three-month figure.
-                    rec[key] = val
+                v = resolved[key].get(q)
+                rec[key] = v
+                if v is not None:
                     usable = True
-                    _diag("span_discrete")
-                    continue
-                if q == 1:
-                    rec[key] = val
-                    usable = True
-                    continue
-                prev = byq.get(q - 1, {}).get(key)
-                if prev is None:
-                    rec[key] = None
-                    _diag("missing_prev_quarter")
-                    continue
-                diff = val - prev[0]
-                if key == "revenue" and diff < 0:
-                    rec[key] = None
-                    _diag("negative_derived_revenue")
-                    continue
-                rec[key] = diff
-                usable = True
-                _diag("span_cumulative")
             if usable:
                 quarters.append(rec)
     return quarters
@@ -607,13 +659,20 @@ def main():
     print(f"Existing data: {len(prev_fin):,} tickers "
           f"(asOf {previous.get('asOf') or '—'})", flush=True)
 
-    print("Fetching DART corp_code master…", flush=True)
-    try:
-        code_map = download_corp_code_map(sess)
-    except (RuntimeError, requests.RequestException, zipfile.BadZipFile) as e:
-        print(f"ERROR: corp_code download failed — {e}", file=sys.stderr)
-        sys.exit(1)
-    print(f"  loaded {len(code_map):,} listed corp_code entries", flush=True)
+    code_map = load_corp_code_cache()
+    if code_map:
+        print(f"  corp_code from cache: {len(code_map):,} entries", flush=True)
+    else:
+        print("Fetching DART corp_code master…", flush=True)
+        try:
+            code_map = download_corp_code_map(sess)
+        except (RuntimeError, requests.RequestException,
+                zipfile.BadZipFile) as e:
+            print(f"ERROR: corp_code download failed — {e}", file=sys.stderr)
+            sys.exit(1)
+        save_corp_code_cache(code_map)
+        print(f"  downloaded {len(code_map):,} listed corp_code entries "
+              f"(cached for {CORP_CACHE_MAX_AGE_DAYS}d)", flush=True)
 
     tickers = load_tickers()
     names = dict(tickers)
@@ -629,13 +688,17 @@ def main():
     print(f"Querying fiscal years {years} x {len(REPORTS)} report codes…",
           flush=True)
 
-    by_corp = defaultdict(lambda: defaultdict(dict))
-    collect_periods(sess, [cc for _t, cc in pairs], years, by_corp)
-
+    # Filing dates first. This sweep is cheap (a few dozen pages) but in
+    # the first full run it sat behind the heavy fetch, the budget was
+    # already spent by the time it started, and it returned nothing at
+    # all — losing the 실적 발표일 half of the feature.
     print("Fetching 정기공시 filing dates…", flush=True)
     filings, filing_pages = fetch_report_filings(sess)
     print(f"  {filing_pages} pages · {len(filings):,} tickers with a recent "
           f"periodic report", flush=True)
+
+    by_corp = defaultdict(lambda: defaultdict(dict))
+    collect_periods(sess, [cc for _t, cc in pairs], years, by_corp)
 
     results = {}
     for corp, periods in by_corp.items():
