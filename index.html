@@ -380,6 +380,7 @@
   @media (max-width: 700px) { .retro-body { grid-template-columns: 1fr; } }
 
   .col-add { padding: 10px 12px; border-top: 1px solid var(--line); flex-shrink: 0; background: var(--surface); }
+  .col-add.col-add-top { border-top: 0; border-bottom: 1px solid var(--line); }
   .col-add-btn { width: 100%; padding: 9px; border: 1px dashed var(--line-strong); border-radius: 5px; font-family: var(--mono); font-size: 10px; color: var(--ink-soft); letter-spacing: 0.1em; text-transform: uppercase; transition: all 0.15s; }
   .col-add-btn:hover { border-color: var(--accent); color: var(--accent); border-style: solid; }
   .col-body.drag-over { background: var(--bg-warm); }
@@ -575,16 +576,16 @@
         <div class="col-title"><span class="icon"></span>그때그때 할 일</div>
         <div class="col-count" id="cnt-todo">0</div>
       </div>
+      <div class="col-add col-add-top"><button class="col-add-btn" data-add="todo">+ 할 일 추가</button></div>
       <div class="col-body" id="col-todo" data-drop="todo"></div>
-      <div class="col-add"><button class="col-add-btn" data-add="todo">+ 할 일 추가</button></div>
     </div>
     <div class="col todo todo-daily" data-col="todo" data-status="todo">
       <div class="col-header">
         <div class="col-title"><span class="icon"></span>데일리 할 일</div>
         <div class="col-count" id="cnt-todo-daily">0</div>
       </div>
+      <div class="col-add col-add-top"><button class="col-add-btn" data-add="todo" data-add-daily="1">+ 데일리 할 일 추가</button></div>
       <div class="col-body" id="col-todo-daily" data-drop="todo" data-drop-daily="1"></div>
-      <div class="col-add"><button class="col-add-btn" data-add="todo" data-add-daily="1">+ 데일리 할 일 추가</button></div>
     </div>
     <div class="col deals" data-col="deals" data-status="deals">
       <div class="col-header">
