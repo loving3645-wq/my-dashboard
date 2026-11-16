@@ -1,11 +1,18 @@
 name: DART Financials
 
-# Annual reports (사업보고서) are filed by end of March each year for the
-# prior fiscal year. Numbers don't change after that, so weekly is more
-# than enough. Sunday 18:00 UTC = Monday 03:00 KST — quiet hours.
+# Quarterly + annual earnings for the whole market.
+#
+# Runs daily, not weekly. The numbers themselves only move four times a
+# year, but WHEN a company files is the thing we track, and filings land
+# every business day through earnings season. The run is bulk now
+# (fnlttMultiAcnt, 99 companies per call), so a daily pass is ~270 API
+# calls and a couple of minutes.
+#
+# 15:00 UTC = 00:00 KST, clear of the disclosures (13:00 UTC) and
+# mezzanine (19:00 UTC) jobs so the three don't share a DART quota spike.
 on:
   schedule:
-    - cron: '0 18 * * 0'
+    - cron: '0 15 * * *'
   workflow_dispatch:
 
 permissions:
@@ -18,6 +25,11 @@ concurrency:
 jobs:
   fetch:
     runs-on: ubuntu-latest
+    # Backstop only. The script holds its own, shorter budget
+    # (FIN_BUDGET_MIN) and writes + commits what it has when that runs
+    # out. The previous 30-minute timeout killed all 29 runs this
+    # workflow ever had, each time skipping the commit step, so
+    # data/financials.json was never produced at all.
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -33,6 +45,7 @@ jobs:
       - name: Fetch DART financials
         env:
           OPENDART_KEY: ${{ secrets.OPENDART_KEY }}
+          FIN_BUDGET_MIN: '20'
         run: python scripts/fetch_dart_financials.py
 
       - name: Commit if changed
@@ -44,7 +57,9 @@ jobs:
             echo "No changes — nothing to commit"
           else
             STAMP=$(date -u +"%Y-%m-%d")
-            COUNT=$(python -c "import json; print(json.load(open('data/financials.json'))['count'])")
-            git commit -m "📊 DART financials ${STAMP} (${COUNT} tickers)"
+            COVERED=$(python -c "import json; print(json.load(open('data/financials.json'))['covered'])")
+            QTRS=$(python -c "import json; print(json.load(open('data/financials.json'))['withQuarters'])")
+            PARTIAL=$(python -c "import json; r=(json.load(open('data/financials.json')).get('lastRun') or {}); print('' if r.get('complete', True) else ' (partial)')")
+            git commit -m "📊 Financials ${STAMP} (${COVERED} tickers, ${QTRS} with quarters)${PARTIAL}"
             git push
           fi
