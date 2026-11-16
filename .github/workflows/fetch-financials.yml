@@ -30,7 +30,7 @@ jobs:
     # out. The previous 30-minute timeout killed all 29 runs this
     # workflow ever had, each time skipping the commit step, so
     # data/financials.json was never produced at all.
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
 
@@ -45,14 +45,14 @@ jobs:
       - name: Fetch DART financials
         env:
           OPENDART_KEY: ${{ secrets.OPENDART_KEY }}
-          FIN_BUDGET_MIN: '20'
+          FIN_BUDGET_MIN: '25'
         run: python scripts/fetch_dart_financials.py
 
       - name: Commit if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/financials.json
+          git add data/financials.json data/dart-corpcode.json
           if git diff --cached --quiet; then
             echo "No changes — nothing to commit"
           else
