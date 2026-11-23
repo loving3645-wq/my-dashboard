@@ -315,7 +315,7 @@
 
   <div class="page-head">
     <h1>증권사 <em>리서치</em></h1>
-    <div class="sub"><span id="report-count">—</span>개 리포트 · 최근 14일 · 매일 21:00 KST 자동 갱신</div>
+    <div class="sub"><span id="report-count">—</span>개 리포트 · 최근 14일 · 매일 21:00 KST 자동 갱신<span class="fresh-badge" data-fresh-src="data/research-reports.json" data-fresh-field="generatedAt" data-fresh-warn="36" data-fresh-stale="72" style="margin-left:8px"></span></div>
   </div>
 
   <div class="toolbar">
@@ -1142,5 +1142,6 @@ document.addEventListener('keydown', e => {
 
 loadReports();
 </script>
+<script src="freshness.js" defer></script>
 </body>
 </html>

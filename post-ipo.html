@@ -199,7 +199,7 @@
 
   <div class="page-head">
     <h1>Post-IPO <em>시트</em></h1>
-    <div class="sub"><span id="ipo-count">—</span>건 · 2016년 이후 상장 · 공모가 / 공모규모 / 주관사 / +1W·1M·3M·6M·1Y 수익률 · <a href="ipo-calendar.html" style="color:var(--accent); text-decoration:none;">→ 청약 캘린더</a></div>
+    <div class="sub"><span id="ipo-count">—</span>건 · 2016년 이후 상장 · 공모가 / 공모규모 / 주관사 / +1W·1M·3M·6M·1Y 수익률 · <a href="ipo-calendar.html" style="color:var(--accent); text-decoration:none;">→ 청약 캘린더</a><span class="fresh-badge" data-fresh-src="data/ipo-history.json" data-fresh-field="generatedAt" data-fresh-warn="48" data-fresh-stale="192" style="margin-left:8px"></span></div>
   </div>
 
   <div class="toolbar">
@@ -612,5 +612,6 @@ $('head-row').addEventListener('click', e => {
 
 load();
 </script>
+<script src="freshness.js" defer></script>
 </body>
 </html>

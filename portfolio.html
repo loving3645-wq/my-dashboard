@@ -203,7 +203,7 @@
 
   <div class="page-head">
     <h1>내 <em>포트폴리오</em></h1>
-    <div class="sub">펀드 명세 · 주식 포트폴리오 — 주식은 매일 자동 시세 반영</div>
+    <div class="sub">펀드 명세 · 주식 포트폴리오 — 주식은 매일 자동 시세 반영<span class="fresh-badge" data-fresh-src="data/market-snapshot.json" data-fresh-field="generatedAt" data-fresh-warn="36" data-fresh-stale="96" style="margin-left:8px" title="주식 시세 갱신"></span></div>
   </div>
 
   <div class="tabs">
@@ -711,5 +711,6 @@ $('s-fund-filter').addEventListener('change', e => { STATE.sFund = e.target.valu
 
 loadAll();
 </script>
+<script src="freshness.js" defer></script>
 </body>
 </html>

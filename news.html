@@ -183,7 +183,7 @@
   <div class="page-head">
     <div>
       <h1>뉴스 <em>크롤링</em></h1>
-      <div class="sub"><span id="article-count">—</span>개 기사 · 최근 <span id="window-days">14</span>일 · 3시간마다 자동 갱신</div>
+      <div class="sub"><span id="article-count">—</span>개 기사 · 최근 <span id="window-days">14</span>일 · 3시간마다 자동 갱신<span class="fresh-badge" data-fresh-src="data/news.json" data-fresh-field="generated_at" data-fresh-warn="8" data-fresh-stale="24" style="margin-left:8px"></span></div>
     </div>
   </div>
 
@@ -518,5 +518,6 @@ document.getElementById('add-form').addEventListener('submit', e => {
 
 load();
 </script>
+<script src="freshness.js" defer></script>
 </body>
 </html>

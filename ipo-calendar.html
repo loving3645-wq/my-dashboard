@@ -167,7 +167,7 @@
 
   <div class="page-head">
     <h1>IPO <em>캘린더</em></h1>
-    <div class="sub">다가오는 청약 / 상장 + 보호예수 만기 (의무보유 해제)</div>
+    <div class="sub">다가오는 청약 / 상장 + 보호예수 만기 (의무보유 해제)<span class="fresh-badge" data-fresh-src="data/ipo-calendar.json" data-fresh-field="generatedAt" data-fresh-warn="36" data-fresh-stale="72" style="margin-left:8px"></span></div>
   </div>
 
   <div class="status-bar">
@@ -523,5 +523,6 @@ applyHash();
 window.addEventListener('hashchange', () => { applyHash(); renderLockups(); });
 loadAll();
 </script>
+<script src="freshness.js" defer></script>
 </body>
 </html>
