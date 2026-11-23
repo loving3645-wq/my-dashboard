@@ -320,7 +320,7 @@
   <!-- ============ PAGE HEAD ============ -->
   <div class="page-head">
     <h1>국내 시장 <em>스캐너</em></h1>
-    <div class="sub">KOSPI · KOSDAQ <span id="ticker-total">2,613</span>종목 · 1D / 1W / 1M / 3M / 6M / 1Y 등락 + 거래량 + 주체별 수급</div>
+    <div class="sub">KOSPI · KOSDAQ <span id="ticker-total">2,613</span>종목 · 1D / 1W / 1M / 3M / 6M / 1Y 등락 + 거래량 + 주체별 수급<span class="fresh-badge" data-fresh-src="data/market-snapshot.json" data-fresh-field="generatedAt" data-fresh-warn="36" data-fresh-stale="96" style="margin-left:8px"></span></div>
   </div>
 
   <!-- ============ TOOLBAR ============ -->
@@ -1973,5 +1973,6 @@ function init() {
 
 init();
 </script>
+<script src="freshness.js" defer></script>
 </body>
 </html>
