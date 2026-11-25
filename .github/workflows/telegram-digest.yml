@@ -1,0 +1,37 @@
+name: Telegram Digest
+
+# 그날의 주요 업데이트(신규 메자닌 / 청약·상장 / 리서치 목표가 변경 / 주요 뉴스)를
+# 텔레그램 봇으로 하루 1회 보낸다.
+# 13:00 UTC = 22:00 KST — 리서치(21:00 KST)·시세·공시가 모두 올라온 뒤.
+on:
+  schedule:
+    - cron: '0 13 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: telegram-digest
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install --quiet requests
+
+      - name: Send digest
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/telegram_digest.py
