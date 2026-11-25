@@ -1,0 +1,49 @@
+name: Weekly US Market Snapshot
+
+# NASDAQ-wide snapshot (market cap >= 5천억 원), scanned via yfinance + Yahoo
+# chart endpoint. ~5,500 tickers with modest concurrency is heavy and Yahoo
+# rate-limits, so run weekly rather than daily.
+# Sat 09:00 UTC = Sat 18:00 KST, after the US trading week closes.
+on:
+  schedule:
+    - cron: '0 9 * * 6'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: us-market-snapshot
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install --quiet requests yfinance
+
+      - name: Generate US snapshot
+        run: python scripts/snapshot_us_market.py
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/us-market-snapshot.json
+          if git diff --cached --quiet; then
+            echo "No changes — nothing to commit"
+          else
+            STAMP=$(date -u +"%Y-%m-%d")
+            COUNT=$(python -c "import json; d=json.load(open('data/us-market-snapshot.json')); print(d.get('qualified', '?'))")
+            git commit -m "🇺🇸 US market snapshot ${STAMP} (${COUNT} tickers)"
+            git push
+          fi
